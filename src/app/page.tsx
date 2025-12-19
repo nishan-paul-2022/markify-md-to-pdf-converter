@@ -99,7 +99,7 @@ export default function Home() {
               <Shield className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight">MD to PDF Generator</h1>
+              <h1 className="text-xl font-bold tracking-tight">MarkdownPDF</h1>
             </div>
           </div>
 

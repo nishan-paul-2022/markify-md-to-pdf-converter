@@ -1,13 +1,5 @@
 # Public Key Infrastructure (PKI) - Implementation & Web Application Integration
 
-**Course:** CSE 802 - Information Security and Cryptography  
-**Author:** Nishan Paul  
-**Roll No:** JN-50028  
-**Registration:** H-55  
-**Batch:** 05  
-**Institution:** University of Dhaka - Professional Masters in Information and Cyber Security  
-**Date:** December 18, 2025
-
 ---
 
 ## Table of Contents
