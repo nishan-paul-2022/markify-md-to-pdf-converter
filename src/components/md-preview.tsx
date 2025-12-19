@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ZoomIn, ZoomOut, ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight, LayoutGrid, FileText } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -23,6 +23,7 @@ interface MdPreviewProps {
     date: string;
   };
   className?: string;
+  showToolbar?: boolean;
 }
 
 type ZoomMode = 'fit-page' | 'fit-width' | 'custom';
@@ -99,12 +100,25 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
   );
 };
 
-export const MdPreview = ({ content, metadata, className }: MdPreviewProps) => {
+export const MdPreview = ({ content, metadata, className, showToolbar = true }: MdPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
   const [customZoom, setCustomZoom] = useState(100);
+  const [viewMode, setViewMode] = useState<'single' | 'continuous'>('single');
+  const [fitWidthScale, setFitWidthScale] = useState(0.75);
+  const [fitPageScale, setFitPageScale] = useState(0.5);
   const containerRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  const handleZoomChange = useCallback((delta: number) => {
+    if (zoomMode !== 'custom') {
+      setZoomMode('custom');
+      setCustomZoom(100 + delta);
+    } else {
+      setCustomZoom(prev => Math.max(25, Math.min(400, prev + delta)));
+    }
+  }, [zoomMode]);
 
   // Split content by page break marker ---
   const pages = content.split(/\n---\n/).map(p => p.trim()).filter(p => p.length > 0);
@@ -120,11 +134,92 @@ export const MdPreview = ({ content, metadata, className }: MdPreviewProps) => {
     setPageInput(currentPage.toString());
   }, [currentPage]);
 
+  // Calculate dynamic scale for fit-width and fit-page
+  useEffect(() => {
+    const calculateScale = () => {
+      if (!containerRef.current) return;
+
+      const container = containerRef.current;
+
+      // Get container dimensions (minimal padding for better fit)
+      const containerWidth = container.clientWidth - 32; // 16px padding on each side
+      const containerHeight = container.clientHeight - 32;
+
+      // A4 page dimensions in pixels (210mm x 297mm at 96 DPI)
+      const pageWidth = 794; // 210mm
+      const pageHeight = 1123; // 297mm
+
+      // Calculate scales
+      const widthScale = containerWidth / pageWidth;
+      const heightScale = containerHeight / pageHeight;
+
+      // Fit width: use width as constraint
+      setFitWidthScale(widthScale);
+
+      // Fit page: use the smaller of width or height to ensure entire page is visible
+      setFitPageScale(Math.min(widthScale, heightScale));
+    };
+
+    calculateScale();
+
+    // Recalculate on window resize
+    const resizeObserver = new ResizeObserver(calculateScale);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  // Track visible page in continuous mode
+  useEffect(() => {
+    if (viewMode !== 'continuous' || !containerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Find the entry with the largest intersection ratio
+        let maxRatio = 0;
+        let visiblePageIndex = currentPage - 1;
+
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
+            maxRatio = entry.intersectionRatio;
+            const pageIndex = parseInt(entry.target.getAttribute('data-page-index') || '0');
+            visiblePageIndex = pageIndex;
+          }
+        });
+
+        if (maxRatio > 0.3) { // Only update if at least 30% of page is visible
+          setCurrentPage(visiblePageIndex + 1);
+        }
+      },
+      {
+        root: containerRef.current,
+        threshold: [0, 0.3, 0.5, 0.7, 1.0],
+      }
+    );
+
+    // Observe all page elements
+    const pageElements = containerRef.current.querySelectorAll('[data-page-index]');
+    pageElements.forEach((el) => observer.observe(el));
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [viewMode]);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore if user is typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // Disable page navigation in continuous mode
+      if (viewMode === 'continuous') {
         return;
       }
 
@@ -153,7 +248,7 @@ export const MdPreview = ({ content, metadata, className }: MdPreviewProps) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [totalPages]);
+  }, [totalPages, viewMode]);
 
   // Mouse wheel zoom (Ctrl + scroll)
   useEffect(() => {
@@ -170,16 +265,9 @@ export const MdPreview = ({ content, metadata, className }: MdPreviewProps) => {
       container.addEventListener('wheel', handleWheel, { passive: false });
       return () => container.removeEventListener('wheel', handleWheel);
     }
-  }, [customZoom, zoomMode]);
+  }, [handleZoomChange]);
 
-  const handleZoomChange = (delta: number) => {
-    if (zoomMode !== 'custom') {
-      setZoomMode('custom');
-      setCustomZoom(100 + delta);
-    } else {
-      setCustomZoom(prev => Math.max(25, Math.min(400, prev + delta)));
-    }
-  };
+
 
   const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPageInput(e.target.value);
@@ -211,8 +299,8 @@ export const MdPreview = ({ content, metadata, className }: MdPreviewProps) => {
   };
 
   const getScale = () => {
-    if (zoomMode === 'fit-page') return 0.5;
-    if (zoomMode === 'fit-width') return 0.75;
+    if (zoomMode === 'fit-page') return fitPageScale;
+    if (zoomMode === 'fit-width') return fitWidthScale;
     return customZoom / 100;
   };
 
@@ -299,129 +387,177 @@ export const MdPreview = ({ content, metadata, className }: MdPreviewProps) => {
 
   return (
     <div className={cn("pdf-viewer flex flex-col h-full bg-slate-900/50", className)}>
-      {/* Professional PDF Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-800/90 border-b border-slate-700 shrink-0 gap-4">
-        {/* Page Navigation */}
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setCurrentPage(1)}
-            disabled={currentPage === 1}
-            title="First page (Home)"
-            className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30"
-          >
-            <ChevronsLeft className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            title="Previous page (←)"
-            className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
+      {/* Toolbar Content */}
+      {showToolbar && (
+        <div className="flex items-center justify-between px-4 py-2.5 bg-slate-800/90 border-b border-slate-700 shrink-0 gap-4 transition-all duration-300 ease-in-out">
+          {/* Page Navigation */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentPage(1)}
+              disabled={viewMode === 'continuous' || currentPage === 1}
+              title="First page (Home)"
+              className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30"
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={viewMode === 'continuous' || currentPage === 1}
+              title="Previous page (←)"
+              className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
 
-          <form onSubmit={handlePageInputSubmit} className="flex items-center gap-2 mx-2">
-            <Input
-              type="text"
-              value={pageInput}
-              onChange={handlePageInputChange}
-              onBlur={handlePageInputSubmit}
-              className="h-8 w-12 text-center bg-slate-700 border-slate-600 text-slate-100 text-sm focus:ring-primary focus:border-primary"
-            />
-            <span className="text-sm text-slate-400">of {totalPages}</span>
-          </form>
+            <form onSubmit={handlePageInputSubmit} className="flex items-center gap-2 mx-2">
+              <Input
+                type="text"
+                value={pageInput}
+                onChange={handlePageInputChange}
+                onBlur={handlePageInputSubmit}
+                disabled={viewMode === 'continuous'}
+                className="h-8 w-12 text-center bg-slate-700 border-slate-600 text-slate-100 text-sm focus:ring-primary focus:border-primary"
+              />
+              <span className="text-sm text-slate-400">of {totalPages}</span>
+            </form>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-            title="Next page (→)"
-            className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setCurrentPage(totalPages)}
-            disabled={currentPage === totalPages}
-            title="Last page (End)"
-            className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30"
-          >
-            <ChevronsRight className="w-4 h-4" />
-          </Button>
-        </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={viewMode === 'continuous' || currentPage === totalPages}
+              title="Next page (→)"
+              className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={viewMode === 'continuous' || currentPage === totalPages}
+              title="Last page (End)"
+              className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30"
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </Button>
+          </div>
 
-        {/* Zoom Controls */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleZoomChange(-10)}
-            disabled={zoomMode === 'custom' && customZoom <= 25}
-            title="Zoom out (Ctrl + -)"
-            className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30"
-          >
-            <ZoomOut className="w-4 h-4" />
-          </Button>
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-1 border-l border-slate-700 pl-4">
+            <Button
+              variant={viewMode === 'single' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('single')}
+              title="Single page view"
+              className={cn(
+                "h-8 w-8 p-0",
+                viewMode === 'single'
+                  ? "bg-primary text-white"
+                  : "text-slate-300 hover:text-white hover:bg-slate-700"
+              )}
+            >
+              <FileText className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'continuous' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('continuous')}
+              title="Continuous page view"
+              className={cn(
+                "h-8 w-8 p-0",
+                viewMode === 'continuous'
+                  ? "bg-primary text-white"
+                  : "text-slate-300 hover:text-white hover:bg-slate-700"
+              )}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </Button>
+          </div>
 
-          <Select value={getCurrentZoomValue()} onValueChange={handleZoomSelect}>
-            <SelectTrigger className="h-8 w-[130px] bg-slate-700 border-slate-600 text-slate-100 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-700">
-              <SelectItem value="fit-page" className="text-slate-100 focus:bg-slate-700 focus:text-white">
-                Fit Page
-              </SelectItem>
-              <SelectItem value="fit-width" className="text-slate-100 focus:bg-slate-700 focus:text-white">
-                Fit Width
-              </SelectItem>
-              <div className="border-t border-slate-700 my-1" />
-              {ZOOM_LEVELS.map(level => (
-                <SelectItem
-                  key={level}
-                  value={level.toString()}
-                  className="text-slate-100 focus:bg-slate-700 focus:text-white"
-                >
-                  {level}%
+          {/* Zoom Controls */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleZoomChange(-10)}
+              disabled={zoomMode === 'custom' && customZoom <= 25}
+              title="Zoom out (Ctrl + -)"
+              className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+
+            <Select value={getCurrentZoomValue()} onValueChange={handleZoomSelect}>
+              <SelectTrigger className="h-8 w-[130px] bg-slate-700 border-slate-600 text-slate-100 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectItem value="fit-page" className="text-slate-100 focus:bg-slate-700 focus:text-white">
+                  Fit Page
                 </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                <SelectItem value="fit-width" className="text-slate-100 focus:bg-slate-700 focus:text-white">
+                  Fit Width
+                </SelectItem>
+                <div className="border-t border-slate-700 my-1" />
+                {ZOOM_LEVELS.map(level => (
+                  <SelectItem
+                    key={level}
+                    value={level.toString()}
+                    className="text-slate-100 focus:bg-slate-700 focus:text-white"
+                  >
+                    {level}%
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleZoomChange(10)}
-            disabled={zoomMode === 'custom' && customZoom >= 400}
-            title="Zoom in (Ctrl + +)"
-            className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30"
-          >
-            <ZoomIn className="w-4 h-4" />
-          </Button>
-        </div>
-
-        {/* Keyboard Shortcuts Hint */}
-        <div className="text-xs text-slate-500 hidden xl:block">
-          Use ← → or Page Up/Down to navigate • Ctrl+Scroll to zoom
-        </div>
-      </div>
-
-      {/* PDF Content */}
-      <div ref={containerRef} className="flex-grow overflow-auto p-8 flex justify-center bg-slate-900/40">
-        <div
-          className="transition-transform duration-200 origin-top"
-          style={{ transform: `scale(${getScale()})` }}
-        >
-          <div className="shadow-2xl">
-            {renderPage(allPages[currentPage - 1], currentPage - 1)}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleZoomChange(10)}
+              disabled={zoomMode === 'custom' && customZoom >= 400}
+              title="Zoom in (Ctrl + +)"
+              className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </Button>
           </div>
         </div>
+      )}
+
+      {/* PDF Content */}
+      <div
+        ref={containerRef}
+        className="flex-grow overflow-auto p-4 flex justify-center bg-slate-900/40"
+      >
+        {viewMode === 'single' ? (
+          <div
+            className="transition-transform duration-200 origin-top"
+            style={{ transform: `scale(${getScale()})` }}
+          >
+            <div ref={pageRef} className="shadow-2xl">
+              {renderPage(allPages[currentPage - 1], currentPage - 1)}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-8">
+            {allPages.map((page, index) => (
+              <div
+                key={index}
+                ref={index === 0 ? pageRef : null}
+                data-page-index={index}
+                className="shadow-2xl"
+              >
+                {renderPage(page, index)}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

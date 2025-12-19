@@ -13,6 +13,7 @@ export default function Home() {
   const [metadata, setMetadata] = useState(DEFAULT_METADATA);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
+  const [showPdfControls, setShowPdfControls] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -256,10 +257,21 @@ export default function Home() {
             <div className="flex items-center gap-2 text-xs font-medium text-slate-400 uppercase tracking-wider">
               <Play className="w-3.5 h-3.5" /> Live Preview
             </div>
+            <button
+              onClick={() => setShowPdfControls(!showPdfControls)}
+              className="text-slate-500 hover:text-slate-300 transition-colors"
+              title={showPdfControls ? "Hide PDF controls" : "Show PDF controls"}
+            >
+              {showPdfControls ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </button>
           </div>
           <div className="flex-grow overflow-hidden">
             <ScrollArea className="h-full w-full bg-slate-900/40">
-              <MdPreview content={content} metadata={metadata} />
+              <MdPreview content={content} metadata={metadata} showToolbar={showPdfControls} />
             </ScrollArea>
           </div>
         </div>
