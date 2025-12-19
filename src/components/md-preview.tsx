@@ -29,7 +29,7 @@ export const MdPreview = ({ content, className }: MdPreviewProps) => {
           },
           // Custom rendering for headings, etc. to match the style
           h2: ({ children }) => (
-            <h2 className="text-3xl font-bold mt-12 mb-6 border-l-8 border-slate-500 pl-4 py-2">
+            <h2 className="text-3xl font-bold mt-12 mb-6 border-l-8 border-primary pl-4 py-2">
               {children}
             </h2>
           ),

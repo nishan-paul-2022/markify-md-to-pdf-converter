@@ -95,8 +95,8 @@ export default function Home() {
       <header className="border-b border-slate-800 bg-slate-900/50 p-4 shrink-0">
         <div className="max-w-full mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-lg">
-              <Shield className="w-6 h-6 text-white" />
+            <div className="p-1 rounded-lg">
+              <img src="/brand-logo.svg" alt="Logo" className="w-10 h-10 object-contain" />
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight">MarkdownPDF</h1>
@@ -128,7 +128,7 @@ export default function Home() {
             <Button
               onClick={handleDownloadPdf}
               disabled={isGenerating}
-              className="bg-blue-600 text-white hover:bg-blue-700 gap-2 border-none px-6"
+              className="bg-primary text-primary-foreground hover:opacity-90 gap-2 border-none px-6"
             >
               {isGenerating ? (
                 <Terminal className="w-4 h-4 animate-spin" />
@@ -168,7 +168,7 @@ export default function Home() {
                     name="course"
                     value={metadata.course}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
                 <div className="space-y-2">
@@ -177,7 +177,7 @@ export default function Home() {
                     name="date"
                     value={metadata.date}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
               </div>
@@ -188,7 +188,7 @@ export default function Home() {
                     name="name"
                     value={metadata.name}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
                 <div className="space-y-2">
@@ -197,7 +197,7 @@ export default function Home() {
                     name="roll"
                     value={metadata.roll}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
                 <div className="space-y-2">
@@ -206,7 +206,7 @@ export default function Home() {
                     name="reg"
                     value={metadata.reg}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
                 <div className="space-y-2">
@@ -215,7 +215,7 @@ export default function Home() {
                     name="batch"
                     value={metadata.batch}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
               </div>
@@ -225,7 +225,7 @@ export default function Home() {
                   name="title"
                   value={metadata.title}
                   onChange={handleMetadataChange}
-                  className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
               <div className="space-y-2 mt-4">
@@ -234,7 +234,7 @@ export default function Home() {
                   name="subtitle"
                   value={metadata.subtitle}
                   onChange={handleMetadataChange}
-                  className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
@@ -244,7 +244,7 @@ export default function Home() {
             <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-blue-500/30 custom-scrollbar dark-editor"
+              className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
               placeholder="Write your markdown here..."
             />
           </div>

@@ -7,7 +7,7 @@ export async function generatePdf(markdownHtml: string, metadata: any) {
   const page = await browser.newPage();
 
   // Load images as base64
-  const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+  const logoPath = path.join(process.cwd(), 'public', 'brand-logo.svg');
   const bgPath = path.join(process.cwd(), 'public', 'cover-bg.png');
 
   let logoBase64 = '';
@@ -30,7 +30,7 @@ export async function generatePdf(markdownHtml: string, metadata: any) {
       color: #1a1a1a;
     }
     .report-container { padding: 2cm; }
-    h2 { font-size: 24pt; color: #1B263B; border-left: 8px solid #778DA9; padding-left: 15px; margin-top: 1.5cm; margin-bottom: 0.5cm; page-break-after: avoid; }
+    h2 { font-size: 24pt; color: #234258; border-left: 8px solid #234258; padding-left: 15px; margin-top: 1.5cm; margin-bottom: 0.5cm; page-break-after: avoid; }
     h3 { font-size: 18pt; color: #415A77; margin-top: 1cm; page-break-after: avoid; }
     p { text-align: justify; line-height: 1.6; font-family: 'Lora', serif; font-size: 11pt; }
     .page-break { page-break-before: always; }
@@ -148,7 +148,7 @@ export async function generatePdf(markdownHtml: string, metadata: any) {
     <body>
       <div class="cover-page">
         <div class="logo-container">
-          <img src="data:image/png;base64,${logoBase64}" class="logo" />
+          <img src="data:image/svg+xml;base64,${logoBase64}" class="logo" />
         </div>
         
         <div class="university">UNIVERSITY OF DHAKA</div>
