@@ -2,69 +2,23 @@
 
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MdPreview } from '@/components/md-preview';
-import { FileDown, FileText, Layout, Play, Shield, Terminal, Upload, RotateCcw } from 'lucide-react';
+import { FileDown, FileText, Play, Shield, Terminal, Upload, RotateCcw } from 'lucide-react';
 
-const INITIAL_CONTENT = `
-# Public Key Infrastructure (PKI)
-## Implementation & Web Application Integration
-
-### Introduction
-In today's digital world, trust is everything. When you visit a website with HTTPS, send encrypted emails, or connect to a corporate VPN, there's an invisible infrastructure working behind the scenes to ensure that your communication is secure and that you're really talking to who you think you're talking to. This infrastructure is called Public Key Infrastructure, or PKI.
-
-### PKI Architecture
-A well-designed PKI isn't a single monolithic system—it's a carefully architected hierarchy that balances security with operational efficiency.
-
-\`\`\`mermaid
-graph TD
-    RootCA["Root CA (Offline)"] --> IntCA["Intermediate CA (Online)"]
-    IntCA --> ServerCert["Server Certificate (HTTPS)"]
-    IntCA --> ClientCert["Client Certificate (mTLS)"]
-    subgraph "Chain of Trust"
-        RootCA
-        IntCA
-    end
-\`\`\`
-
-### The TLS Handshake
-When a browser connects to an HTTPS website, a complex handshake occurs:
-
-\`\`\`mermaid
-sequenceDiagram
-    participant Client
-    participant Server
-    participant CA as PKI Chain
-
-    Client->>Server: ClientHello
-    Server->>Client: ServerHello, Certificate
-    Note over Client,CA: Client verifies Server Cert
-    Client->>Server: Key Exchange
-    Server-->>Client: Secure Session (TLS 1.3)
-\`\`\`
-
-### Directory Structure Philosophy
-A well-organized PKI requires a clear directory structure. Each CA has its own directory:
-
-- \`certs/\`: Stores issued certificates
-- \`crl/\`: Contains Certificate Revocation Lists
-- \`private/\`: Highly sensitive directory (permissions set to 700)
-- \`csr/\`: Certificate Signing Requests
-
-### Implementation Steps
-1. **Setting Up Environment**: Install OpenSSL and create directory structures.
-2. **Generating Root CA**: Create the 4096-bit RSA trust anchor.
-3. **Creating Intermediate CA**: Signed by the Root CA for day-to-day operations.
-4. **Issuing Server Certificates**: For securing web services with SANs.
-5. **Certificate Revocation**: Managing the lifecycle through CRLs.
-`;
+import { DEFAULT_MARKDOWN, DEFAULT_METADATA } from '@/constants/default-content';
 
 export default function Home() {
-  const [content, setContent] = useState(INITIAL_CONTENT);
+  const [content, setContent] = useState(DEFAULT_MARKDOWN);
+  const [metadata, setMetadata] = useState(DEFAULT_METADATA);
   const [isGenerating, setIsGenerating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleMetadataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setMetadata(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleDownloadPdf = async () => {
     setIsGenerating(true);
@@ -76,10 +30,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           markdown: content,
-          metadata: {
-            title: "PKI Report",
-            author: "Nishan Paul"
-          }
+          metadata: metadata
         }),
       });
 
@@ -121,7 +72,8 @@ export default function Home() {
   };
 
   const handleReset = () => {
-    setContent(INITIAL_CONTENT);
+    setContent(DEFAULT_MARKDOWN);
+    setMetadata(DEFAULT_METADATA);
   };
 
   return (
@@ -137,7 +89,7 @@ export default function Home() {
               <h1 className="text-xl font-bold tracking-tight">MD to PDF Generator</h1>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <input
               type="file"
@@ -146,22 +98,22 @@ export default function Home() {
               onChange={handleFileUpload}
               className="hidden"
             />
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={triggerFileUpload}
               className="gap-2 border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200"
             >
               <Upload className="w-4 h-4" /> Upload MD
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleReset}
               className="gap-2 border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200"
             >
               <RotateCcw className="w-4 h-4" /> Reset
             </Button>
-            <Button 
-              onClick={handleDownloadPdf} 
+            <Button
+              onClick={handleDownloadPdf}
               disabled={isGenerating}
               className="bg-blue-600 text-white hover:bg-blue-700 gap-2 border-none px-6"
             >
@@ -182,16 +134,98 @@ export default function Home() {
         <div className="flex-1 flex flex-col border-r border-slate-800 overflow-hidden">
           <div className="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-medium text-slate-400 uppercase tracking-wider">
-              <FileText className="w-3.5 h-3.5" /> Editor
+              <FileText className="w-3.5 h-3.5" /> Document Settings
             </div>
           </div>
-          <div className="flex-grow relative overflow-hidden">
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-blue-500/30 custom-scrollbar dark-editor"
-              placeholder="Write your markdown here..."
-            />
+
+          <div className="flex-grow flex flex-col overflow-hidden">
+            <div className="p-4 bg-slate-900/30 border-b border-slate-800">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs text-slate-400 font-semibold block uppercase">Course Name</label>
+                  <input
+                    name="course"
+                    value={metadata.course}
+                    onChange={handleMetadataChange}
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs text-slate-400 font-semibold block uppercase">Submission Date</label>
+                  <input
+                    name="date"
+                    value={metadata.date}
+                    onChange={handleMetadataChange}
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-4 mt-4">
+                <div className="space-y-2">
+                  <label className="text-xs text-slate-400 font-semibold block uppercase">Name</label>
+                  <input
+                    name="name"
+                    value={metadata.name}
+                    onChange={handleMetadataChange}
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs text-slate-400 font-semibold block uppercase">Roll No</label>
+                  <input
+                    name="roll"
+                    value={metadata.roll}
+                    onChange={handleMetadataChange}
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs text-slate-400 font-semibold block uppercase">Reg No</label>
+                  <input
+                    name="reg"
+                    value={metadata.reg}
+                    onChange={handleMetadataChange}
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs text-slate-400 font-semibold block uppercase">Batch</label>
+                  <input
+                    name="batch"
+                    value={metadata.batch}
+                    onChange={handleMetadataChange}
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2 mt-4">
+                <label className="text-xs text-slate-400 font-semibold block uppercase">Cover Title</label>
+                <input
+                  name="title"
+                  value={metadata.title}
+                  onChange={handleMetadataChange}
+                  className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <div className="space-y-2 mt-4">
+                <label className="text-xs text-slate-400 font-semibold block uppercase">Cover Subtitle</label>
+                <input
+                  name="subtitle"
+                  value={metadata.subtitle}
+                  onChange={handleMetadataChange}
+                  className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex-grow relative overflow-hidden">
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-blue-500/30 custom-scrollbar dark-editor"
+                placeholder="Write your markdown here..."
+              />
+            </div>
           </div>
         </div>
 
