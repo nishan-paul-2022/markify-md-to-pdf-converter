@@ -10,11 +10,12 @@ import { cn } from '@/lib/utils';
 import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, Maximize, ArrowLeftRight, ScrollText, Eye, FileDown, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
+import dynamic from 'next/dynamic';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+const PdfViewer = dynamic(() => import('./pdf-viewer'), {
+  ssr: false,
+  loading: () => <div className="h-[800px] w-[600px] animate-pulse bg-slate-800/20 rounded-lg" />,
+});
 
 
 
@@ -775,24 +776,11 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 </div>
               )}
               {pdfBlobUrl && (
-                <Document
-                  file={pdfBlobUrl}
+                <PdfViewer
+                  url={pdfBlobUrl}
                   onLoadSuccess={handlePdfLoadSuccess}
-                  className="flex flex-col gap-4"
-                  loading={<div className="h-[800px] w-[600px] animate-pulse bg-slate-800/20 rounded-lg" />}
-                >
-                  {Array.from(new Array(numPages), (el, index) => (
-                    <div key={`page_${index + 1}`} data-page-index={index} className="shadow-xl">
-                      <Page
-                        pageNumber={index + 1}
-                        width={A4_WIDTH_PX}
-                        renderTextLayer={false}
-                        renderAnnotationLayer={false}
-                        className="bg-white"
-                      />
-                    </div>
-                  ))}
-                </Document>
+                  width={A4_WIDTH_PX}
+                />
               )}
             </div>
           )}
