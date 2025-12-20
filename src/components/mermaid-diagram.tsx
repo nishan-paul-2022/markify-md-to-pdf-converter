@@ -1,14 +1,11 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import mermaid from 'mermaid';
 
 export const MermaidDiagram = ({ chart }: MermaidProps) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [hasMounted, setHasMounted] = useState(false);
-
   useEffect(() => {
-    setHasMounted(true);
     mermaid.initialize({
       startOnLoad: false,
       theme: 'neutral',
@@ -18,7 +15,7 @@ export const MermaidDiagram = ({ chart }: MermaidProps) => {
   }, []);
 
   useEffect(() => {
-    if (hasMounted && ref.current) {
+    if (ref.current) {
       const id = `mermaid-${Math.random().toString(36).substring(2, 11)}`;
       mermaid.render(id, chart).then(({ svg }) => {
         if (ref.current) {
@@ -28,7 +25,7 @@ export const MermaidDiagram = ({ chart }: MermaidProps) => {
         console.error('Mermaid render error:', err);
       });
     }
-  }, [hasMounted, chart]);
+  }, [chart]);
 
   return (
     <div className="diagram-container my-8 flex justify-center">
