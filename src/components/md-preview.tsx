@@ -17,8 +17,6 @@ const PdfViewer = dynamic(() => import('./pdf-viewer'), {
   loading: () => <div className="h-[800px] w-[600px] animate-pulse bg-slate-800/20 rounded-lg" />,
 });
 
-
-
 interface MdPreviewProps {
   content: string;
   metadata?: {
@@ -60,27 +58,27 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
 
       <div className="relative z-10 w-full h-full flex flex-col items-center">
         <div className="mt-[2cm] p-4 flex justify-center">
-          <Image src="/du-logo.png" alt="Logo" width={140} height={140} className="w-[140px] h-auto" />
+          <Image src="/du-logo.png" alt="Logo" width={120} height={120} className="w-[120px] h-auto" />
         </div>
 
-        <div className="text-[32px] font-bold tracking-[2px] mt-2 uppercase">UNIVERSITY OF DHAKA</div>
-        <div className="text-[18px] font-normal mt-2 opacity-90">Professional Masters in Information and Cyber Security</div>
+        <div className="text-[28px] font-bold tracking-[2px] mt-[10px] uppercase">UNIVERSITY OF DHAKA</div>
+        <div className="text-[16px] font-normal mt-[8px] opacity-90">Professional Masters in Information and Cyber Security</div>
 
-        <div className="mt-[2cm] mb-[1.5cm] w-full flex flex-col items-center">
-          <div className="text-[38px] font-extrabold leading-[1.2] mb-5 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
+        <div className="mt-[2cm] mb-[2cm] w-full flex flex-col items-center">
+          <div className="text-[32px] font-extrabold leading-[1.2] mb-[15px] w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
             {metadata.title || 'Public Key Infrastructure (PKI)'}
           </div>
-          <div className="text-[22px] font-semibold opacity-95 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
+          <div className="text-[18px] font-semibold opacity-95 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
             {metadata.subtitle || 'Implementation & Web Application Integration'}
           </div>
         </div>
 
-        <div className="mt-[1.5cm] text-[18px] w-full max-w-[90%] border-b border-white/20 pb-3 whitespace-nowrap overflow-hidden text-ellipsis">
+        <div className="mt-[1cm] text-[15px] w-[85%] border-b border-white/20 pb-[10px] whitespace-nowrap overflow-hidden text-ellipsis">
           Course: {metadata.course}
         </div>
 
-        <div className="mt-[1cm] w-[70%] p-8 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
-          <div className="space-y-3">
+        <div className="mt-[1cm] w-[70%] p-[20px] bg-white/10 border border-white/10 rounded-xl backdrop-blur-sm">
+          <div className="space-y-[8px]">
             {[
               { label: 'Name:', value: metadata.name },
               { label: 'Roll No:', value: metadata.roll },
@@ -88,9 +86,9 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
               { label: 'Batch:', value: metadata.batch },
               { label: 'Submission Date:', value: metadata.date },
             ].map((detail, idx) => (
-              <div key={idx} className="flex text-left text-[18px]">
-                <div className="w-[160px] font-semibold text-white/80">{detail.label}</div>
-                <div className="flex-1 font-medium text-white">{detail.value}</div>
+              <div key={idx} className="flex text-left text-[14px]">
+                <div className="w-[40%] font-semibold text-white/90">{detail.label}</div>
+                <div className="w-[60%] font-medium text-white">{detail.value}</div>
               </div>
             ))}
           </div>
@@ -102,135 +100,35 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
 
 const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.ReactNode, pageNumber: number, totalPages: number }) => {
   return (
-    <div className="pdf-page relative bg-white p-[2cm] mx-auto flex flex-col shrink-0"
-      style={{ width: `${A4_WIDTH_PX}px`, minHeight: `${A4_HEIGHT_PX}px`, height: 'fit-content', color: '#111827', fontFamily: 'var(--font-inter), sans-serif' }}>
+    <div className="pdf-page relative bg-white mx-auto flex flex-col shrink-0 shadow-sm"
+      style={{
+        width: `${A4_WIDTH_PX}px`,
+        minHeight: `${A4_HEIGHT_PX}px`,
+        height: 'fit-content',
+        color: '#111827',
+        fontFamily: 'var(--font-inter), sans-serif',
+        padding: '15mm',
+        // Visual guide for physical page breaks (A4 height)
+        backgroundImage: `linear-gradient(to bottom, transparent calc(100% - 1px), #cbd5e1 calc(100% - 1px))`,
+        backgroundSize: `100% ${A4_HEIGHT_PX}px`,
+        backgroundRepeat: 'repeat-y'
+      }}>
+
+      {/* Page Break Indicator Label (Optional, for first break) */}
+      <div className="absolute left-0 w-full pointer-events-none" style={{ top: `${A4_HEIGHT_PX}px` }}>
+        <div className="absolute right-0 -top-6 text-[9px] text-slate-400 font-mono pr-2 opacity-50">Page Break</div>
+      </div>
+
       <div className="flex-grow">
         {children}
       </div>
 
       <div className="mt-auto pt-4 flex justify-end text-[8pt] text-slate-400 font-sans">
-        Page {pageNumber} of {totalPages}
+        Section {pageNumber} of {totalPages}
       </div>
     </div>
   );
 };
-
-interface PageRendererProps {
-  page: { type: 'cover' | 'content', content: string | null };
-  index: number;
-  totalPages: number;
-  metadata?: MdPreviewProps['metadata'];
-}
-
-const PageRenderer = React.memo(({ page, index, totalPages, metadata }: PageRendererProps) => {
-  if (page.type === 'cover') {
-    return <CoverPage metadata={metadata} />;
-  }
-
-  return (
-    <PageWrapper pageNumber={index + 1} totalPages={totalPages}>
-      <div className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }}>
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            code({ inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
-              const match = /language-(\w+)/.exec(className || '');
-              if (!inline && match && match[1] === 'mermaid') {
-                return <MermaidDiagram chart={String(children).replace(/\n$/, '')} />;
-              }
-              return (
-                <code
-                  className={cn(
-                    inline ? "bg-slate-100 text-[#0c4a6e] px-1.5 py-0.5 rounded font-mono text-[0.9em] border border-slate-200" : "bg-transparent p-0 border-0 text-inherit",
-                    className
-                  )}
-                  {...props}
-                >
-                  {children}
-                </code>
-              );
-            },
-            pre: ({ children }) => (
-              <pre className="my-3 relative bg-[#0f172a] text-[#f8fafc] p-3 rounded-lg overflow-x-auto text-[10pt] font-mono shadow-sm border border-slate-800">
-                {children}
-              </pre>
-            ),
-            h2: ({ children, ...props }) => {
-              const id = children?.toString().toLowerCase().replace(/\s+/g, '-');
-              return (
-                <h2 id={id} className="text-[18pt] font-bold mt-8 mb-3 border-b-2 border-slate-900 pb-1.5 text-slate-900" {...props}>
-                  {children}
-                </h2>
-              );
-            },
-            h3: ({ children }) => (
-              <h3 className="text-[14pt] font-bold mt-6 mb-2 text-slate-800 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-slate-800 rotate-45"></span>
-                {children}
-              </h3>
-            ),
-            p: ({ children }) => (
-              <p className="mb-3 leading-[1.6] text-[#334155] text-justify text-[12pt] font-normal">
-                {children}
-              </p>
-            ),
-            ul: ({ children }) => (
-              <ul className="list-none mb-3 space-y-1.5 text-[#334155] text-[12pt]">
-                {children}
-              </ul>
-            ),
-            ol: ({ children }) => (
-              <ol className="list-decimal ml-8 mb-3 space-y-1.5 text-[#334155] text-[12pt]">
-                {children}
-              </ol>
-            ),
-            li: ({ children, ...props }: any) => {
-              if (props.ordered) {
-                return (
-                  <li className="pl-2 mb-1 leading-relaxed">
-                    {children}
-                  </li>
-                );
-              }
-              return (
-                <li className="flex gap-3 mb-1 leading-relaxed text-justify">
-                  <span className="text-[#0ea5e9] font-bold mt-2 min-w-[10px] flex justify-center flex-shrink-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0ea5e9]"></span>
-                  </span>
-                  <span className="flex-1">{children}</span>
-                </li>
-              );
-            },
-            table: ({ children }) => (
-              <div className="my-6 overflow-x-auto custom-scrollbar rounded-lg border border-slate-200">
-                <table className="w-full border-collapse text-[11pt]">
-                  {children}
-                </table>
-              </div>
-            ),
-            th: ({ children }) => (
-              <th className="bg-slate-50 border-b border-slate-200 p-2 text-left font-bold text-slate-800 uppercase tracking-wider text-[9pt]">
-                {children}
-              </th>
-            ),
-            td: ({ children }) => (
-              <td className="border-b border-slate-50 p-2 text-slate-600">
-                {children}
-              </td>
-            ),
-            img: ({ src, alt }) => (
-              <img src={src} alt={alt} className="max-w-[65%] max-h-[12cm] object-contain rounded-lg mx-auto my-4 shadow-sm" />
-            ),
-          }}
-        >
-          {page.content || ''}
-        </ReactMarkdown>
-      </div>
-    </PageWrapper>
-  );
-});
-
-PageRenderer.displayName = 'PageRenderer';
 
 export const MdPreview = ({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false }: MdPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -244,8 +142,96 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [numPages, setNumPages] = useState<number>(0);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [paginatedPages, setPaginatedPages] = useState<string[]>([]);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
+  const stagingRef = useRef<HTMLDivElement>(null);
+
+  // Memoized components for ReactMarkdown to use in Staging Area
+  const markdownComponents = React.useMemo(() => ({
+    code({ inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
+      const match = /language-(\w+)/.exec(className || '');
+      if (!inline && match && match[1] === 'mermaid') {
+        return <MermaidDiagram chart={String(children).replace(/\n$/, '')} />;
+      }
+      return (
+        <code
+          className={cn(
+            inline ? "bg-slate-100 text-[#0c4a6e] px-1.5 py-0.5 rounded font-mono text-[0.9em] border border-slate-200" : "bg-transparent p-0 border-0 text-inherit",
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    },
+    pre: ({ children }: any) => (
+      <pre className="my-[0.8cm] relative bg-[#0f172a] text-[#f8fafc] p-[15px] rounded-lg overflow-x-auto text-[9pt] font-mono shadow-sm border border-white/5 leading-[1.45]">
+        {children}
+      </pre>
+    ),
+    h2: ({ children, ...props }: any) => {
+      const id = children?.toString().toLowerCase().replace(/\s+/g, '-');
+      return (
+        <h2 id={id} className="text-[24pt] text-[#0369a1] font-sans font-bold mt-0 mb-[0.8cm] border-l-[10px] border-[#0ea5e9] pl-[20px] py-[10px] bg-[#f8fafc] rounded-r-lg leading-[1.3]" {...props}>
+          {children}
+        </h2>
+      );
+    },
+    h3: ({ children }: any) => (
+      <h3 className="text-[16pt] text-[#0369a1] font-sans font-bold mt-[1cm] mb-[0.5cm] flex items-center leading-[1.4]">
+        <span className="w-[6px] h-[6px] bg-[#0ea5e9] rounded-full mr-[10px] inline-block shrink-0"></span>
+        {children}
+      </h3>
+    ),
+    p: ({ children }: any) => (
+      <p className="mb-[0.6cm] leading-[1.6] text-[#334155] text-justify text-[11pt] font-normal font-serif">
+        {children}
+      </p>
+    ),
+    ul: ({ children }: any) => (
+      <ul className="list-disc mb-[0.6cm] pl-[1.5cm] text-[#334155] text-[11pt] font-serif leading-[1.6]">
+        {children}
+      </ul>
+    ),
+    ol: ({ children }: any) => (
+      <ol className="list-decimal mb-[0.6cm] pl-[1.5cm] text-[#334155] text-[11pt] font-serif leading-[1.6]">
+        {children}
+      </ol>
+    ),
+    li: ({ children }: any) => (
+      <li className="mb-[0.2cm] pl-2">
+        {children}
+      </li>
+    ),
+    table: ({ children }: any) => (
+      <div className="my-[0.8cm] w-full">
+        <table className="w-full border-collapse text-[10pt] font-sans">
+          {children}
+        </table>
+      </div>
+    ),
+    th: ({ children }: any) => (
+      <th className="bg-[#f8fafc] text-[#0369a1] font-bold uppercase tracking-[0.05em] text-[8.5pt] p-[10px] border-b-2 border-[#e2e8f0] text-left">
+        {children}
+      </th>
+    ),
+    td: ({ children }: any) => (
+      <td className="p-[10px] border-b border-[#f1f5f9] color-[#475569]">
+        {children}
+      </td>
+    ),
+    img: ({ src, alt }: any) => (
+      <img src={src} alt={alt} className="max-w-full h-auto rounded-lg mx-auto my-[1cm] block" />
+    ),
+    blockquote: ({ children }: any) => (
+      <blockquote className="border-l-4 border-slate-300 pl-4 italic text-slate-600 my-4">
+        {children}
+      </blockquote>
+    ),
+  }), []);
 
   const handlePdfLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -264,25 +250,75 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     }
   }, [viewMode, onGeneratePdf, pdfBlobUrl]);
 
-  // Cleanup blob url
   useEffect(() => {
     return () => {
       if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
     };
   }, [pdfBlobUrl]);
 
-  // Reset PDF when content changes? 
-  // Maybe explicit refresh is better to avoid spamming the server.
-  // We'll reset blob url when content changes if we want auto-update, but that's expensive.
-  // For now, let's keep it manual toggle or explicit update.
   useEffect(() => {
     if (viewMode === 'preview') {
-      // Invalidate PDF if content changes? 
-      // For now, let's force user to toggle or click refresh if we add one.
-      // Or we can just let them toggle back and forth.
-      setPdfBlobUrl(null); // Force regenerate on content change if in preview mode?
+      setPdfBlobUrl(null);
     }
-  }, [content, metadata]); // Be careful with this deps array, metadata object reference might change often.
+  }, [content, metadata]);
+
+  // Client-side Pagination Logic
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!stagingRef.current) return;
+
+      const MAX_HEIGHT = 1009; // 1123 - 114
+
+      const pages: string[] = [];
+      let currentPageBucket: string[] = [];
+      let currentHeight = 0;
+
+      const children = Array.from(stagingRef.current.children);
+
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i] as HTMLElement;
+
+        if (child.tagName === 'HR' || child.classList.contains('page-break')) {
+          if (currentPageBucket.length > 0) {
+            pages.push(currentPageBucket.join(''));
+            currentPageBucket = [];
+            currentHeight = 0;
+          }
+          continue;
+        }
+
+        const style = window.getComputedStyle(child);
+        const marginTop = parseFloat(style.marginTop) || 0;
+        const marginBottom = parseFloat(style.marginBottom) || 0;
+        const elementHeight = child.offsetHeight + marginTop + marginBottom;
+
+        if (currentHeight + elementHeight > MAX_HEIGHT) {
+          if (currentPageBucket.length > 0) {
+            pages.push(currentPageBucket.join(''));
+            currentPageBucket = [];
+            currentHeight = 0;
+          }
+
+          currentPageBucket.push(child.outerHTML);
+          currentHeight = elementHeight;
+        } else {
+          currentPageBucket.push(child.outerHTML);
+          currentHeight += elementHeight;
+        }
+      }
+
+      if (currentPageBucket.length > 0) {
+        pages.push(currentPageBucket.join(''));
+      }
+
+      setPaginatedPages(pages);
+
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [content, metadata]);
+
+  const totalPages = viewMode === 'preview' ? numPages : (metadata ? paginatedPages.length + 1 : Math.max(1, paginatedPages.length));
 
   const handleZoomChange = useCallback((delta: number) => {
     setZoomMode('custom');
@@ -290,220 +326,73 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       let currentBase = prev;
       if (zoomMode === 'fit-page') currentBase = fitPageScale * 100;
       else if (zoomMode === 'fit-width') currentBase = fitWidthScale * 100;
-
-      // Round to nearest 5 to keep things clean
       const newZoom = Math.round((currentBase + delta) / 5) * 5;
       return Math.max(25, Math.min(400, newZoom));
     });
   }, [zoomMode, fitPageScale, fitWidthScale]);
 
-  // Split content by page break marker --- and H2 headers
-  /* eslint-disable react-hooks/exhaustive-deps */
-  const allPages = React.useMemo(() => {
-    if (viewMode === 'preview') return []; // Don't calculate for PDF mode
-    const rawContent = content || '';
-    // First split by explicit page breaks
-    const chunks = rawContent.split(/\n---\n/);
-
-    const processedPages: { type: 'content' | 'cover', content: string | null }[] = [];
-
-    if (metadata) {
-      processedPages.push({ type: 'cover', content: null });
-    }
-
-    const tempChunks: string[] = [];
-    chunks.forEach(chunk => {
-      // Split by H2 at start of line
-      const subChunks = chunk.split(/(?=^##\s)/m);
-      subChunks.forEach(subChunk => {
-        if (subChunk.trim()) {
-          tempChunks.push(subChunk.trim());
-        }
-      });
-    });
-
-    // Handle orphaned headings (headings at the end of a chunk)
-    const finalChunks: string[] = [];
-    for (let i = 0; i < tempChunks.length; i++) {
-      let current = tempChunks[i];
-
-      // Check if current chunk ends with a heading
-      const orphanHeadingMatch = current.match(/(\n|^)(#{1,6}\s+[^\n]+)$/);
-
-      if (orphanHeadingMatch && i < tempChunks.length - 1) {
-        const heading = orphanHeadingMatch[2];
-        const headingStartIdx = current.lastIndexOf(heading);
-        const newCurrent = current.substring(0, headingStartIdx).trim();
-
-        // Only move if there's actually content before the heading
-        if (newCurrent) {
-          current = newCurrent;
-          tempChunks[i + 1] = heading + "\n" + tempChunks[i + 1];
-        }
-      }
-
-      if (current.trim()) {
-        finalChunks.push(current.trim());
-      }
-    }
-
-    finalChunks.forEach(c => {
-      processedPages.push({ type: 'content' as const, content: c });
-    });
-
-    return processedPages;
-  }, [content, metadata, viewMode]);
-
-  const totalPages = viewMode === 'preview' ? numPages : allPages.length;
-
-  // Update page input when current page changes
+  // Handle Input Changes
   useEffect(() => {
     setPageInput(currentPage.toString());
   }, [currentPage]);
 
-  // Calculate dynamic scale for fit-width and fit-page
+  // Calculate Scale for fit modes
   useEffect(() => {
     const calculateScale = () => {
       if (!containerRef.current) return;
-
       const container = containerRef.current;
-
-      // Get container dimensions
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
 
-      // A4 page dimensions in pixels
       const pageWidth = A4_WIDTH_PX;
       const pageHeight = A4_HEIGHT_PX;
 
-      // Fit width: use full width for a true edge-to-edge experience
       setFitWidthScale(containerWidth / pageWidth);
 
-      // Fit page: use width/height minus padding for a comfortable margin
-      const padding = 32; // 16px on each side
+      const padding = 32;
       const widthScaleWithPadding = (containerWidth - padding) / pageWidth;
       const heightScaleWithPadding = (containerHeight - padding) / pageHeight;
       setFitPageScale(Math.min(widthScaleWithPadding, heightScaleWithPadding));
     };
 
     calculateScale();
-
-    // Recalculate on window resize
     const resizeObserver = new ResizeObserver(calculateScale);
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
-
-    return () => {
-      resizeObserver.disconnect();
-    };
+    if (containerRef.current) resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
   }, []);
 
-  // Sync zoom input with current scale
+  // Sync Zoom Input
   useEffect(() => {
     let scale = 1;
     if (zoomMode === 'fit-page') scale = fitPageScale;
     else if (zoomMode === 'fit-width') scale = fitWidthScale;
     else scale = customZoom / 100;
-
     setZoomInput(`${Math.round(scale * 100)}%`);
   }, [zoomMode, customZoom, fitPageScale, fitWidthScale]);
 
-  // Track visible page in continuous mode
+  // Intersection Observer for Current Page
   useEffect(() => {
     if (!containerRef.current) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
-        // Find the entry with the largest intersection ratio
         let maxRatio = 0;
         let visiblePageIndex = currentPage - 1;
-
         entries.forEach((entry) => {
           if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
             maxRatio = entry.intersectionRatio;
-            const pageIndex = parseInt(entry.target.getAttribute('data-page-index') || '0');
-            visiblePageIndex = pageIndex;
+            visiblePageIndex = parseInt(entry.target.getAttribute('data-page-index') || '0');
           }
         });
-
-        if (maxRatio > 0.3) { // Only update if at least 30% of page is visible
+        if (maxRatio > 0.3) {
           setCurrentPage(visiblePageIndex + 1);
         }
       },
-      {
-        root: containerRef.current,
-        threshold: [0, 0.3, 0.5, 0.7, 1.0],
-      }
+      { root: containerRef.current, threshold: [0, 0.3, 0.5, 0.7, 1.0] }
     );
-
-    // Observe all page elements
     const pageElements = containerRef.current.querySelectorAll('[data-page-index]');
     pageElements.forEach((el) => observer.observe(el));
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [allPages]); // Stable dependency through useMemo
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if user is typing in an input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-
-      // Handle scrolling with arrow keys/page keys
-      switch (e.key) {
-        case 'ArrowUp':
-          containerRef.current?.scrollBy({ top: -50, behavior: 'smooth' });
-          break;
-        case 'ArrowDown':
-          containerRef.current?.scrollBy({ top: 50, behavior: 'smooth' });
-          break;
-        case 'PageUp':
-          containerRef.current?.scrollBy({ top: -400, behavior: 'smooth' });
-          break;
-        case 'PageDown':
-        case ' ':
-          containerRef.current?.scrollBy({ top: 400, behavior: 'smooth' });
-          break;
-        case 'Home':
-          containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-          break;
-        case 'End':
-          containerRef.current?.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Mouse wheel zoom (Ctrl + scroll)
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-        const delta = e.deltaY > 0 ? -10 : 10;
-        handleZoomChange(delta);
-      }
-    };
-
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('wheel', handleWheel, { passive: false });
-      return () => container.removeEventListener('wheel', handleWheel);
-    }
-  }, [handleZoomChange]);
-
-
-
-  const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPageInput(e.target.value);
-  };
+    return () => observer.disconnect();
+  }, [paginatedPages, metadata, viewMode]); // Re-observe when pages change
 
   const scrollToPage = (pageNum: number) => {
     if (pageNum >= 1 && pageNum <= totalPages && containerRef.current) {
@@ -524,6 +413,10 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     }
   };
 
+  const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPageInput(e.target.value);
+  };
+
   const handleZoomInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setZoomInput(e.target.value);
   };
@@ -532,20 +425,13 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     e.preventDefault();
     const cleanValue = zoomInput.replace(/[^0-9]/g, '');
     const zoomVal = parseInt(cleanValue);
-
     if (!isNaN(zoomVal)) {
-      // Clamp between 25 and 400
       const clamped = Math.max(25, Math.min(400, zoomVal));
       setZoomMode('custom');
       setCustomZoom(clamped);
       setZoomInput(`${clamped}%`);
     } else {
-      // Reset to current
-      let scale = 1;
-      if (zoomMode === 'fit-page') scale = fitPageScale;
-      else if (zoomMode === 'fit-width') scale = fitWidthScale;
-      else scale = customZoom / 100;
-      setZoomInput(`${Math.round(scale * 100)}%`);
+      setZoomInput(`${Math.round(getScale() * 100)}%`);
     }
   };
 
@@ -555,233 +441,88 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     return customZoom / 100;
   };
 
-  // No-op for removed single page render
-  const renderPage = (page: typeof allPages[0], index: number) => {
-    return (
-      <PageRenderer
-        key={index}
-        page={page}
-        index={index}
-        totalPages={totalPages}
-        metadata={metadata}
-      />
-    );
-  };
-
   return (
     <div className={cn("pdf-viewer flex flex-col h-full bg-slate-900/50", className)}>
-      {/* Toolbar Content */}
-      {/* Floating Toolbar Island */}
+      {/* Hidden Staging Area */}
+      <div
+        className="fixed top-0 left-0 overflow-hidden pointer-events-none opacity-0 -z-50 bg-white"
+        style={{ width: `${A4_WIDTH_PX}px`, padding: '15mm' }}
+        aria-hidden="true"
+      >
+        <div ref={stagingRef} className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {content}
+          </ReactMarkdown>
+        </div>
+      </div>
+
       {showToolbar && (
         <div className="flex items-center justify-between px-4 py-2 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm">
-          {/* Left: Label */}
           <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
             <Eye className="w-3.5 h-3.5" />
             Preview Mode:
             <div className="flex bg-slate-950/50 rounded-md p-1 border border-white/10 ml-3 shadow-inner">
-              <button
-                onClick={() => setViewMode('live')}
-                className={cn(
-                  "px-3 py-1 rounded-sm text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer",
-                  viewMode === 'live'
-                    ? "bg-primary text-primary-foreground shadow-lg ring-1 ring-primary/50 transform scale-105"
-                    : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
-                )}
-              >
-                LIVE
-              </button>
-              <button
-                onClick={() => setViewMode('preview')}
-                className={cn(
-                  "px-3 py-1 rounded-sm text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer",
-                  viewMode === 'preview'
-                    ? "bg-primary text-primary-foreground shadow-lg ring-1 ring-primary/50 transform scale-105"
-                    : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
-                )}
-              >
-                PRINT
-              </button>
+              <button onClick={() => setViewMode('live')} className={cn("px-3 py-1 rounded-sm text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer", viewMode === 'live' ? "bg-primary text-primary-foreground shadow-lg ring-1 ring-primary/50 transform scale-105" : "text-slate-500 hover:text-slate-300 hover:bg-white/5")}>LIVE</button>
+              <button onClick={() => setViewMode('preview')} className={cn("px-3 py-1 rounded-sm text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer", viewMode === 'preview' ? "bg-primary text-primary-foreground shadow-lg ring-1 ring-primary/50 transform scale-105" : "text-slate-500 hover:text-slate-300 hover:bg-white/5")}>PRINT</button>
             </div>
           </div>
-
-          {/* Right: Controls */}
           <div className="flex items-center gap-2">
-
-            {/* Page Nav */}
             <div className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-0.5 border border-white/5">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => scrollToPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-colors"
-                title="Previous Page"
-              >
-                <ChevronUp className="w-3 h-3" />
-              </Button>
-
+              <Button variant="ghost" size="icon" onClick={() => scrollToPage(currentPage - 1)} disabled={currentPage === 1} className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-colors"><ChevronUp className="w-3 h-3" /></Button>
               <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1 min-w-[3.5rem] justify-center">
-                <Input
-                  type="text"
-                  value={pageInput}
-                  onChange={handlePageInputChange}
-                  onBlur={handlePageInputSubmit}
-                  className="h-4 w-6 text-center bg-transparent border-0 p-0 text-white text-xs font-medium focus-visible:ring-0 focus-visible:bg-white/5 rounded-sm tabular-nums"
-                  title="Enter page number to jump"
-                />
+                <Input type="text" value={pageInput} onChange={handlePageInputChange} onBlur={handlePageInputSubmit} className="h-4 w-6 text-center bg-transparent border-0 p-0 text-white text-xs font-medium focus-visible:ring-0 focus-visible:bg-white/5 rounded-sm tabular-nums" />
                 <span className="text-[10px] text-slate-500 font-medium select-none">/ {totalPages}</span>
               </form>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => scrollToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-colors"
-                title="Next Page"
-              >
-                <ChevronDown className="w-3 h-3" />
-              </Button>
+              <Button variant="ghost" size="icon" onClick={() => scrollToPage(currentPage + 1)} disabled={currentPage === totalPages} className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-colors"><ChevronDown className="w-3 h-3" /></Button>
             </div>
-
             <div className="w-px h-4 bg-slate-800 mx-0.5" />
-
-            {/* Zoom */}
             <div className="flex items-center gap-0.5 bg-slate-800/50 rounded-lg p-0.5 border border-white/5">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleZoomChange(-10)}
-                disabled={getScale() * 100 <= 25}
-                className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-all active:scale-95"
-                title="Zoom Out"
-              >
-                <ZoomOut className="w-3 h-3" />
-              </Button>
-
-              <form onSubmit={handleZoomInputSubmit} className="min-w-[2.5rem] flex justify-center">
-                <Input
-                  type="text"
-                  value={zoomInput}
-                  onChange={handleZoomInputChange}
-                  onBlur={handleZoomInputSubmit}
-                  className="h-4 w-8 text-center bg-transparent border-0 p-0 text-white text-xs font-medium focus-visible:ring-0 focus-visible:bg-white/5 rounded-sm tabular-nums"
-                />
-              </form>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleZoomChange(10)}
-                disabled={getScale() * 100 >= 400}
-                className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-all active:scale-95"
-                title="Zoom In"
-              >
-                <ZoomIn className="w-3 h-3" />
-              </Button>
+              <Button variant="ghost" size="icon" onClick={() => handleZoomChange(-10)} disabled={getScale() * 100 <= 25} className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-all active:scale-95"><ZoomOut className="w-3 h-3" /></Button>
+              <form onSubmit={handleZoomInputSubmit} className="min-w-[2.5rem] flex justify-center"><Input type="text" value={zoomInput} onChange={handleZoomInputChange} onBlur={handleZoomInputSubmit} className="h-4 w-8 text-center bg-transparent border-0 p-0 text-white text-xs font-medium focus-visible:ring-0 focus-visible:bg-white/5 rounded-sm tabular-nums" /></form>
+              <Button variant="ghost" size="icon" onClick={() => handleZoomChange(10)} disabled={getScale() * 100 >= 400} className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-all active:scale-95"><ZoomIn className="w-3 h-3" /></Button>
             </div>
-
-            {/* View Actions */}
-            <div className="flex items-center gap-0.5 bg-slate-800/50 rounded-lg p-0.5 border border-white/5">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setZoomMode('fit-page')}
-                className={cn(
-                  "h-6 w-6 rounded-md transition-all active:scale-95",
-                  zoomMode === 'fit-page'
-                    ? "bg-slate-700 text-white shadow-sm"
-                    : "text-slate-400 hover:bg-white/5 hover:text-white"
-                )}
-                title="Fit Page"
-              >
-                <Maximize className="w-3 h-3" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setZoomMode('fit-width')}
-                className={cn(
-                  "h-6 w-6 rounded-md transition-all active:scale-95",
-                  zoomMode === 'fit-width'
-                    ? "bg-slate-700 text-white shadow-sm"
-                    : "text-slate-400 hover:bg-white/5 hover:text-white"
-                )}
-                title="Fit Width"
-              >
-                <ArrowLeftRight className="w-3 h-3" />
-              </Button>
-            </div>
-
             <div className="w-px h-4 bg-slate-800 mx-0.5" />
-
-            {/* Download Action */}
             <div className="flex items-center gap-0.5 bg-slate-800/50 rounded-lg p-0.5 border border-white/5">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onDownload}
-                disabled={isGenerating}
-                className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-primary disabled:opacity-50 transition-all active:scale-95"
-                title={isGenerating ? "Generating..." : "Download PDF"}
-              >
-                {isGenerating ? (
-                  <Loader2 className="w-3 h-3 animate-spin text-primary" />
-                ) : (
-                  <FileDown className="w-3 h-3" />
-                )}
+              <Button variant="ghost" size="icon" onClick={() => setZoomMode('fit-page')} className={cn("h-6 w-6 rounded-md transition-all active:scale-95", zoomMode === 'fit-page' ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:bg-white/5 hover:text-white")}><Maximize className="w-3 h-3" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setZoomMode('fit-width')} className={cn("h-6 w-6 rounded-md transition-all active:scale-95", zoomMode === 'fit-width' ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:bg-white/5 hover:text-white")}><ArrowLeftRight className="w-3 h-3" /></Button>
+            </div>
+            <div className="w-px h-4 bg-slate-800 mx-0.5" />
+            <div className="flex items-center gap-0.5 bg-slate-800/50 rounded-lg p-0.5 border border-white/5">
+              <Button variant="ghost" size="icon" onClick={onDownload} disabled={isGenerating} className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-primary disabled:opacity-50 transition-all active:scale-95">
+                {isGenerating ? <Loader2 className="w-3 h-3 animate-spin text-primary" /> : <FileDown className="w-3 h-3" />}
               </Button>
             </div>
-
           </div>
         </div>
       )}
 
-      {/* PDF Content */}
-      <div
-        ref={containerRef}
-        className={cn(
-          "flex-grow overflow-auto flex justify-center bg-slate-900/40 custom-scrollbar transition-all duration-200",
-          zoomMode === 'fit-width' ? "p-0 overflow-x-hidden" : "p-4"
-        )}
-      >
-        <div
-          className="flex flex-col gap-4 origin-top"
-          style={{
-            transform: `scale(${getScale()}) translateZ(0)`,
-            width: `${A4_WIDTH_PX}px`,
-            height: 'fit-content',
-            willChange: 'transform'
-          }}
-        >
-
+      <div ref={containerRef} className={cn("flex-grow overflow-auto flex justify-center bg-slate-900/40 custom-scrollbar transition-all duration-200", zoomMode === 'fit-width' ? "p-0 overflow-x-hidden" : "p-4")}>
+        <div className="flex flex-col gap-4 origin-top" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
           {viewMode === 'live' ? (
-            allPages.map((page, index) => (
-              <div
-                key={index}
-                ref={index === 0 ? pageRef : null}
-                data-page-index={index}
-                className="shadow-xl"
-              >
-                {renderPage(page, index)}
-              </div>
-            ))
-          ) : (
-            <div className="relative">
-              {isPdfLoading && (
-                <div className="absolute inset-0 flex items-center justify-center min-h-[50vh] text-slate-400">
-                  <Loader2 className="w-8 h-8 animate-spin" />
-                  <span className="ml-2">Rendering PDF...</span>
+            <>
+              {metadata && (
+                <div ref={currentPage === 1 ? pageRef : null} data-page-index={0} className="shadow-xl">
+                  <CoverPage metadata={metadata} />
                 </div>
               )}
-              {pdfBlobUrl && (
-                <PdfViewer
-                  url={pdfBlobUrl}
-                  onLoadSuccess={handlePdfLoadSuccess}
-                  width={A4_WIDTH_PX}
-                />
+              {paginatedPages.length > 0 ? (
+                paginatedPages.map((pageHtml, index) => (
+                  <div key={index} ref={currentPage === (index + (metadata ? 2 : 1)) ? pageRef : null} data-page-index={index + (metadata ? 1 : 0)} className="shadow-xl">
+                    <PageWrapper pageNumber={index + 1} totalPages={totalPages - (metadata ? 1 : 0)}>
+                      <div className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }} dangerouslySetInnerHTML={{ __html: pageHtml }} />
+                    </PageWrapper>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center justify-center h-[20cm] bg-white rounded-sm text-slate-400">
+                  <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Preparing layout...</span>
+                </div>
               )}
+            </>
+          ) : (
+            <div className="relative">
+              {isPdfLoading && <div className="absolute inset-0 flex items-center justify-center min-h-[50vh] text-slate-400"><Loader2 className="w-8 h-8 animate-spin" /><span className="ml-2">Rendering PDF...</span></div>}
+              {pdfBlobUrl && <PdfViewer url={pdfBlobUrl} onLoadSuccess={handlePdfLoadSuccess} width={A4_WIDTH_PX} />}
             </div>
           )}
         </div>
