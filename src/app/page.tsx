@@ -96,7 +96,7 @@ export default function Home() {
     <main className="h-screen w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
       {/* Header */}
       {/* Floating Branding Island */}
-      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-2 bg-slate-900/20 backdrop-blur-md border border-white/5 rounded-full shadow-2xl transition-all hover:bg-slate-900/40 hover:border-white/10 hover:scale-105 duration-300 group select-none">
+      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-2 bg-slate-900/85 backdrop-blur-md border border-white/10 rounded-full shadow-2xl transition-all hover:scale-105 hover:bg-slate-900 duration-300 group select-none">
         <div className="relative">
           <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <Image src="/brand-logo.svg" alt="Logo" width={24} height={24} className="w-6 h-6 object-contain relative z-10 opacity-90 group-hover:opacity-100 transition-opacity" />
