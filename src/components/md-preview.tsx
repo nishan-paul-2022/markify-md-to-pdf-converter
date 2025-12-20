@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, Maximize, ArrowLeftRight, ScrollText, Play, FileDown, Loader2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, Maximize, ArrowLeftRight, ScrollText, Eye, FileDown, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
@@ -422,11 +422,8 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       {showToolbar && (
         <div className="flex items-center justify-between px-4 py-2 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm">
           {/* Left: Label */}
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-400 uppercase tracking-wider">
-            <div className="p-1 rounded-sm bg-slate-800/50">
-              <Play className="w-3 h-3 fill-current" />
-            </div>
-            Live Preview
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
+            <Eye className="w-3.5 h-3.5" /> PDF
           </div>
 
           {/* Right: Controls */}
@@ -581,7 +578,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       {/* PDF Content */}
       <div
         ref={containerRef}
-        className="flex-grow overflow-auto p-4 flex justify-center bg-slate-900/40"
+        className="flex-grow overflow-auto p-4 flex justify-center bg-slate-900/40 custom-scrollbar"
       >
         {viewMode === 'single' ? (
           <div
