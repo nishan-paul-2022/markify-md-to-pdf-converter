@@ -32,6 +32,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
   }
 
   const style = `
+
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora&display=swap');
     
     body { 
@@ -47,68 +48,75 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       font-size: 24pt; 
       color: #0369a1; 
       border-left: 10px solid #0ea5e9; 
-      padding: 15px 0 15px 25px; 
+      padding: 10px 0 10px 20px; 
       margin-top: 0; 
-      margin-bottom: 1cm; 
+      margin-bottom: 0.8cm; 
       page-break-before: always; 
+      break-after: avoid-page;
       page-break-after: avoid;
       background: #f8fafc;
       border-radius: 0 8px 8px 0;
+      line-height: 1.3;
     }
-    
-    /* First h2 on the first page doesn't need a page break if it's the very first thing */
-    /* But actually, for reports, it's safer to just always break before h2 */
 
     h3 { 
-      font-size: 18pt; 
+      font-size: 16pt; 
       color: #0369a1; 
-      margin-top: 1.2cm; 
-      margin-bottom: 0.6cm; 
+      margin-top: 1cm; 
+      margin-bottom: 0.5cm; 
       page-break-after: avoid; 
+      break-after: avoid;
       display: flex;
       align-items: center;
+      line-height: 1.4;
     }
     
     h3::before {
       content: "";
       display: inline-block;
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       background-color: #0ea5e9;
       border-radius: 50%;
-      margin-right: 12px;
+      margin-right: 10px;
     }
 
     p { 
       text-align: justify; 
-      line-height: 1.8; 
+      -webkit-hyphens: auto;
+      hyphens: auto;
+      line-height: 1.6; 
       font-family: 'Lora', serif; 
-      font-size: 11.5pt; 
+      font-size: 11pt; 
       color: #334155;
-      margin-bottom: 0.8cm;
+      margin-bottom: 0.6cm;
+      orphans: 3;
+      widows: 3;
     }
 
     ul, ol {
-      margin-bottom: 0.8cm;
+      margin-bottom: 0.6cm;
       color: #334155;
       font-family: 'Lora', serif;
-      font-size: 11.5pt;
+      font-size: 11pt;
+      padding-left: 1.5cm;
     }
     
-    li { margin-bottom: 0.3cm; line-height: 1.6; }
+    li { margin-bottom: 0.2cm; line-height: 1.6; pl-2; }
 
     .page-break { page-break-before: always; }
     
     pre { 
       background: #0f172a; 
       color: #f8fafc; 
-      padding: 20px; 
-      border-radius: 12px; 
-      font-size: 10pt; 
+      padding: 15px; 
+      border-radius: 8px; 
+      font-size: 9pt; 
       white-space: pre-wrap; 
-      margin: 1cm 0;
+      margin: 0.8cm 0;
       border: 1px solid rgba(255,255,255,0.05);
-      line-height: 1.5;
+      line-height: 1.45;
+      page-break-inside: avoid;
     }
     
     code {
@@ -116,11 +124,18 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     }
 
     .mermaid-wrapper {
-      margin: 1cm 0;
+      margin: 0.8cm 0;
       padding: 0;
       display: flex;
       justify-content: center;
       width: 100%;
+      page-break-inside: avoid;
+    }
+    
+    /* Ensure only SVGs are visible and scaled */
+    .mermaid svg {
+       max-width: 100% !important;
+       height: auto !important;
     }
 
     .diagram-container { margin: 0; text-align: center; width: 100%; }
@@ -128,8 +143,8 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 1cm 0;
-      font-size: 10.5pt;
+      margin: 0.8cm 0;
+      font-size: 10pt;
       page-break-inside: auto;
     }
     th {
@@ -137,14 +152,14 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       color: #0369a1;
       font-weight: 700;
       text-transform: uppercase;
-      font-size: 9pt;
+      font-size: 8.5pt;
       letter-spacing: 0.05em;
-      padding: 12px;
+      padding: 10px;
       border-bottom: 2px solid #e2e8f0;
       text-align: left;
     }
     td {
-      padding: 12px;
+      padding: 10px;
       border-bottom: 1px solid #f1f5f9;
       color: #475569;
     }
@@ -152,22 +167,27 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       page-break-inside: avoid;
       page-break-after: auto;
     }
+    thead {
+      display: table-header-group;
+    }
     img {
       max-width: 100%;
       height: auto;
       border-radius: 8px;
+      display: block;
+      margin: 1cm auto;
+      page-break-inside: avoid;
     }
     
     .content-page { 
-      padding: 2cm; 
+      padding: 0; 
       page-break-after: always;
       word-break: break-word;
     }
 
-    
     .cover-page { 
-      height: 297mm; 
-      width: 210mm;
+      width: 100%;
+      min-height: 95vh;
       background-image: url('data:image/png;base64,${bgBase64}');
       background-size: cover;
       background-position: center;
@@ -176,92 +196,89 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       flex-direction: column; 
       align-items: center; 
       text-align: center; 
-      padding: 2cm; 
+      padding: 2cm 1cm; 
       page-break-after: always;
       position: relative;
       box-sizing: border-box;
+      border-radius: 4px; /* Optional: adds a slight finish if margins are present */
     }
     .logo-container {
-      margin-top: 2cm;
+      margin-top: 1cm;
       padding: 15px;
       display: flex;
       justify-content: center;
     }
     .logo {
-      width: 140px;
+      width: 120px;
       height: auto;
+      margin: 0; /* Reset img margin */
     }
     .university { 
-      font-size: 32px; 
+      font-size: 28px; 
       letter-spacing: 2px; 
       font-weight: 700; 
       margin-top: 10px;
       text-transform: uppercase;
     }
     .program {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 400;
       margin-top: 8px;
       opacity: 0.9;
     }
     .title-section {
-      margin-top: 2.5cm;
+      margin-top: 2cm;
       margin-bottom: 2cm;
+      width: 100%;
     }
     .report-title {
-      font-size: 34px;
+      font-size: 32px;
       font-weight: 800;
       line-height: 1.2;
-      margin-bottom: 20px;
-      width: 100%;
-      padding: 0 40px;
-      box-sizing: border-box;
-      /* Removed truncation for readability */
+      margin-bottom: 15px;
+      padding: 0 20px;
       word-wrap: break-word;
     }
     .report-subtitle {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 600;
       opacity: 0.95;
-      width: 100%;
-      padding: 0 40px;
-      box-sizing: border-box;
-      /* Removed truncation */
+      padding: 0 20px;
       word-wrap: break-word;
     }
     .course-info {
-      margin-top: 1.5cm;
-      font-size: 16px;
-      width: 90%;
+      margin-top: 1cm;
+      font-size: 15px;
+      width: 85%;
       border-bottom: 1px solid rgba(255,255,255,0.2);
-      padding-bottom: 12px;
-      text-align: center;
-      box-sizing: border-box;
+      padding-bottom: 10px;
+      display: inline-block;
       word-wrap: break-word;
     }
-    .content-page { 
-      /* Padding handled by PDF margins now */
-      padding: 0; 
-      page-break-after: always;
-      word-break: break-word;
+    .student-details {
+      margin-top: 1cm;
+      width: 70%;
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.1);
     }
-
-    
-    .cover-page { 
-      min-height: 90vh; /* Relaxed height */
-      width: 100%;
-      background-image: url('data:image/png;base64,${bgBase64}');
-      background-size: cover;
-      background-position: center;
-      color: white; 
+    .details-row {
       display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      text-align: center; 
-      padding: 2cm; 
-      page-break-after: always;
-      position: relative;
-      box-sizing: border-box;
+      margin-bottom: 8px;
+      text-align: left;
+      font-size: 14px;
+    }
+    .details-row:last-child { margin-bottom: 0; }
+    .details-label {
+      width: 40%;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+    }
+    .details-value {
+      width: 60%;
+      font-weight: 500;
     }
     /* ... other styles ... */
   `;
