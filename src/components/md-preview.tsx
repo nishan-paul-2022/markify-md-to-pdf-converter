@@ -34,13 +34,15 @@ interface MdPreviewProps {
 type ZoomMode = 'fit-page' | 'fit-width' | 'custom';
 
 const ZOOM_LEVELS = [25, 50, 75, 100, 125, 150, 200, 300, 400];
+const A4_WIDTH_PX = 794; // 210mm at 96 DPI
+const A4_HEIGHT_PX = 1123; // 297mm at 96 DPI
 
 const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
   if (!metadata) return null;
 
   return (
     <div className="pdf-page relative bg-white overflow-hidden flex flex-col items-center text-center p-[2cm] mx-auto shrink-0"
-      style={{ width: '210mm', height: '297mm', color: 'white', fontFamily: 'var(--font-inter), sans-serif' }}>
+      style={{ width: `${A4_WIDTH_PX}px`, height: `${A4_HEIGHT_PX}px`, color: 'white', fontFamily: 'var(--font-inter), sans-serif' }}>
       {/* Background */}
       <div
         className="absolute inset-0 z-0 bg-cover bg-center"
@@ -92,7 +94,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
 const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.ReactNode, pageNumber: number, totalPages: number }) => {
   return (
     <div className="pdf-page relative bg-white p-[2cm] mx-auto flex flex-col shrink-0"
-      style={{ width: '210mm', height: '297mm', color: '#1a1a1a', fontFamily: 'var(--font-inter), sans-serif' }}>
+      style={{ width: `${A4_WIDTH_PX}px`, height: `${A4_HEIGHT_PX}px`, color: '#1a1a1a', fontFamily: 'var(--font-inter), sans-serif' }}>
       <div className="flex-grow">
         {children}
       </div>
@@ -241,23 +243,22 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
 
       const container = containerRef.current;
 
-      // Get container dimensions (minimal padding for better fit)
-      const containerWidth = container.clientWidth - 32; // 16px padding on each side
-      const containerHeight = container.clientHeight - 32;
+      // Get container dimensions
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
 
-      // A4 page dimensions in pixels (210mm x 297mm at 96 DPI)
-      const pageWidth = 794; // 210mm
-      const pageHeight = 1123; // 297mm
+      // A4 page dimensions in pixels
+      const pageWidth = A4_WIDTH_PX;
+      const pageHeight = A4_HEIGHT_PX;
 
-      // Calculate scales
-      const widthScale = containerWidth / pageWidth;
-      const heightScale = containerHeight / pageHeight;
+      // Fit width: use full width for a true edge-to-edge experience
+      setFitWidthScale(containerWidth / pageWidth);
 
-      // Fit width: use width as constraint
-      setFitWidthScale(widthScale);
-
-      // Fit page: use the smaller of width or height to ensure entire page is visible
-      setFitPageScale(Math.min(widthScale, heightScale));
+      // Fit page: use width/height minus padding for a comfortable margin
+      const padding = 32; // 16px on each side
+      const widthScaleWithPadding = (containerWidth - padding) / pageWidth;
+      const heightScaleWithPadding = (containerHeight - padding) / pageHeight;
+      setFitPageScale(Math.min(widthScaleWithPadding, heightScaleWithPadding));
     };
 
     calculateScale();
@@ -590,12 +591,16 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       {/* PDF Content */}
       <div
         ref={containerRef}
-        className="flex-grow overflow-auto p-4 flex justify-center bg-slate-900/40 custom-scrollbar"
+        className={cn(
+          "flex-grow overflow-auto flex justify-center bg-slate-900/40 custom-scrollbar transition-all duration-200",
+          zoomMode === 'fit-width' ? "p-0 overflow-x-hidden" : "p-4"
+        )}
       >
         <div
           className="flex flex-col gap-8 origin-top"
           style={{
             transform: `scale(${getScale()}) translateZ(0)`,
+            width: `${A4_WIDTH_PX}px`,
             height: 'fit-content',
             willChange: 'transform'
           }}
