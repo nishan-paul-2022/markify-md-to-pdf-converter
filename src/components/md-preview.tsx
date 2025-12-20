@@ -94,7 +94,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
 const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.ReactNode, pageNumber: number, totalPages: number }) => {
   return (
     <div className="pdf-page relative bg-white p-[2cm] mx-auto flex flex-col shrink-0"
-      style={{ width: `${A4_WIDTH_PX}px`, height: `${A4_HEIGHT_PX}px`, color: '#1a1a1a', fontFamily: 'var(--font-inter), sans-serif' }}>
+      style={{ width: `${A4_WIDTH_PX}px`, minHeight: `${A4_HEIGHT_PX}px`, height: 'fit-content', color: '#1a1a1a', fontFamily: 'var(--font-inter), sans-serif' }}>
       <div className="flex-grow">
         {children}
       </div>
@@ -120,7 +120,7 @@ const PageRenderer = React.memo(({ page, index, totalPages, metadata }: PageRend
 
   return (
     <PageWrapper pageNumber={index + 1} totalPages={totalPages}>
-      <div className="prose prose-slate max-w-none" style={{ fontFamily: 'var(--font-lora), serif' }}>
+      <div className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }}>
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
@@ -193,7 +193,7 @@ const PageRenderer = React.memo(({ page, index, totalPages, metadata }: PageRend
               );
             },
             table: ({ children }) => (
-              <div className="my-10 overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+              <div className="my-10 overflow-x-auto custom-scrollbar rounded-xl border border-slate-200 shadow-sm">
                 <table className="w-full border-collapse text-[10.5pt]">
                   {children}
                 </table>
@@ -208,6 +208,9 @@ const PageRenderer = React.memo(({ page, index, totalPages, metadata }: PageRend
               <td className="border-b border-slate-50 p-4 text-slate-600">
                 {children}
               </td>
+            ),
+            img: ({ src, alt }) => (
+              <img src={src} alt={alt} className="max-w-full h-auto rounded-lg mx-auto my-8 shadow-md" />
             ),
           }}
         >

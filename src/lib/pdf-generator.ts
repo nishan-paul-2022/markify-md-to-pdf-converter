@@ -42,7 +42,6 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       background: white;
     }
     .report-container { padding: 0; }
-    .content-page { padding: 2cm; page-break-after: always; }
     
     h2 { 
       font-size: 26pt; 
@@ -125,6 +124,46 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     }
 
     .diagram-container { margin: 0; text-align: center; width: 100%; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1cm 0;
+      font-size: 10.5pt;
+      page-break-inside: auto;
+    }
+    th {
+      background: #f8fafc;
+      color: #0369a1;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 9pt;
+      letter-spacing: 0.05em;
+      padding: 12px;
+      border-bottom: 2px solid #e2e8f0;
+      text-align: left;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #475569;
+    }
+    tr {
+      page-break-inside: avoid;
+      page-break-after: auto;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    
+    .content-page { 
+      padding: 2cm; 
+      page-break-after: always;
+      word-break: break-word;
+    }
+
     
     .cover-page { 
       height: 297mm; 
