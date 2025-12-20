@@ -1,12 +1,14 @@
 'use client';
 
+import Image from 'next/image';
+
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MdPreview } from '@/components/md-preview';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA } from '@/constants/default-content';
-import { ChevronDown, ChevronUp, FileDown, FileText, Play, Shield, Terminal, Upload, RotateCcw } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileDown, FileText, Play, Terminal, Upload, RotateCcw } from 'lucide-react';
 
 export default function Home() {
   const [content, setContent] = useState('');
@@ -97,7 +99,7 @@ export default function Home() {
         <div className="max-w-full mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-1 rounded-lg">
-              <img src="/brand-logo.svg" alt="Logo" className="w-10 h-10 object-contain" />
+              <Image src="/brand-logo.svg" alt="Logo" width={40} height={40} className="w-10 h-10 object-contain" />
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight">MarkdownPDF</h1>

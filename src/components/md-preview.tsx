@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -44,7 +46,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
 
       <div className="relative z-10 w-full h-full flex flex-col items-center">
         <div className="mt-[2cm] p-4 flex justify-center">
-          <img src="/du-logo.png" alt="Logo" className="w-[140px] h-auto" />
+          <Image src="/du-logo.png" alt="Logo" width={140} height={140} className="w-[140px] h-auto" />
         </div>
 
         <div className="text-[32px] font-bold tracking-[2px] mt-2 uppercase">UNIVERSITY OF DHAKA</div>
@@ -208,7 +210,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true }: 
     return () => {
       observer.disconnect();
     };
-  }, [viewMode]);
+  }, [viewMode, currentPage]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -315,7 +317,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true }: 
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              code({ node, inline, className, children, ...props }: any) {
+              code({ inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
                 const match = /language-mermaid/.exec(className || '');
                 if (!inline && match) {
                   return <MermaidDiagram chart={String(children).replace(/\n$/, '')} />;

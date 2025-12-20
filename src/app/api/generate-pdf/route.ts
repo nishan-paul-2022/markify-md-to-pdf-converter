@@ -5,11 +5,11 @@ import { marked } from 'marked';
 export async function POST(req: NextRequest) {
   try {
     const { markdown, metadata } = await req.json();
-    
+
     // Process markdown to HTML for PDF engine
     // We use marked here as it's simpler for plain HTML generation on server
     const htmlContent = await marked.parse(markdown);
-    
+
     // In a real app, you'd add the cover page and diagrams here
     const pdfBuffer = await generatePdf(htmlContent, metadata);
 
@@ -20,8 +20,8 @@ export async function POST(req: NextRequest) {
         'Content-Disposition': 'attachment; filename="report.pdf"',
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('PDF Generation Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

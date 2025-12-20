@@ -2,7 +2,18 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
 
-export async function generatePdf(markdownHtml: string, metadata: any) {
+interface Metadata {
+  title?: string;
+  subtitle?: string;
+  course?: string;
+  name?: string;
+  roll?: string;
+  reg?: string;
+  batch?: string;
+  date?: string;
+}
+
+export async function generatePdf(markdownHtml: string, metadata: Metadata) {
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
