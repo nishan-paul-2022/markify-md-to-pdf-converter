@@ -66,7 +66,7 @@ export const MermaidDiagram = ({ chart }: MermaidProps) => {
   }, [chart]);
 
   return (
-    <div className="diagram-wrapper my-12 flex flex-col items-center w-full">
+    <div className="diagram-wrapper my-4 flex flex-col items-center w-full">
       {!isLoaded && !error && (
         <div className="flex flex-col items-center justify-center py-12 gap-3 text-slate-400">
           <Loader2 className="w-6 h-6 animate-spin" />

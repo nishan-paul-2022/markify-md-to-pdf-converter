@@ -93,8 +93,8 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
 
 const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.ReactNode, pageNumber: number, totalPages: number }) => {
   return (
-    <div className="pdf-page relative bg-white p-[2cm] mx-auto flex flex-col shrink-0"
-      style={{ width: `${A4_WIDTH_PX}px`, minHeight: `${A4_HEIGHT_PX}px`, height: 'fit-content', color: '#1a1a1a', fontFamily: 'var(--font-inter), sans-serif' }}>
+    <div className="pdf-page relative bg-white p-[2.5cm] mx-auto flex flex-col shrink-0"
+      style={{ width: `${A4_WIDTH_PX}px`, minHeight: `${A4_HEIGHT_PX}px`, height: 'fit-content', color: '#111827', fontFamily: 'var(--font-inter), sans-serif' }}>
       <div className="flex-grow">
         {children}
       </div>
@@ -142,36 +142,36 @@ const PageRenderer = React.memo(({ page, index, totalPages, metadata }: PageRend
               );
             },
             pre: ({ children }) => (
-              <pre className="my-8 relative bg-[#0f172a] text-[#f8fafc] p-6 rounded-lg overflow-x-auto text-[9.5pt] font-mono shadow-md border border-slate-800">
+              <pre className="my-4 relative bg-[#0f172a] text-[#f8fafc] p-3 rounded-lg overflow-x-auto text-[10pt] font-mono shadow-sm border border-slate-800">
                 {children}
               </pre>
             ),
             h2: ({ children, ...props }) => {
               const id = children?.toString().toLowerCase().replace(/\s+/g, '-');
               return (
-                <h2 id={id} className="text-[26pt] font-extrabold mt-16 mb-8 border-l-[10px] border-[#0ea5e9] pl-6 py-3 text-[#0f172a] bg-slate-50 rounded-r-lg" {...props}>
+                <h2 id={id} className="text-[18pt] font-bold mt-10 mb-4 border-b-2 border-slate-900 pb-2 text-slate-900" {...props}>
                   {children}
                 </h2>
               );
             },
             h3: ({ children }) => (
-              <h3 className="text-[20pt] font-bold mt-10 mb-5 text-[#0369a1] flex items-center gap-3">
-                <span className="w-2 h-2 rounded-full bg-[#0ea5e9]"></span>
+              <h3 className="text-[14pt] font-bold mt-8 mb-3 text-slate-800 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-slate-800 rotate-45"></span>
                 {children}
               </h3>
             ),
             p: ({ children }) => (
-              <p className="mb-8 leading-[1.8] text-[#334155] text-justify text-[11.5pt] font-normal">
+              <p className="mb-4 leading-[1.6] text-[#334155] text-justify text-[12pt] font-normal">
                 {children}
               </p>
             ),
             ul: ({ children }) => (
-              <ul className="list-none mb-8 space-y-3 text-[#334155] text-[11.5pt]">
+              <ul className="list-none mb-4 space-y-2 text-[#334155] text-[12pt]">
                 {children}
               </ul>
             ),
             ol: ({ children }) => (
-              <ol className="list-decimal ml-10 mb-8 space-y-3 text-[#334155] text-[11.5pt]">
+              <ol className="list-decimal ml-8 mb-4 space-y-2 text-[#334155] text-[12pt]">
                 {children}
               </ol>
             ),
@@ -193,24 +193,24 @@ const PageRenderer = React.memo(({ page, index, totalPages, metadata }: PageRend
               );
             },
             table: ({ children }) => (
-              <div className="my-10 overflow-x-auto custom-scrollbar rounded-xl border border-slate-200 shadow-sm">
-                <table className="w-full border-collapse text-[10.5pt]">
+              <div className="my-6 overflow-x-auto custom-scrollbar rounded-lg border border-slate-200">
+                <table className="w-full border-collapse text-[11pt]">
                   {children}
                 </table>
               </div>
             ),
             th: ({ children }) => (
-              <th className="bg-slate-100 border-b border-slate-200 p-4 text-left font-bold text-[#0369a1] uppercase tracking-wider text-[9pt]">
+              <th className="bg-slate-50 border-b border-slate-200 p-2 text-left font-bold text-slate-800 uppercase tracking-wider text-[9pt]">
                 {children}
               </th>
             ),
             td: ({ children }) => (
-              <td className="border-b border-slate-50 p-4 text-slate-600">
+              <td className="border-b border-slate-50 p-2 text-slate-600">
                 {children}
               </td>
             ),
             img: ({ src, alt }) => (
-              <img src={src} alt={alt} className="max-w-full h-auto rounded-lg mx-auto my-8 shadow-md" />
+              <img src={src} alt={alt} className="max-w-[80%] h-auto rounded-lg mx-auto my-6 shadow-sm" />
             ),
           }}
         >
