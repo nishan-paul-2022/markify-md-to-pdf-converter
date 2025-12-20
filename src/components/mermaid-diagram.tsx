@@ -52,7 +52,9 @@ export const MermaidDiagram = ({ chart }: MermaidProps) => {
             const svgElement = ref.current.querySelector('svg');
             if (svgElement) {
               svgElement.style.maxWidth = '100%';
+              svgElement.style.maxHeight = '400px';
               svgElement.style.height = 'auto';
+              svgElement.style.objectFit = 'contain';
               svgElement.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.05))';
             }
           }
@@ -66,7 +68,7 @@ export const MermaidDiagram = ({ chart }: MermaidProps) => {
   }, [chart]);
 
   return (
-    <div className="diagram-wrapper my-4 flex flex-col items-center w-full">
+    <div className="diagram-wrapper my-3 flex flex-col items-center w-full">
       {!isLoaded && !error && (
         <div className="flex flex-col items-center justify-center py-12 gap-3 text-slate-400">
           <Loader2 className="w-6 h-6 animate-spin" />

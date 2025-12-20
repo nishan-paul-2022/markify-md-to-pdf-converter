@@ -1,7 +1,3 @@
-# Public Key Infrastructure (PKI) - Implementation & Web Application Integration
-
----
-
 ## Table of Contents
 
 1. [Introduction](#introduction)
@@ -13,7 +9,7 @@
 7. [Conclusion](#conclusion)
 8. [Appendix: Quick Reference](#appendix-quick-reference-commands)
 
----
+<div style="page-break-after: always;"></div>
 
 ## Introduction
 
@@ -23,7 +19,7 @@ Think of PKI as a digital identity system—similar to how governments issue pas
 
 This report documents my journey in building a fully functional Mini PKI from scratch. Throughout this implementation, I've learned not just the technical commands, but the reasoning behind each decision—why we need intermediate CAs, how certificate chains work, and why revocation mechanisms are critical for maintaining security.
 
----
+<div style="page-break-after: always;"></div>
 
 ## Understanding Public Key Infrastructure
 
@@ -72,7 +68,7 @@ PKI is the foundation of internet security. Every time you see the padlock icon 
 - **IoT devices:** Establishing secure device-to-device communication
 - **Enterprise networks:** Implementing Zero Trust security architectures
 
----
+<div style="page-break-after: always;"></div>
 
 ## PKI Architecture and Components
 
@@ -247,7 +243,7 @@ graph TD
     style E4 fill:#51cf66,color:#000
 ```
 
----
+<div style="page-break-after: always;"></div>
 
 ## Implementation Environment
 
@@ -307,7 +303,7 @@ graph TD
     style C5 fill:#ff6b6b,stroke:#c92a2a,color:#fff
 ```
 
----
+<div style="page-break-after: always;"></div>
 
 ## Building the PKI Step-by-Step
 
@@ -761,7 +757,7 @@ sudo systemctl reload apache2
 
 ```bash
 # Add hostname to /etc/hosts for testing
-echo "127.0.0.1 server.minipki.local" | sudo遂 tee -a /etc/hosts
+echo "127.0.0.1 server.minipki.local" | sudo tee -a /etc/hosts
 
 # Test with curl
 curl -v --cacert ~/pki/intermediate/certs/ca-chain.cert.pem https://localhost
@@ -797,7 +793,7 @@ sequenceDiagram
     Note over Client,Server: Secure encrypted communication established
 ```
 
-**TLS Handshake Flow:**
+**TLS Handshake Flow**
 
 ### Step 10: Creating Client Certificates
 
@@ -897,7 +893,7 @@ error 23 at 0 depth lookup: certificate revoked
 error certs/client.cert.pem: verification failed
 ```
 
----
+<div style="page-break-after: always;"></div>
 
 ## Testing and Verification
 
@@ -1080,11 +1076,7 @@ Through this implementation, I've gained a deep appreciation for the security pr
 
 **Revocation:** Unlike physical credentials that might remain valid even after loss, certificates can be instantly revoked. Within minutes of detecting a compromise, the certificate becomes untrusted across the entire infrastructure.
 
----
-
-## Lessons Learned and Best Practices
-
-### Security Considerations
+### Lessons Learned and Best Practices
 
 Throughout this implementation, several security principles became clear:
 
@@ -1164,7 +1156,7 @@ graph TB
 
 **Testing Thoroughly:** I verified each certificate at every step, catching issues early rather than debugging complex chain validation failures later.
 
----
+<div style="page-break-after: always;"></div>
 
 ## Conclusion
 
@@ -1182,7 +1174,7 @@ The beauty of PKI lies in its elegant solution to the trust problem. By establis
 
 **Architectural Thinking:** The design decisions—Root vs. Intermediate CAs, validity periods, key sizes, revocation mechanisms—all involve tradeoffs between security, usability, and operational efficiency.
 
----
+<div style="page-break-after: always;"></div>
 
 ## Appendix: Quick Reference Commands
 

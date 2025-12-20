@@ -57,7 +57,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
         <div className="text-[32px] font-bold tracking-[2px] mt-2 uppercase">UNIVERSITY OF DHAKA</div>
         <div className="text-[18px] font-normal mt-2 opacity-90">Professional Masters in Information and Cyber Security</div>
 
-        <div className="mt-[2.5cm] mb-[2cm] w-full flex flex-col items-center">
+        <div className="mt-[2cm] mb-[1.5cm] w-full flex flex-col items-center">
           <div className="text-[38px] font-extrabold leading-[1.2] mb-5 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
             {metadata.title || 'Public Key Infrastructure (PKI)'}
           </div>
@@ -93,7 +93,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
 
 const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.ReactNode, pageNumber: number, totalPages: number }) => {
   return (
-    <div className="pdf-page relative bg-white p-[2.5cm] mx-auto flex flex-col shrink-0"
+    <div className="pdf-page relative bg-white p-[2cm] mx-auto flex flex-col shrink-0"
       style={{ width: `${A4_WIDTH_PX}px`, minHeight: `${A4_HEIGHT_PX}px`, height: 'fit-content', color: '#111827', fontFamily: 'var(--font-inter), sans-serif' }}>
       <div className="flex-grow">
         {children}
@@ -142,36 +142,36 @@ const PageRenderer = React.memo(({ page, index, totalPages, metadata }: PageRend
               );
             },
             pre: ({ children }) => (
-              <pre className="my-4 relative bg-[#0f172a] text-[#f8fafc] p-3 rounded-lg overflow-x-auto text-[10pt] font-mono shadow-sm border border-slate-800">
+              <pre className="my-3 relative bg-[#0f172a] text-[#f8fafc] p-3 rounded-lg overflow-x-auto text-[10pt] font-mono shadow-sm border border-slate-800">
                 {children}
               </pre>
             ),
             h2: ({ children, ...props }) => {
               const id = children?.toString().toLowerCase().replace(/\s+/g, '-');
               return (
-                <h2 id={id} className="text-[18pt] font-bold mt-10 mb-4 border-b-2 border-slate-900 pb-2 text-slate-900" {...props}>
+                <h2 id={id} className="text-[18pt] font-bold mt-8 mb-3 border-b-2 border-slate-900 pb-1.5 text-slate-900" {...props}>
                   {children}
                 </h2>
               );
             },
             h3: ({ children }) => (
-              <h3 className="text-[14pt] font-bold mt-8 mb-3 text-slate-800 flex items-center gap-2">
+              <h3 className="text-[14pt] font-bold mt-6 mb-2 text-slate-800 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-slate-800 rotate-45"></span>
                 {children}
               </h3>
             ),
             p: ({ children }) => (
-              <p className="mb-4 leading-[1.6] text-[#334155] text-justify text-[12pt] font-normal">
+              <p className="mb-3 leading-[1.6] text-[#334155] text-justify text-[12pt] font-normal">
                 {children}
               </p>
             ),
             ul: ({ children }) => (
-              <ul className="list-none mb-4 space-y-2 text-[#334155] text-[12pt]">
+              <ul className="list-none mb-3 space-y-1.5 text-[#334155] text-[12pt]">
                 {children}
               </ul>
             ),
             ol: ({ children }) => (
-              <ol className="list-decimal ml-8 mb-4 space-y-2 text-[#334155] text-[12pt]">
+              <ol className="list-decimal ml-8 mb-3 space-y-1.5 text-[#334155] text-[12pt]">
                 {children}
               </ol>
             ),
@@ -210,7 +210,7 @@ const PageRenderer = React.memo(({ page, index, totalPages, metadata }: PageRend
               </td>
             ),
             img: ({ src, alt }) => (
-              <img src={src} alt={alt} className="max-w-[80%] h-auto rounded-lg mx-auto my-6 shadow-sm" />
+              <img src={src} alt={alt} className="max-w-[65%] max-h-[12cm] object-contain rounded-lg mx-auto my-4 shadow-sm" />
             ),
           }}
         >
@@ -670,7 +670,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         )}
       >
         <div
-          className="flex flex-col gap-8 origin-top"
+          className="flex flex-col gap-4 origin-top"
           style={{
             transform: `scale(${getScale()}) translateZ(0)`,
             width: `${A4_WIDTH_PX}px`,
