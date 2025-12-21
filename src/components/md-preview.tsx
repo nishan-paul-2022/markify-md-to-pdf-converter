@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, Maximize, ArrowLeftRight, ScrollText, Eye, DownloadCloud, Loader2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, ScrollText, Eye, DownloadCloud, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import dynamic from 'next/dynamic';
@@ -491,9 +491,20 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={() => scrollToPage(1)}
+                disabled={currentPage === 1}
+                className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                title="First Page"
+              >
+                <ChevronsUp className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => scrollToPage(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                title="Previous Page"
               >
                 <ChevronUp className="w-4 h-4" />
               </Button>
@@ -513,8 +524,19 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 onClick={() => scrollToPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                title="Next Page"
               >
                 <ChevronDown className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => scrollToPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                title="Last Page"
+              >
+                <ChevronsDown className="w-4 h-4" />
               </Button>
             </div>
 
