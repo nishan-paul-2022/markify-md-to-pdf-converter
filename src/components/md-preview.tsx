@@ -48,7 +48,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
   if (!metadata) return null;
 
   return (
-    <div className="pdf-page relative bg-white overflow-hidden flex flex-col items-center text-center p-[2cm] mx-auto shrink-0"
+    <div className="pdf-page relative bg-white overflow-hidden flex flex-col items-center text-center p-0 mx-auto shrink-0"
       style={{ width: `${A4_WIDTH_PX}px`, height: `${A4_HEIGHT_PX}px`, color: 'white', fontFamily: 'var(--font-inter), sans-serif' }}>
       {/* Background */}
       <div

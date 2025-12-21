@@ -35,6 +35,15 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
 
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora&display=swap');
     
+    /* Page-specific margins: zero for first page (landing), standard for others */
+    @page :first {
+      margin: 0;
+    }
+    
+    @page {
+      margin: 15mm;
+    }
+    
     body { 
       font-family: 'Inter', sans-serif;
       padding: 0;
@@ -199,7 +208,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
 
     .cover-page { 
       width: 100%;
-      min-height: 95vh;
+      min-height: 100vh;
       background-image: url('data:image/png;base64,${bgBase64}');
       background-size: cover;
       background-position: center;
@@ -208,11 +217,10 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       flex-direction: column; 
       align-items: center; 
       text-align: center; 
-      padding: 2cm 1cm; 
+      padding: 0; 
       page-break-after: always;
       position: relative;
       box-sizing: border-box;
-      border-radius: 4px; /* Optional: adds a slight finish if margins are present */
     }
     .logo-container {
       margin-top: 1cm;
@@ -392,7 +400,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
   const pdf = await page.pdf({
     format: 'A4',
     printBackground: true,
-    // Standard Margins for A4 Report
+    // CSS @page rules handle per-page margins (0 for first page, 15mm for others)
     margin: { top: '15mm', bottom: '15mm', left: '15mm', right: '15mm' },
     displayHeaderFooter: true,
     headerTemplate: '<div></div>',
