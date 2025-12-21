@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MdPreview } from '@/components/md-preview';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA } from '@/constants/default-content';
 import { ChevronDown, ChevronUp, FileCode, Upload, RotateCcw } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function Home() {
   const [content, setContent] = useState('');
@@ -115,7 +116,7 @@ export default function Home() {
         {/* Editor Side */}
         <div className="flex-1 flex flex-col border-r border-slate-800 overflow-hidden">
           <div
-            className="bg-slate-900/80 pl-4 pr-2 py-[11px] border-b border-slate-800 flex items-center justify-between transition-colors"
+            className="h-12 bg-slate-900/80 pl-4 pr-2 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
           >
             <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
               <FileCode className="w-3.5 h-3.5" /> Markdown
@@ -133,30 +134,35 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
-                className="h-6 px-2 text-[10px] font-medium uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md border border-transparent hover:border-white/5"
               >
-                <Upload className="w-3 h-3 mr-1.5" /> Upload MD
+                <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload MD
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={(e) => { e.stopPropagation(); handleReset(); }}
-                className="h-6 px-2 text-[10px] font-medium uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md border border-transparent hover:border-white/5"
               >
-                <RotateCcw className="w-3 h-3 mr-1.5" /> Reset Default
+                <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Reset Default
               </Button>
 
               <div className="w-px h-3 bg-slate-800 mx-1" />
 
               <div
-                className="p-1 cursor-pointer hover:bg-slate-800 rounded transition-colors group"
-                title="Toggle Markdown Options"
+                className={cn(
+                  "h-7 w-7 cursor-pointer rounded-md transition-all duration-200 active:scale-95 group flex items-center justify-center border",
+                  isSettingsOpen
+                    ? "bg-white/20 text-white border-white/20 shadow-inner"
+                    : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200"
+                )}
+                title={isSettingsOpen ? "Hide Markdown Options" : "Show Markdown Options"}
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
               >
                 {isSettingsOpen ? (
-                  <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-slate-300" />
+                  <ChevronUp className="w-4 h-4" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-slate-300" />
+                  <ChevronDown className="w-4 h-4" />
                 )}
               </div>
             </div>

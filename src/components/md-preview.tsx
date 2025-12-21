@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, Maximize, ArrowLeftRight, ScrollText, Eye, FileDown, Loader2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, Maximize, ArrowLeftRight, ScrollText, Eye, DownloadCloud, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import dynamic from 'next/dynamic';
@@ -457,41 +457,151 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       </div>
 
       {showToolbar && (
-        <div className="flex items-center justify-between px-4 py-2 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm">
+        <div className="flex items-center justify-between px-4 h-12 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm">
           <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
             <Eye className="w-3.5 h-3.5" />
-            Preview Mode:
-            <div className="flex bg-slate-950/50 rounded-md p-1 border border-white/10 ml-3 shadow-inner">
-              <button onClick={() => setViewMode('live')} className={cn("px-3 py-1 rounded-sm text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer", viewMode === 'live' ? "bg-primary text-primary-foreground shadow-lg ring-1 ring-primary/50 transform scale-105" : "text-slate-500 hover:text-slate-300 hover:bg-white/5")}>LIVE</button>
-              <button onClick={() => setViewMode('preview')} className={cn("px-3 py-1 rounded-sm text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer", viewMode === 'preview' ? "bg-primary text-primary-foreground shadow-lg ring-1 ring-primary/50 transform scale-105" : "text-slate-500 hover:text-slate-300 hover:bg-white/5")}>PRINT</button>
+            PDF
+            <div className="flex bg-slate-950/40 rounded-lg p-1 border border-white/5 ml-3 shadow-inner">
+              <button 
+                onClick={() => setViewMode('live')} 
+                className={cn(
+                  "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer border",
+                  viewMode === 'live' 
+                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
+                    : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
+                )}
+              >
+                LIVE
+              </button>
+              <button 
+                onClick={() => setViewMode('preview')} 
+                className={cn(
+                  "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer border ml-1",
+                  viewMode === 'preview' 
+                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
+                    : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
+                )}
+              >
+                PRINT
+              </button>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-0.5 border border-white/5">
-              <Button variant="ghost" size="icon" onClick={() => scrollToPage(currentPage - 1)} disabled={currentPage === 1} className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-colors"><ChevronUp className="w-3 h-3" /></Button>
-              <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1 min-w-[3.5rem] justify-center">
-                <Input type="text" value={pageInput} onChange={handlePageInputChange} onBlur={handlePageInputSubmit} className="h-4 w-6 text-center bg-transparent border-0 p-0 text-white text-xs font-medium focus-visible:ring-0 focus-visible:bg-white/5 rounded-sm tabular-nums" />
-                <span className="text-[10px] text-slate-500 font-medium select-none">/ {totalPages}</span>
+            <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => scrollToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+              >
+                <ChevronUp className="w-4 h-4" />
+              </Button>
+              <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1.5 min-w-[3.5rem] justify-center">
+                <Input 
+                  type="text" 
+                  value={pageInput} 
+                  onChange={handlePageInputChange} 
+                  onBlur={handlePageInputSubmit} 
+                  className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all" 
+                />
+                <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
               </form>
-              <Button variant="ghost" size="icon" onClick={() => scrollToPage(currentPage + 1)} disabled={currentPage === totalPages} className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-colors"><ChevronDown className="w-3 h-3" /></Button>
-            </div>
-            <div className="w-px h-4 bg-slate-800 mx-0.5" />
-            <div className="flex items-center gap-0.5 bg-slate-800/50 rounded-lg p-0.5 border border-white/5">
-              <Button variant="ghost" size="icon" onClick={() => handleZoomChange(-10)} disabled={getScale() * 100 <= 25} className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-all active:scale-95"><ZoomOut className="w-3 h-3" /></Button>
-              <form onSubmit={handleZoomInputSubmit} className="min-w-[2.5rem] flex justify-center"><Input type="text" value={zoomInput} onChange={handleZoomInputChange} onBlur={handleZoomInputSubmit} className="h-4 w-8 text-center bg-transparent border-0 p-0 text-white text-xs font-medium focus-visible:ring-0 focus-visible:bg-white/5 rounded-sm tabular-nums" /></form>
-              <Button variant="ghost" size="icon" onClick={() => handleZoomChange(10)} disabled={getScale() * 100 >= 400} className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-all active:scale-95"><ZoomIn className="w-3 h-3" /></Button>
-            </div>
-            <div className="w-px h-4 bg-slate-800 mx-0.5" />
-            <div className="flex items-center gap-0.5 bg-slate-800/50 rounded-lg p-0.5 border border-white/5">
-              <Button variant="ghost" size="icon" onClick={() => setZoomMode('fit-page')} className={cn("h-6 w-6 rounded-md transition-all active:scale-95", zoomMode === 'fit-page' ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:bg-white/5 hover:text-white")}><Maximize className="w-3 h-3" /></Button>
-              <Button variant="ghost" size="icon" onClick={() => setZoomMode('fit-width')} className={cn("h-6 w-6 rounded-md transition-all active:scale-95", zoomMode === 'fit-width' ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:bg-white/5 hover:text-white")}><ArrowLeftRight className="w-3 h-3" /></Button>
-            </div>
-            <div className="w-px h-4 bg-slate-800 mx-0.5" />
-            <div className="flex items-center gap-0.5 bg-slate-800/50 rounded-lg p-0.5 border border-white/5">
-              <Button variant="ghost" size="icon" onClick={onDownload} disabled={isGenerating} className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-primary disabled:opacity-50 transition-all active:scale-95">
-                {isGenerating ? <Loader2 className="w-3 h-3 animate-spin text-primary" /> : <FileDown className="w-3 h-3" />}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => scrollToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+              >
+                <ChevronDown className="w-4 h-4" />
               </Button>
             </div>
+
+            <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
+
+            <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleZoomChange(-10)}
+                disabled={getScale() * 100 <= 25}
+                className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+              >
+                <ZoomOut className="w-3.5 h-3.5" />
+              </Button>
+              <form onSubmit={handleZoomInputSubmit} className="min-w-[3rem] flex justify-center">
+                <Input
+                  type="text"
+                  value={zoomInput}
+                  onChange={handleZoomInputChange}
+                  onBlur={handleZoomInputSubmit}
+                  className="h-5 w-10 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-primary/50 rounded-sm tabular-nums shadow-inner transition-all"
+                />
+              </form>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleZoomChange(10)}
+                disabled={getScale() * 100 >= 400}
+                className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+              >
+                <ZoomIn className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+
+            <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
+
+            <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setZoomMode('fit-page')} 
+                className={cn(
+                  "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border",
+                  zoomMode === 'fit-page' 
+                    ? "bg-white/20 text-white border-white/20 shadow-inner cursor-default hover:bg-white/20 hover:text-white hover:border-white/20" 
+                    : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
+                )}
+              >
+                <Maximize className="w-3.5 h-3.5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setZoomMode('fit-width')} 
+                className={cn(
+                  "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border",
+                  zoomMode === 'fit-width' 
+                    ? "bg-white/20 text-white border-white/20 shadow-inner cursor-default hover:bg-white/20 hover:text-white hover:border-white/20" 
+                    : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
+                )}
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+
+            <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
+
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onDownload} 
+              disabled={isGenerating} 
+              className={cn(
+                "h-8 w-8 rounded-md transition-all duration-200 active:scale-95 disabled:opacity-50 group/download relative border",
+                isGenerating 
+                  ? "bg-white/20 text-white border-white/20 shadow-inner" 
+                  : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
+              )}
+              title="Download PDF"
+            >
+              {isGenerating ? (
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+              ) : (
+                <DownloadCloud className="w-[18px] h-[18px]" />
+              )}
+            </Button>
           </div>
         </div>
       )}
