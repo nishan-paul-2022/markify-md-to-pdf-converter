@@ -34,7 +34,9 @@ interface MdPreviewProps {
   onDownload?: () => void;
   onGeneratePdf?: () => Promise<Blob>;
   isGenerating?: boolean;
+  isMetadataValid?: boolean;
 }
+
 
 type ViewMode = 'live' | 'preview';
 
@@ -66,10 +68,10 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
 
         <div className="mt-[2cm] mb-[2cm] w-full flex flex-col items-center">
           <div className="text-[32px] font-extrabold leading-[1.2] mb-[15px] w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
-            {metadata.title ?? 'Public Key Infrastructure (PKI)'}
+            {metadata.title}
           </div>
           <div className="text-[18px] font-semibold opacity-95 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
-            {metadata.subtitle ?? 'Implementation & Web Application Integration'}
+            {metadata.subtitle}
           </div>
         </div>
 
@@ -133,7 +135,7 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
   );
 };
 
-export const MdPreview = ({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false }: MdPreviewProps) => {
+export const MdPreview = ({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isMetadataValid = true }: MdPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
@@ -262,6 +264,13 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   useEffect(() => {
     setPdfBlobUrl(null);
   }, [content, metadata]);
+
+  // Auto-switch to LIVE view if metadata becomes invalid while in PRINT view
+  useEffect(() => {
+    if (viewMode === 'preview' && !isMetadataValid) {
+      setViewMode('live');
+    }
+  }, [isMetadataValid, viewMode]);
 
   // Client-side Pagination Logic
   useEffect(() => {
@@ -475,12 +484,16 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 LIVE
               </button>
               <button 
-                onClick={() => setViewMode('preview')} 
+                onClick={() => isMetadataValid && setViewMode('preview')} 
+                disabled={!isMetadataValid}
+                title={!isMetadataValid ? "Fill in all fields to view print preview" : "View print preview"}
                 className={cn(
-                  "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer border ml-1",
-                  viewMode === 'preview' 
-                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
-                    : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
+                  "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 border ml-1",
+                  !isMetadataValid 
+                    ? "text-slate-700 border-transparent cursor-not-allowed opacity-40" 
+                    : viewMode === 'preview' 
+                      ? "bg-white/20 text-white border-white/20 shadow-inner cursor-pointer" 
+                      : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100 cursor-pointer"
                 )}
               >
                 PRINT
@@ -602,25 +615,35 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
 
             <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
 
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={onDownload} 
-              disabled={isGenerating} 
+            <div 
+              title={!isMetadataValid ? "Fill in all fields to download PDF" : "Download PDF"}
               className={cn(
-                "h-8 w-8 rounded-md transition-all duration-200 active:scale-95 disabled:opacity-50 group/download relative border",
-                isGenerating 
-                  ? "bg-white/20 text-white border-white/20 shadow-inner" 
-                  : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
+                "inline-block",
+                (isGenerating || !isMetadataValid) && "cursor-not-allowed"
               )}
-              title="Download PDF"
             >
-              {isGenerating ? (
-                <Loader2 className="w-4 h-4 animate-spin text-white" />
-              ) : (
-                <DownloadCloud className="w-[18px] h-[18px]" />
-              )}
-            </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={onDownload} 
+                disabled={isGenerating || !isMetadataValid} 
+                className={cn(
+                  "h-8 w-8 rounded-md transition-all duration-200 active:scale-95 group/download relative border",
+                  isGenerating || !isMetadataValid
+                    ? "opacity-50 cursor-not-allowed" 
+                    : "",
+                  isGenerating 
+                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
+                    : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
+                )}
+              >
+                {isGenerating ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                ) : (
+                  <DownloadCloud className="w-[18px] h-[18px]" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       )}

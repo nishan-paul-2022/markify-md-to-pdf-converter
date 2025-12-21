@@ -346,34 +346,34 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
         <div class="program">Professional Masters in Information and Cyber Security</div>
         
         <div class="title-section">
-          <div class="report-title">${metadata.title ?? 'Public Key Infrastructure (PKI)'}</div>
-          <div class="report-subtitle">${metadata.subtitle ?? 'Implementation & Web Application Integration'}</div>
+          <div class="report-title">${metadata.title}</div>
+          <div class="report-subtitle">${metadata.subtitle}</div>
         </div>
         
         <div class="course-info">
-          ${metadata.course || 'CSE 802 - Information Security and Cryptography'}
+          ${metadata.course}
         </div>
         
         <div class="student-details">
           <div class="details-row">
             <div class="details-label"><span>Name</span><span>:</span></div>
-            <div class="details-value">${metadata.name || 'Nishan Paul'}</div>
+            <div class="details-value">${metadata.name}</div>
           </div>
           <div class="details-row">
             <div class="details-label"><span>Roll No</span><span>:</span></div>
-            <div class="details-value">${metadata.roll || 'JN-50028'}</div>
+            <div class="details-value">${metadata.roll}</div>
           </div>
           <div class="details-row">
             <div class="details-label"><span>Reg. No</span><span>:</span></div>
-            <div class="details-value">${metadata.reg || 'H-55'}</div>
+            <div class="details-value">${metadata.reg}</div>
           </div>
           <div class="details-row">
             <div class="details-label"><span>Batch</span><span>:</span></div>
-            <div class="details-value">${metadata.batch || '05'}</div>
+            <div class="details-value">${metadata.batch}</div>
           </div>
           <div class="details-row">
             <div class="details-label"><span>Submission Date</span><span>:</span></div>
-            <div class="details-value">${metadata.date || 'December 18, 2025'}</div>
+            <div class="details-value">${metadata.date}</div>
           </div>
         </div>
       </div>

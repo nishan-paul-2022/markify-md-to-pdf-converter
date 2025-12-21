@@ -97,6 +97,21 @@ export default function Home() {
     }
   };
 
+  const validateMetadata = () => {
+    return !!(
+      metadata.title?.trim() &&
+      metadata.subtitle?.trim() &&
+      metadata.course?.trim() &&
+      metadata.name?.trim() &&
+      metadata.roll?.trim() &&
+      metadata.reg?.trim() &&
+      metadata.batch?.trim() &&
+      metadata.date?.trim()
+    );
+  };
+
+  const isMetadataValid = validateMetadata();
+
   return (
     <main className="h-screen w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
       {/* Header */}
@@ -177,7 +192,10 @@ export default function Home() {
                     name="course"
                     value={metadata.course}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                    className={cn(
+                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
+                      metadata.course?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
+                    )}
                   />
                 </div>
                 <div className="space-y-2">
@@ -186,7 +204,10 @@ export default function Home() {
                     name="date"
                     value={metadata.date}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                    className={cn(
+                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
+                      metadata.date?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
+                    )}
                   />
                 </div>
               </div>
@@ -197,7 +218,10 @@ export default function Home() {
                     name="name"
                     value={metadata.name}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                    className={cn(
+                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
+                      metadata.name?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
+                    )}
                   />
                 </div>
                 <div className="space-y-2">
@@ -206,7 +230,10 @@ export default function Home() {
                     name="roll"
                     value={metadata.roll}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                    className={cn(
+                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
+                      metadata.roll?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
+                    )}
                   />
                 </div>
                 <div className="space-y-2">
@@ -215,7 +242,10 @@ export default function Home() {
                     name="reg"
                     value={metadata.reg}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                    className={cn(
+                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
+                      metadata.reg?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
+                    )}
                   />
                 </div>
                 <div className="space-y-2">
@@ -224,7 +254,10 @@ export default function Home() {
                     name="batch"
                     value={metadata.batch}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                    className={cn(
+                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
+                      metadata.batch?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
+                    )}
                   />
                 </div>
               </div>
@@ -235,7 +268,10 @@ export default function Home() {
                     name="title"
                     value={metadata.title}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                    className={cn(
+                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
+                      metadata.title?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
+                    )}
                   />
                 </div>
                 <div className="space-y-2">
@@ -244,7 +280,10 @@ export default function Home() {
                     name="subtitle"
                     value={metadata.subtitle}
                     onChange={handleMetadataChange}
-                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                    className={cn(
+                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
+                      metadata.subtitle?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
+                    )}
                   />
                 </div>
               </div>
@@ -270,9 +309,11 @@ export default function Home() {
             onDownload={handleDownloadPdf}
             onGeneratePdf={generatePdfBlob}
             isGenerating={isGenerating}
+            isMetadataValid={isMetadataValid}
           />
         </div>
       </div>
     </main>
   );
 }
+
