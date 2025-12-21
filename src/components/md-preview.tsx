@@ -119,17 +119,14 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
         backgroundRepeat: 'repeat-y'
       }}>
 
-      {/* Page Break Indicator Label (Optional, for first break) */}
-      <div className="absolute left-0 w-full pointer-events-none" style={{ top: `${A4_HEIGHT_PX}px` }}>
-        <div className="absolute right-0 -top-6 text-[9px] text-slate-400 font-mono pr-2 opacity-50">Page Break</div>
-      </div>
+
 
       <div className="flex-grow">
         {children}
       </div>
 
       <div className="mt-auto pt-4 flex justify-end text-[8pt] text-slate-400 font-sans">
-        Section {pageNumber} of {totalPages}
+        Page {pageNumber} of {totalPages}
       </div>
     </div>
   );
@@ -664,7 +661,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
               {content.trim() && paginatedPages.length > 0 && (
                 paginatedPages.map((pageHtml, index) => (
                   <div key={index} ref={currentPage === (index + (metadata ? 2 : 1)) ? pageRef : null} data-page-index={index + (metadata ? 1 : 0)} className="shadow-xl">
-                    <PageWrapper pageNumber={index + 1} totalPages={totalPages - (metadata ? 1 : 0)}>
+                    <PageWrapper pageNumber={index + (metadata ? 2 : 1)} totalPages={totalPages}>
                       <div className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }} dangerouslySetInnerHTML={{ __html: pageHtml }} />
                     </PageWrapper>
                   </div>
