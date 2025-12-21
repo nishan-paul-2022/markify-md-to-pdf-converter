@@ -259,8 +259,13 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     };
   }, [pdfBlobUrl]);
 
+  // Debounced PDF regeneration: only reset PDF blob after user stops typing
   useEffect(() => {
-    setPdfBlobUrl(null);
+    const timer = setTimeout(() => {
+      setPdfBlobUrl(null);
+    }, 1500); // Wait 1.5 seconds after last change before invalidating PDF
+
+    return () => clearTimeout(timer);
   }, [content, metadata]);
 
   // Auto-switch to LIVE view if metadata becomes invalid while in PRINT view
