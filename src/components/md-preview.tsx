@@ -484,7 +484,51 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   };
 
   return (
-    <div className={cn("pdf-viewer flex flex-col h-full bg-slate-900/50", className)}>
+    <div className={cn("pdf-viewer relative flex flex-col h-full bg-slate-900/50", className)}>
+      {/* Global Loader Overlay - Centered in viewport, independent of scroll position */}
+      <div className={cn(
+        "absolute inset-0 z-50 flex items-center justify-center transition-all duration-500 ease-in-out backdrop-blur-[2px] bg-slate-900/5",
+        showToolbar ? "top-12" : "top-0",
+        isPdfRendering ? "opacity-100" : "opacity-0 pointer-events-none"
+      )}>
+        <div className="relative flex flex-col items-center gap-8 -translate-y-6">
+          {/* Radial gradient glow background */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-64 h-64 bg-gradient-radial from-primary/20 via-blue-500/10 to-transparent rounded-full blur-3xl animate-pulse" />
+          </div>
+
+          {/* Orbital spinner system */}
+          <div className="relative w-24 h-24 scale-110">
+            {/* Outer ring */}
+            <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin" style={{ animationDuration: '3s' }} />
+
+            {/* Middle ring */}
+            <div className="absolute inset-2 rounded-full border-2 border-blue-400/30 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
+
+            {/* Inner glow */}
+            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/40 to-blue-500/40 blur-md animate-pulse" />
+
+            {/* Center spinner */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 className="w-10 h-10 animate-spin text-primary drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]" style={{ animationDuration: '1.5s' }} />
+            </div>
+
+            {/* Floating particles */}
+            <div className="absolute -top-1 left-1/2 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDuration: '2s' }} />
+            <div className="absolute top-1/2 -right-1 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+            <div className="absolute -bottom-1 left-1/3 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
+          </div>
+
+          {/* Animated text */}
+          <div className="relative text-center">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-xl" />
+            <span className="relative text-xl font-bold bg-gradient-to-r from-slate-200 via-primary to-slate-200 bg-clip-text text-transparent animate-pulse bg-[length:200%_100%]" style={{ animation: 'pulse 2s ease-in-out infinite, shimmer 3s linear infinite' }}>
+              Rendering PDF...
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Hidden Staging Area */}
       <div
         className="fixed top-0 left-0 overflow-hidden pointer-events-none opacity-0 -z-50 bg-white"
@@ -720,48 +764,6 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
             viewMode === 'preview' ? "opacity-100" : "opacity-0 pointer-events-none"
           )}>
             <div className="relative" key={`pdf-view-${renderKey}`}>
-              {/* Enhanced Loader - Locked to first page area to prevent jitter */}
-              <div className={cn(
-                "absolute top-0 left-0 w-full flex items-center justify-center z-20 transition-all duration-500 ease-in-out",
-                isPdfRendering ? "opacity-100" : "opacity-0 pointer-events-none"
-              )} style={{ height: `${A4_HEIGHT_PX}px` }}>
-                <div className="relative flex flex-col items-center gap-8">
-                  {/* Radial gradient glow background */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-64 h-64 bg-gradient-radial from-primary/20 via-blue-500/10 to-transparent rounded-full blur-3xl animate-pulse" />
-                  </div>
-
-                  {/* Orbital spinner system */}
-                  <div className="relative w-24 h-24">
-                    {/* Outer ring */}
-                    <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin" style={{ animationDuration: '3s' }} />
-
-                    {/* Middle ring */}
-                    <div className="absolute inset-2 rounded-full border-2 border-blue-400/30 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
-
-                    {/* Inner glow */}
-                    <div className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/40 to-blue-500/40 blur-md animate-pulse" />
-
-                    {/* Center spinner */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Loader2 className="w-10 h-10 animate-spin text-primary drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]" style={{ animationDuration: '1.5s' }} />
-                    </div>
-
-                    {/* Floating particles */}
-                    <div className="absolute -top-1 left-1/2 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDuration: '2s' }} />
-                    <div className="absolute top-1/2 -right-1 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
-                    <div className="absolute -bottom-1 left-1/3 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
-                  </div>
-
-                  {/* Animated text */}
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-xl" />
-                    <span className="relative text-xl font-bold bg-gradient-to-r from-slate-200 via-primary to-slate-200 bg-clip-text text-transparent animate-pulse bg-[length:200%_100%]" style={{ animation: 'pulse 2s ease-in-out infinite, shimmer 3s linear infinite' }}>
-                      Rendering PDF...
-                    </span>
-                  </div>
-                </div>
-              </div>
               {/* Note: We keep PdfViewer mounted if pdfBlobUrl exists, even in live mode, for instant switch */}
               {pdfBlobUrl && (
                 <div className={cn(
