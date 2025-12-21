@@ -66,7 +66,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
         <div className="text-[16px] font-normal mt-[8px] opacity-90">Professional Masters in Information and Cyber Security</div>
 
         <div className="mt-[2cm] mb-[2cm] w-full flex flex-col items-center">
-          <div className="text-[32px] font-extrabold leading-[1.2] mb-[15px] w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
+          <div className="text-[32px] font-extrabold leading-[1.2] mb-[8px] w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
             {metadata.title}
           </div>
           <div className="text-[18px] font-semibold opacity-95 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
@@ -170,36 +170,36 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       );
     },
     pre: ({ children }: React.ComponentPropsWithoutRef<'pre'>) => (
-      <pre className="my-[0.8cm] relative bg-[#0f172a] text-[#f8fafc] p-[15px] rounded-lg overflow-x-auto text-[9pt] font-mono shadow-sm border border-white/5 leading-[1.45]">
+      <pre className="mt-[0.2cm] mb-[0.8cm] relative bg-[#0f172a] text-[#f8fafc] p-[15px] rounded-lg overflow-x-auto text-[9pt] font-mono shadow-sm border border-white/5 leading-[1.45]">
         {children}
       </pre>
     ),
     h2: ({ children, ...props }: React.ComponentPropsWithoutRef<'h2'>) => {
       const id = children?.toString().toLowerCase().replace(/\s+/g, '-');
       return (
-        <h2 id={id} className="text-[24pt] text-[#0369a1] font-sans font-bold mt-0 mb-[0.8cm] border-l-[10px] border-[#0ea5e9] pl-[20px] py-[10px] bg-[#f8fafc] rounded-r-lg leading-[1.3]" {...props}>
+        <h2 id={id} className="text-[24pt] text-[#0369a1] font-sans font-bold mt-[0.8cm] mb-[0.3cm] border-l-[10px] border-[#0ea5e9] pl-[20px] py-[10px] bg-[#f8fafc] rounded-r-lg leading-[1.3]" {...props}>
           {children}
         </h2>
       );
     },
     h3: ({ children }: React.ComponentPropsWithoutRef<'h3'>) => (
-      <h3 className="text-[16pt] text-[#0369a1] font-sans font-bold mt-[1cm] mb-[0.5cm] flex items-center leading-[1.4]">
+      <h3 className="text-[16pt] text-[#0369a1] font-sans font-bold mt-[0.6cm] mb-[0.2cm] flex items-center leading-[1.4]">
         <span className="w-[6px] h-[6px] bg-[#0ea5e9] rounded-full mr-[10px] inline-block shrink-0"></span>
         {children}
       </h3>
     ),
     p: ({ children }: React.ComponentPropsWithoutRef<'p'>) => (
-      <p className="mb-[0.6cm] leading-[1.6] text-[#334155] text-justify text-[11pt] font-normal font-serif">
+      <p className="mb-[0.4cm] leading-[1.6] text-[#334155] text-justify text-[11pt] font-normal font-serif">
         {children}
       </p>
     ),
     ul: ({ children }: React.ComponentPropsWithoutRef<'ul'>) => (
-      <ul className="list-disc mb-[0.6cm] pl-[1.5cm] text-[#334155] text-[11pt] font-serif leading-[1.6]">
+      <ul className="list-disc mb-[0.4cm] pl-[1.5cm] text-[#334155] text-[11pt] font-serif leading-[1.6]">
         {children}
       </ul>
     ),
     ol: ({ children }: React.ComponentPropsWithoutRef<'ol'>) => (
-      <ol className="list-decimal mb-[0.6cm] pl-[1.5cm] text-[#334155] text-[11pt] font-serif leading-[1.6]">
+      <ol className="list-decimal mb-[0.4cm] pl-[1.5cm] text-[#334155] text-[11pt] font-serif leading-[1.6]">
         {children}
       </ol>
     ),
@@ -209,7 +209,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       </li>
     ),
     table: ({ children }: React.ComponentPropsWithoutRef<'table'>) => (
-      <div className="my-[0.8cm] w-full">
+      <div className="mt-[0.2cm] mb-[0.6cm] w-full">
         <table className="w-full border-collapse text-[10pt] font-sans">
           {children}
         </table>
@@ -227,7 +227,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     ),
     img: ({ src, alt }: React.ComponentPropsWithoutRef<'img'>) => (
       /* eslint-disable-next-line @next/next/no-img-element */
-      <img src={src} alt={alt} className="max-w-full h-auto rounded-lg mx-auto my-[1cm] block" />
+      <img src={src} alt={alt} className="max-w-full h-auto rounded-lg mx-auto mt-[0.2cm] mb-[0.8cm] block" />
     ),
     blockquote: ({ children }: React.ComponentPropsWithoutRef<'blockquote'>) => (
       <blockquote className="border-l-4 border-slate-300 pl-4 italic text-slate-600 my-4">

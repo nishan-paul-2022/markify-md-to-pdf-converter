@@ -62,7 +62,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     h1 {
       font-size: 28pt;
       color: #0369a1;
-      margin-bottom: 1cm;
+      margin-bottom: 0.4cm;
     }
 
     h2 { 
@@ -70,8 +70,8 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       color: #0369a1; 
       border-left: 10px solid #0ea5e9; 
       padding: 10px 0 10px 20px; 
-      margin-top: 1cm; 
-      margin-bottom: 0.8cm; 
+      margin-top: 0.8cm; 
+      margin-bottom: 0.3cm; 
       page-break-before: always; 
       background: #f8fafc;
       border-radius: 0 8px 8px 0;
@@ -81,8 +81,8 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     h3 { 
       font-size: 16pt; 
       color: #0369a1; 
-      margin-top: 1cm; 
-      margin-bottom: 0.5cm; 
+      margin-top: 0.6cm; 
+      margin-bottom: 0.2cm; 
       display: flex;
       align-items: center;
       line-height: 1.4;
@@ -101,8 +101,8 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     h4, h5, h6 {
       font-size: 13pt;
       color: #0f172a;
-      margin-top: 0.8cm;
-      margin-bottom: 0.4cm;
+      margin-top: 0.5cm;
+      margin-bottom: 0.15cm;
     }
 
     p { 
@@ -113,13 +113,13 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       font-family: 'Lora', serif; 
       font-size: 11pt; 
       color: #334155;
-      margin-bottom: 0.6cm;
+      margin-bottom: 0.4cm;
       orphans: 3;
       widows: 3;
     }
 
     ul, ol {
-      margin-bottom: 0.6cm;
+      margin-bottom: 0.4cm;
       color: #334155;
       font-family: 'Lora', serif;
       font-size: 11pt;
@@ -142,7 +142,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       border-radius: 8px; 
       font-size: 9pt; 
       white-space: pre-wrap; 
-      margin: 0.8cm 0;
+      margin: 0.2cm 0 0.8cm 0;
       border: 1px solid rgba(255,255,255,0.05);
       line-height: 1.45;
       page-break-inside: avoid;
@@ -190,7 +190,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 0.8cm 0;
+      margin: 0.2cm 0 0.6cm 0;
       font-size: 10pt;
       page-break-inside: auto;
     }
@@ -223,7 +223,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       height: auto;
       border-radius: 8px;
       display: block;
-      margin: 1cm auto;
+      margin: 0.2cm auto 0.8cm auto;
       page-break-inside: avoid;
       break-inside: avoid;
     }
@@ -283,7 +283,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       font-size: 32px;
       font-weight: 800;
       line-height: 1.2;
-      margin-bottom: 15px;
+      margin-bottom: 8px;
       padding: 0 20px;
       word-wrap: break-word;
     }
