@@ -145,6 +145,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   const [numPages, setNumPages] = useState<number>(0);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [paginatedPages, setPaginatedPages] = useState<string[]>([]);
+  const [renderKey, setRenderKey] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
@@ -269,6 +270,16 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     }
   }, [isMetadataValid, viewMode]);
 
+  // Reset to page 1 when switching view modes and reset numPages when leaving preview
+  useEffect(() => {
+    setCurrentPage(1);
+    if (viewMode === 'live') {
+      setNumPages(0);
+    }
+    // Increment render key to force re-observation
+    setRenderKey(prev => prev + 1);
+  }, [viewMode]);
+
   // Client-side Pagination Logic
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -387,7 +398,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     const observer = new IntersectionObserver(
       (entries) => {
         let maxRatio = 0;
-        let visiblePageIndex = currentPage - 1;
+        let visiblePageIndex = 0;
         entries.forEach((entry) => {
           if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
             maxRatio = entry.intersectionRatio;
@@ -400,10 +411,19 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       },
       { root: containerRef.current, threshold: [0, 0.3, 0.5, 0.7, 1.0] }
     );
-    const pageElements = containerRef.current.querySelectorAll('[data-page-index]');
-    pageElements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [paginatedPages, metadata, viewMode, numPages]); // Re-observe when pages change or PDF loads
+    
+    // Small delay to ensure DOM is ready, especially after mode switch
+    const timeoutId = setTimeout(() => {
+      if (!containerRef.current) return;
+      const pageElements = containerRef.current.querySelectorAll('[data-page-index]');
+      pageElements.forEach((el) => observer.observe(el));
+    }, 200);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, [paginatedPages, metadata, viewMode, numPages, pdfBlobUrl, renderKey]); // Re-observe when pages change, PDF loads, or mode switches
 
   const scrollToPage = (pageNum: number) => {
     if (pageNum >= 1 && pageNum <= totalPages && containerRef.current) {
@@ -669,9 +689,9 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
               )}
             </>
           ) : (
-            <div className="relative">
+            <div className="relative" key={`pdf-view-${renderKey}`}>
               {isPdfLoading && <div className="absolute inset-0 flex items-center justify-center min-h-[50vh] text-slate-400"><Loader2 className="w-8 h-8 animate-spin" /><span className="ml-2">Rendering PDF...</span></div>}
-              {pdfBlobUrl && <PdfViewer url={pdfBlobUrl} onLoadSuccess={handlePdfLoadSuccess} width={A4_WIDTH_PX} />}
+              {pdfBlobUrl && <PdfViewer key={renderKey} url={pdfBlobUrl} onLoadSuccess={handlePdfLoadSuccess} width={A4_WIDTH_PX} />}
             </div>
           )}
         </div>
