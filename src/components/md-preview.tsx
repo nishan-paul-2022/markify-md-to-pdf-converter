@@ -66,10 +66,10 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
 
         <div className="mt-[2cm] mb-[2cm] w-full flex flex-col items-center">
           <div className="text-[32px] font-extrabold leading-[1.2] mb-[15px] w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
-            {metadata.title || 'Public Key Infrastructure (PKI)'}
+            {metadata.title ?? 'Public Key Infrastructure (PKI)'}
           </div>
           <div className="text-[18px] font-semibold opacity-95 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
-            {metadata.subtitle || 'Implementation & Web Application Integration'}
+            {metadata.subtitle ?? 'Implementation & Web Application Integration'}
           </div>
         </div>
 

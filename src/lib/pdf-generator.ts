@@ -346,8 +346,8 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
         <div class="program">Professional Masters in Information and Cyber Security</div>
         
         <div class="title-section">
-          <div class="report-title">${metadata.title || 'Public Key Infrastructure (PKI)'}</div>
-          <div class="report-subtitle">${metadata.subtitle || 'Implementation & Web Application Integration'}</div>
+          <div class="report-title">${metadata.title ?? 'Public Key Infrastructure (PKI)'}</div>
+          <div class="report-subtitle">${metadata.subtitle ?? 'Implementation & Web Application Integration'}</div>
         </div>
         
         <div class="course-info">
