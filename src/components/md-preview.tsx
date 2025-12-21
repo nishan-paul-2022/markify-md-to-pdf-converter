@@ -341,11 +341,11 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     return () => clearTimeout(timer);
   }, [content, metadata]);
 
-  const totalPages = viewMode === 'preview' 
-    ? numPages 
-    : (metadata 
-        ? (content.trim() ? paginatedPages.length + 1 : 1) 
-        : Math.max(1, paginatedPages.length));
+  const totalPages = viewMode === 'preview'
+    ? numPages
+    : (metadata
+      ? (content.trim() ? paginatedPages.length + 1 : 1)
+      : Math.max(1, paginatedPages.length));
 
   const handleZoomChange = useCallback((delta: number) => {
     setZoomMode('custom');
@@ -416,14 +416,14 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       },
       { root: containerRef.current, threshold: [0, 0.3, 0.5, 0.7, 1.0] }
     );
-    
+
     // Small delay to ensure DOM is ready, especially after mode switch
     const timeoutId = setTimeout(() => {
       if (!containerRef.current) return;
       const pageElements = containerRef.current.querySelectorAll('[data-page-index]');
       pageElements.forEach((el) => observer.observe(el));
     }, 200);
-    
+
     return () => {
       clearTimeout(timeoutId);
       observer.disconnect();
@@ -498,27 +498,27 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
             <Eye className="w-3.5 h-3.5" />
             PDF
             <div className="flex bg-slate-950/40 rounded-lg p-1 border border-white/5 ml-3 shadow-inner">
-              <button 
-                onClick={() => setViewMode('live')} 
+              <button
+                onClick={() => setViewMode('live')}
                 className={cn(
                   "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer border",
-                  viewMode === 'live' 
-                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
+                  viewMode === 'live'
+                    ? "bg-white/20 text-white border-white/20 shadow-inner"
                     : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
                 )}
               >
                 LIVE
               </button>
-              <button 
-                onClick={() => isMetadataValid && setViewMode('preview')} 
+              <button
+                onClick={() => isMetadataValid && setViewMode('preview')}
                 disabled={!isMetadataValid}
                 title={!isMetadataValid ? "Fill in all fields to view print preview" : "View print preview"}
                 className={cn(
                   "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 border ml-1",
-                  !isMetadataValid 
-                    ? "text-slate-700 border-transparent cursor-not-allowed opacity-40" 
-                    : viewMode === 'preview' 
-                      ? "bg-white/20 text-white border-white/20 shadow-inner cursor-pointer" 
+                  !isMetadataValid
+                    ? "text-slate-700 border-transparent cursor-not-allowed opacity-40"
+                    : viewMode === 'preview'
+                      ? "bg-white/20 text-white border-white/20 shadow-inner cursor-pointer"
                       : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100 cursor-pointer"
                 )}
               >
@@ -549,12 +549,12 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 <ChevronUp className="w-4 h-4" />
               </Button>
               <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1.5 min-w-[3.5rem] justify-center">
-                <Input 
-                  type="text" 
-                  value={pageInput} 
-                  onChange={handlePageInputChange} 
-                  onBlur={handlePageInputSubmit} 
-                  className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all" 
+                <Input
+                  type="text"
+                  value={pageInput}
+                  onChange={handlePageInputChange}
+                  onBlur={handlePageInputSubmit}
+                  className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all"
                 />
                 <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
               </form>
@@ -615,23 +615,23 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
             <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
 
             <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
-              <button 
-                onClick={() => setZoomMode('fit-page')} 
+              <button
+                onClick={() => setZoomMode('fit-page')}
                 className={cn(
                   "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
-                  zoomMode === 'fit-page' 
-                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
+                  zoomMode === 'fit-page'
+                    ? "bg-white/20 text-white border-white/20 shadow-inner"
                     : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
                 )}
               >
                 <Maximize className="w-3.5 h-3.5" />
               </button>
-              <button 
-                onClick={() => setZoomMode('fit-width')} 
+              <button
+                onClick={() => setZoomMode('fit-width')}
                 className={cn(
                   "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
-                  zoomMode === 'fit-width' 
-                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
+                  zoomMode === 'fit-width'
+                    ? "bg-white/20 text-white border-white/20 shadow-inner"
                     : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
                 )}
               >
@@ -641,25 +641,25 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
 
             <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
 
-            <div 
+            <div
               title={!isMetadataValid ? "Fill in all fields to download PDF" : "Download PDF"}
               className={cn(
                 "inline-block",
                 (isGenerating || !isMetadataValid) && "cursor-not-allowed"
               )}
             >
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={onDownload} 
-                disabled={isGenerating || !isMetadataValid} 
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onDownload}
+                disabled={isGenerating || !isMetadataValid}
                 className={cn(
                   "h-8 w-8 rounded-md transition-all duration-200 active:scale-95 group/download relative border",
                   isGenerating || !isMetadataValid
-                    ? "opacity-50 cursor-not-allowed" 
+                    ? "opacity-50 cursor-not-allowed"
                     : "",
-                  isGenerating 
-                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
+                  isGenerating
+                    ? "bg-white/20 text-white border-white/20 shadow-inner"
                     : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
                 )}
               >
@@ -695,7 +695,46 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
             </>
           ) : (
             <div className="relative" key={`pdf-view-${renderKey}`}>
-              {isPdfLoading && <div className="absolute inset-0 flex items-center justify-center min-h-[50vh] text-slate-400"><Loader2 className="w-8 h-8 animate-spin" /><span className="ml-2">Rendering PDF...</span></div>}
+              {isPdfLoading && (
+                <div className="absolute inset-0 flex items-center justify-center min-h-[50vh] z-10">
+                  <div className="relative flex flex-col items-center gap-8">
+                    {/* Radial gradient glow background */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-64 h-64 bg-gradient-radial from-primary/20 via-blue-500/10 to-transparent rounded-full blur-3xl animate-pulse" />
+                    </div>
+
+                    {/* Orbital spinner system */}
+                    <div className="relative w-24 h-24">
+                      {/* Outer ring */}
+                      <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin" style={{ animationDuration: '3s' }} />
+
+                      {/* Middle ring */}
+                      <div className="absolute inset-2 rounded-full border-2 border-blue-400/30 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
+
+                      {/* Inner glow */}
+                      <div className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/40 to-blue-500/40 blur-md animate-pulse" />
+
+                      {/* Center spinner */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Loader2 className="w-10 h-10 animate-spin text-primary drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]" style={{ animationDuration: '1.5s' }} />
+                      </div>
+
+                      {/* Floating particles */}
+                      <div className="absolute -top-1 left-1/2 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDuration: '2s' }} />
+                      <div className="absolute top-1/2 -right-1 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+                      <div className="absolute -bottom-1 left-1/3 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
+                    </div>
+
+                    {/* Animated text */}
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-xl" />
+                      <span className="relative text-xl font-bold bg-gradient-to-r from-slate-200 via-primary to-slate-200 bg-clip-text text-transparent animate-pulse bg-[length:200%_100%]" style={{ animation: 'pulse 2s ease-in-out infinite, shimmer 3s linear infinite' }}>
+                        Rendering PDF...
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
               {pdfBlobUrl && <PdfViewer key={renderKey} url={pdfBlobUrl} onLoadSuccess={handlePdfLoadSuccess} width={A4_WIDTH_PX} />}
             </div>
           )}
