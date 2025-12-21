@@ -5,7 +5,6 @@ import Image from 'next/image';
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { MdPreview } from '@/components/md-preview';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA } from '@/constants/default-content';
 import { ChevronDown, ChevronUp, FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine } from 'lucide-react';
@@ -16,7 +15,6 @@ export default function Home() {
   const [metadata, setMetadata] = useState(DEFAULT_METADATA);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
-  const [showPdfControls, setShowPdfControls] = useState(true);
   const [filename, setFilename] = useState('document.md');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);

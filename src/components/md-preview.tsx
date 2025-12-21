@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, ScrollText, Eye, DownloadCloud, Loader2, Sparkles } from 'lucide-react';
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import dynamic from 'next/dynamic';
@@ -42,7 +42,6 @@ type ViewMode = 'live' | 'preview';
 
 type ZoomMode = 'fit-page' | 'fit-width' | 'custom';
 
-const ZOOM_LEVELS = [25, 50, 75, 100, 125, 150, 200, 300, 400];
 const A4_WIDTH_PX = 794; // 210mm at 96 DPI
 const A4_HEIGHT_PX = 1123; // 297mm at 96 DPI
 
@@ -145,11 +144,10 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   const [numPages, setNumPages] = useState<number>(0);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [paginatedPages, setPaginatedPages] = useState<string[]>([]);
-  const [renderKey, setRenderKey] = useState(0);
+  const [renderKey] = useState(0);
   const [isPdfReady, setIsPdfReady] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const pageRef = useRef<HTMLDivElement>(null);
   const stagingRef = useRef<HTMLDivElement>(null);
 
   // Memoized components for ReactMarkdown to use in Staging Area
@@ -171,12 +169,12 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         </code>
       );
     },
-    pre: ({ children }: any) => (
+    pre: ({ children }: React.ComponentPropsWithoutRef<'pre'>) => (
       <pre className="my-[0.8cm] relative bg-[#0f172a] text-[#f8fafc] p-[15px] rounded-lg overflow-x-auto text-[9pt] font-mono shadow-sm border border-white/5 leading-[1.45]">
         {children}
       </pre>
     ),
-    h2: ({ children, ...props }: any) => {
+    h2: ({ children, ...props }: React.ComponentPropsWithoutRef<'h2'>) => {
       const id = children?.toString().toLowerCase().replace(/\s+/g, '-');
       return (
         <h2 id={id} className="text-[24pt] text-[#0369a1] font-sans font-bold mt-0 mb-[0.8cm] border-l-[10px] border-[#0ea5e9] pl-[20px] py-[10px] bg-[#f8fafc] rounded-r-lg leading-[1.3]" {...props}>
@@ -184,53 +182,54 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         </h2>
       );
     },
-    h3: ({ children }: any) => (
+    h3: ({ children }: React.ComponentPropsWithoutRef<'h3'>) => (
       <h3 className="text-[16pt] text-[#0369a1] font-sans font-bold mt-[1cm] mb-[0.5cm] flex items-center leading-[1.4]">
         <span className="w-[6px] h-[6px] bg-[#0ea5e9] rounded-full mr-[10px] inline-block shrink-0"></span>
         {children}
       </h3>
     ),
-    p: ({ children }: any) => (
+    p: ({ children }: React.ComponentPropsWithoutRef<'p'>) => (
       <p className="mb-[0.6cm] leading-[1.6] text-[#334155] text-justify text-[11pt] font-normal font-serif">
         {children}
       </p>
     ),
-    ul: ({ children }: any) => (
+    ul: ({ children }: React.ComponentPropsWithoutRef<'ul'>) => (
       <ul className="list-disc mb-[0.6cm] pl-[1.5cm] text-[#334155] text-[11pt] font-serif leading-[1.6]">
         {children}
       </ul>
     ),
-    ol: ({ children }: any) => (
+    ol: ({ children }: React.ComponentPropsWithoutRef<'ol'>) => (
       <ol className="list-decimal mb-[0.6cm] pl-[1.5cm] text-[#334155] text-[11pt] font-serif leading-[1.6]">
         {children}
       </ol>
     ),
-    li: ({ children }: any) => (
+    li: ({ children }: React.ComponentPropsWithoutRef<'li'>) => (
       <li className="mb-[0.2cm] pl-2">
         {children}
       </li>
     ),
-    table: ({ children }: any) => (
+    table: ({ children }: React.ComponentPropsWithoutRef<'table'>) => (
       <div className="my-[0.8cm] w-full">
         <table className="w-full border-collapse text-[10pt] font-sans">
           {children}
         </table>
       </div>
     ),
-    th: ({ children }: any) => (
+    th: ({ children }: React.ComponentPropsWithoutRef<'th'>) => (
       <th className="bg-[#f8fafc] text-[#0369a1] font-bold uppercase tracking-[0.05em] text-[8.5pt] p-[10px] border-b-2 border-[#e2e8f0] text-left">
         {children}
       </th>
     ),
-    td: ({ children }: any) => (
+    td: ({ children }: React.ComponentPropsWithoutRef<'td'>) => (
       <td className="p-[10px] border-b border-[#f1f5f9] color-[#475569]">
         {children}
       </td>
     ),
-    img: ({ src, alt }: any) => (
+    img: ({ src, alt }: React.ComponentPropsWithoutRef<'img'>) => (
+      /* eslint-disable-next-line @next/next/no-img-element */
       <img src={src} alt={alt} className="max-w-full h-auto rounded-lg mx-auto my-[1cm] block" />
     ),
-    blockquote: ({ children }: any) => (
+    blockquote: ({ children }: React.ComponentPropsWithoutRef<'blockquote'>) => (
       <blockquote className="border-l-4 border-slate-300 pl-4 italic text-slate-600 my-4">
         {children}
       </blockquote>
