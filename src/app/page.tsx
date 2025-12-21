@@ -77,7 +77,16 @@ export default function Home() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'pki-report.pdf';
+
+      // Generate filename with date and time
+      const now = new Date();
+      const dateTimeString = now.toISOString()
+        .replace(/T/, '-')
+        .replace(/:/g, '-')
+        .replace(/\..+/, ''); // Format: YYYY-MM-DD-HH-MM-SS
+      const baseName = getBaseName(filename);
+      a.download = `${baseName}-${dateTimeString}.pdf`;
+
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
