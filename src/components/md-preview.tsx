@@ -553,32 +553,28 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
             <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
 
             <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <button 
                 onClick={() => setZoomMode('fit-page')} 
                 className={cn(
-                  "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border",
+                  "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
                   zoomMode === 'fit-page' 
-                    ? "bg-white/20 text-white border-white/20 shadow-inner cursor-default hover:bg-white/20 hover:text-white hover:border-white/20" 
+                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
                     : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
                 )}
               >
                 <Maximize className="w-3.5 h-3.5" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              </button>
+              <button 
                 onClick={() => setZoomMode('fit-width')} 
                 className={cn(
-                  "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border",
+                  "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
                   zoomMode === 'fit-width' 
-                    ? "bg-white/20 text-white border-white/20 shadow-inner cursor-default hover:bg-white/20 hover:text-white hover:border-white/20" 
+                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
                     : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
                 )}
               >
                 <ArrowLeftRight className="w-3.5 h-3.5" />
-              </Button>
+              </button>
             </div>
 
             <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
