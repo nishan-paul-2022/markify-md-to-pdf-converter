@@ -132,6 +132,10 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       font-family: 'Inter', monospace;
     }
 
+    hr {
+      display: none;
+    }
+
 
     .mermaid-wrapper {
       margin: 0.5cm 0;

@@ -234,6 +234,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         {children}
       </blockquote>
     ),
+    hr: () => <hr className="hidden" />,
   }), []);
 
   const handlePdfLoadSuccess = ({ numPages }: { numPages: number }) => {
