@@ -146,6 +146,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [paginatedPages, setPaginatedPages] = useState<string[]>([]);
   const [renderKey, setRenderKey] = useState(0);
+  const [isPdfReady, setIsPdfReady] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
@@ -240,6 +241,10 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     setNumPages(numPages);
   };
 
+  const onPdfRenderSuccess = useCallback(() => {
+    setIsPdfReady(true);
+  }, []);
+
   useEffect(() => {
     if (viewMode === 'preview' && onGeneratePdf && !pdfBlobUrl) {
       setIsPdfLoading(true);
@@ -263,6 +268,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   useEffect(() => {
     const timer = setTimeout(() => {
       setPdfBlobUrl(null);
+      setIsPdfReady(false);
     }, 1500); // Wait 1.5 seconds after last change before invalidating PDF
 
     return () => clearTimeout(timer);
@@ -336,7 +342,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     return () => clearTimeout(timer);
   }, [content, metadata]);
 
-  const isPdfRendering = viewMode === 'preview' && (isPdfLoading || numPages === 0);
+  const isPdfRendering = viewMode === 'preview' && (isPdfLoading || !isPdfReady);
 
   const totalPages = viewMode === 'preview'
     ? numPages
@@ -714,50 +720,61 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
             viewMode === 'preview' ? "opacity-100" : "opacity-0 pointer-events-none"
           )}>
             <div className="relative" key={`pdf-view-${renderKey}`}>
-              {isPdfRendering && (
-                <div className="absolute inset-0 flex items-center justify-center min-h-[50vh] z-10 transition-opacity duration-300">
-                  <div className="relative flex flex-col items-center gap-8">
-                    {/* Radial gradient glow background */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-64 h-64 bg-gradient-radial from-primary/20 via-blue-500/10 to-transparent rounded-full blur-3xl animate-pulse" />
+              {/* Enhanced Loader - Locked to first page area to prevent jitter */}
+              <div className={cn(
+                "absolute top-0 left-0 w-full flex items-center justify-center z-20 transition-all duration-500 ease-in-out",
+                isPdfRendering ? "opacity-100" : "opacity-0 pointer-events-none"
+              )} style={{ height: `${A4_HEIGHT_PX}px` }}>
+                <div className="relative flex flex-col items-center gap-8">
+                  {/* Radial gradient glow background */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-64 h-64 bg-gradient-radial from-primary/20 via-blue-500/10 to-transparent rounded-full blur-3xl animate-pulse" />
+                  </div>
+
+                  {/* Orbital spinner system */}
+                  <div className="relative w-24 h-24">
+                    {/* Outer ring */}
+                    <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin" style={{ animationDuration: '3s' }} />
+
+                    {/* Middle ring */}
+                    <div className="absolute inset-2 rounded-full border-2 border-blue-400/30 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
+
+                    {/* Inner glow */}
+                    <div className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/40 to-blue-500/40 blur-md animate-pulse" />
+
+                    {/* Center spinner */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Loader2 className="w-10 h-10 animate-spin text-primary drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]" style={{ animationDuration: '1.5s' }} />
                     </div>
 
-                    {/* Orbital spinner system */}
-                    <div className="relative w-24 h-24">
-                      {/* Outer ring */}
-                      <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin" style={{ animationDuration: '3s' }} />
+                    {/* Floating particles */}
+                    <div className="absolute -top-1 left-1/2 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDuration: '2s' }} />
+                    <div className="absolute top-1/2 -right-1 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+                    <div className="absolute -bottom-1 left-1/3 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
+                  </div>
 
-                      {/* Middle ring */}
-                      <div className="absolute inset-2 rounded-full border-2 border-blue-400/30 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
-
-                      {/* Inner glow */}
-                      <div className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/40 to-blue-500/40 blur-md animate-pulse" />
-
-                      {/* Center spinner */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Loader2 className="w-10 h-10 animate-spin text-primary drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]" style={{ animationDuration: '1.5s' }} />
-                      </div>
-
-                      {/* Floating particles */}
-                      <div className="absolute -top-1 left-1/2 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDuration: '2s' }} />
-                      <div className="absolute top-1/2 -right-1 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
-                      <div className="absolute -bottom-1 left-1/3 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
-                    </div>
-
-                    {/* Animated text */}
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-xl" />
-                      <span className="relative text-xl font-bold bg-gradient-to-r from-slate-200 via-primary to-slate-200 bg-clip-text text-transparent animate-pulse bg-[length:200%_100%]" style={{ animation: 'pulse 2s ease-in-out infinite, shimmer 3s linear infinite' }}>
-                        Rendering PDF...
-                      </span>
-                    </div>
+                  {/* Animated text */}
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-xl" />
+                    <span className="relative text-xl font-bold bg-gradient-to-r from-slate-200 via-primary to-slate-200 bg-clip-text text-transparent animate-pulse bg-[length:200%_100%]" style={{ animation: 'pulse 2s ease-in-out infinite, shimmer 3s linear infinite' }}>
+                      Rendering PDF...
+                    </span>
                   </div>
                 </div>
-              )}
+              </div>
               {/* Note: We keep PdfViewer mounted if pdfBlobUrl exists, even in live mode, for instant switch */}
               {pdfBlobUrl && (
-                <div className="pdf-view-page-container">
-                  <PdfViewer key={renderKey} url={pdfBlobUrl} onLoadSuccess={handlePdfLoadSuccess} width={A4_WIDTH_PX} />
+                <div className={cn(
+                  "pdf-view-page-container transition-opacity duration-700 ease-in-out",
+                  isPdfReady ? "opacity-100" : "opacity-0"
+                )}>
+                  <PdfViewer
+                    key={renderKey}
+                    url={pdfBlobUrl}
+                    onLoadSuccess={handlePdfLoadSuccess}
+                    onRenderSuccess={onPdfRenderSuccess}
+                    width={A4_WIDTH_PX}
+                  />
                 </div>
               )}
             </div>
