@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, Sparkles } from 'lucide-react';
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, Sparkles, RefreshCw, Play, Pause } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import {
@@ -167,6 +167,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
   const [isPdfReady, setIsPdfReady] = useState(false);
   const [isPaginating, setIsPaginating] = useState(true);
   const [isScaleCalculated, setIsScaleCalculated] = useState(false);
+  const [isAutoRender, setIsAutoRender] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const stagingRef = useRef<HTMLDivElement>(null);
@@ -297,13 +298,21 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
 
   // Debounced PDF regeneration: reset PDF blob 2s after user stops typing
   useEffect(() => {
+    // If auto-render is disabled and we are in preview mode, do not reset the PDF blob automatically
+    if (!isAutoRender && viewMode === 'preview') return;
+
     const timer = setTimeout(() => {
       setPdfBlobUrl(null);
       setIsPdfReady(false);
     }, 2000); // Keep PDF steady for 2s while Live View updates quickly
 
     return () => clearTimeout(timer);
-  }, [content, metadata]);
+  }, [content, metadata, isAutoRender, viewMode]);
+
+  const handleManualRefresh = useCallback(() => {
+    setPdfBlobUrl(null);
+    setIsPdfReady(false);
+  }, []);
 
   // Auto-switch to LIVE view if metadata becomes invalid while in PRINT view
   useEffect(() => {
@@ -790,6 +799,46 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>Fit Width</TooltipContent>
+                </Tooltip>
+              </div>
+
+              <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
+
+              <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsAutoRender(!isAutoRender)}
+                      className={cn(
+                        "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border",
+                        isAutoRender
+                          ? "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
+                          : "bg-white/10 text-amber-400 border-amber-400/20 hover:bg-white/20"
+                      )}
+                    >
+                      {isAutoRender ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isAutoRender ? "Pause Auto-Rendering" : "Resume Auto-Rendering"}
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleManualRefresh}
+                      disabled={isPdfRendering || (isAutoRender && isPdfReady)}
+                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                    >
+                      <RefreshCw className={cn("w-3.5 h-3.5", isPdfRendering && "animate-spin")} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Manual Refresh</TooltipContent>
                 </Tooltip>
               </div>
 
