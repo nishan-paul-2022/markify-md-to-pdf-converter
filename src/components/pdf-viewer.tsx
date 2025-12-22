@@ -17,7 +17,7 @@ interface PdfViewerProps {
     onRenderSuccess?: () => void;
 }
 
-export default function PdfViewer({ url, width, onLoadSuccess, onRenderSuccess }: PdfViewerProps) {
+const PdfViewer = React.memo(function PdfViewer({ url, width, onLoadSuccess, onRenderSuccess }: PdfViewerProps) {
     const [numPages, setNumPages] = useState<number>(0);
     const [renderedPages, setRenderedPages] = useState<Set<number>>(new Set());
 
@@ -35,10 +35,10 @@ export default function PdfViewer({ url, width, onLoadSuccess, onRenderSuccess }
     };
 
     useEffect(() => {
-        if (renderedPages.size > 0 && onRenderSuccess) {
+        if (renderedPages.size > 0 && renderedPages.size === numPages && onRenderSuccess) {
             onRenderSuccess();
         }
-    }, [renderedPages.size, onRenderSuccess]);
+    }, [renderedPages.size, numPages, onRenderSuccess]);
 
     return (
         <Document
@@ -62,4 +62,6 @@ export default function PdfViewer({ url, width, onLoadSuccess, onRenderSuccess }
             ))}
         </Document>
     );
-}
+});
+
+export default PdfViewer;

@@ -2,20 +2,31 @@
 
 import Image from 'next/image';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { MdPreview } from '@/components/md-preview';
-import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA } from '@/constants/default-content';
-import { ChevronDown, ChevronUp, FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Editor } from '@/components/editor';
+import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
+import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy, Download } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+const MAX_FILENAME_LENGTH = 30;
 
 export default function Home() {
-  const [content, setContent] = useState('');
-  const [metadata, setMetadata] = useState(DEFAULT_METADATA);
+  const [rawContent, setRawContent] = useState(''); // Full markdown including Landing Page section
+  const [content, setContent] = useState(''); // Content without Landing Page section
+  const [metadata, setMetadata] = useState<Metadata>(DEFAULT_METADATA);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(true);
   const [filename, setFilename] = useState('document.md');
+  const [isEditing, setIsEditing] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(false);
+  const [isReset, setIsReset] = useState(false);
+  const [tempFilename, setTempFilename] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -24,32 +35,82 @@ export default function Home() {
     return name.replace(/\.md$/i, '');
   };
 
-  // Update filename with .md extension
-  const handleFilenameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const baseName = e.target.value;
-    setFilename(baseName ? `${baseName}.md` : 'document.md');
-  };
+
 
   // Calculate input width based on content
-  const getInputWidth = () => {
-    const baseName = getBaseName(filename);
-    const charCount = baseName.length || 8; // minimum 8 chars for "document"
-    return `${Math.max(charCount * 0.6, 5)}rem`; // ~0.6rem per character, min 5rem
+  const getInputWidth = (name: string) => {
+    const charCount = name.length || 8; // minimum 8 chars for "document"
+    return `${Math.max(charCount * 0.65, 5)}rem`; // ~0.65rem per character, min 5rem
   };
 
-  React.useEffect(() => {
-    fetch(DEFAULT_MARKDOWN_PATH)
-      .then(res => res.text())
-      .then(text => setContent(text))
-      .catch(err => console.error('Failed to load default content:', err));
+  const handleStartEdit = () => {
+    setTempFilename(getBaseName(filename));
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    if (tempFilename.trim()) {
+      setFilename(`${tempFilename.trim()}.md`);
+    } else {
+      setFilename('document.md');
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSave();
+    if (e.key === 'Escape') handleCancel();
+  };
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Buffer state to keep the Editor "Butter Smooth"
+  // We don't update the Live Preview on every keystroke
+  const handleContentChange = useCallback((newRawContent: string) => {
+    setRawContent(newRawContent);
   }, []);
 
-  const handleMetadataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setMetadata(prev => ({ ...prev, [name]: value }));
-  };
+  // Debounce the heavy content processing
+  React.useEffect(() => {
+    if (isLoading) return; // Don't debounce if still loading initial content
 
-  const generatePdfBlob = async () => {
+    const timer = setTimeout(() => {
+      const parsedMetadata = parseMetadataFromMarkdown(rawContent);
+      const contentWithoutLandingPage = removeLandingPageSection(rawContent);
+      
+      setMetadata(parsedMetadata);
+      setContent(contentWithoutLandingPage);
+    }, 500); // 500ms delay for Live Preview to keep editor snappy
+
+    return () => clearTimeout(timer);
+  }, [rawContent, isLoading]);
+
+  React.useEffect(() => {
+    setIsLoading(true);
+    fetch(DEFAULT_MARKDOWN_PATH)
+      .then(res => res.text())
+      .then(text => {
+        setRawContent(text);
+        // Immediate update for first load
+        const parsedMetadata = parseMetadataFromMarkdown(text);
+        const contentWithoutLandingPage = removeLandingPageSection(text);
+        setMetadata(parsedMetadata);
+        setContent(contentWithoutLandingPage);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load default content:', err);
+        setIsLoading(false);
+      });
+  }, []);
+
+
+
+  const generatePdfBlob = useCallback(async () => {
     const response = await fetch('/api/generate-pdf', {
       method: 'POST',
       headers: {
@@ -66,9 +127,9 @@ export default function Home() {
     }
 
     return await response.blob();
-  };
+  }, [content, metadata]);
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = useCallback(async () => {
     setIsGenerating(true);
     try {
       const blob = await generatePdfBlob();
@@ -93,9 +154,9 @@ export default function Home() {
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [generatePdfBlob, filename]);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setFilename(file.name);
@@ -103,307 +164,314 @@ export default function Home() {
       reader.onload = (e) => {
         const text = e.target?.result;
         if (typeof text === 'string') {
-          setContent(text);
+          handleContentChange(text);
+          setIsUploaded(true);
+          setTimeout(() => setIsUploaded(false), 2000);
         }
       };
       reader.readAsText(file);
     }
-  };
+  }, [handleContentChange]);
 
-  const triggerFileUpload = () => {
+  const triggerFileUpload = useCallback(() => {
     fileInputRef.current?.click();
-  };
+  }, []);
 
-  const handleReset = async () => {
+  const handleReset = useCallback(async () => {
     try {
       const res = await fetch(DEFAULT_MARKDOWN_PATH);
       const text = await res.text();
-      setContent(text);
-      setMetadata(DEFAULT_METADATA);
+      
+      handleContentChange(text);
       setFilename('document.md');
+      setIsReset(true);
+      setTimeout(() => setIsReset(false), 2000);
     } catch (err) {
       console.error('Failed to reset content:', err);
     }
-  };
+  }, [handleContentChange]);
 
-  const scrollToStart = () => {
+  const [isCopied, setIsCopied] = useState(false);
+  const [isDownloaded, setIsDownloaded] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(rawContent);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy content:', err);
+    }
+  }, [rawContent]);
+
+  // No loading state needed for client-side blob generation - it should be instant
+  const handleDownloadMd = useCallback(() => {
+    const blob = new Blob([rawContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename.endsWith('.md') ? filename : `${filename}.md`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+    setIsDownloaded(true);
+    setTimeout(() => setIsDownloaded(false), 2000);
+  }, [rawContent, filename]);
+
+  const scrollToStart = useCallback(() => {
     if (textareaRef.current) {
       textareaRef.current.scrollTop = 0;
       textareaRef.current.setSelectionRange(0, 0);
       textareaRef.current.focus();
     }
-  };
+  }, []);
 
-  const scrollToEnd = () => {
+  const scrollToEnd = useCallback(() => {
     if (textareaRef.current) {
       const length = textareaRef.current.value.length;
       textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
       textareaRef.current.setSelectionRange(length, length);
       textareaRef.current.focus();
     }
-  };
+  }, []);
 
-  const validateMetadata = () => {
-    return !!(
-      metadata.title?.trim() &&
-      metadata.subtitle?.trim() &&
-      metadata.course?.trim() &&
-      metadata.name?.trim() &&
-      metadata.roll?.trim() &&
-      metadata.reg?.trim() &&
-      metadata.batch?.trim() &&
-      metadata.date?.trim()
-    );
-  };
 
-  const isMetadataValid = validateMetadata();
 
   return (
-    <main className="h-screen w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
-      {/* Header */}
-      {/* Floating Branding Island */}
-      <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 px-4 py-2 bg-slate-900/85 backdrop-blur-md border border-white/10 rounded-full shadow-2xl transition-all hover:scale-105 hover:bg-slate-900 duration-300 group select-none">
-        <div className="relative">
-          <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <Image src="/brand-logo.svg" alt="Logo" width={24} height={24} className="w-6 h-6 object-contain relative z-10 opacity-90 group-hover:opacity-100 transition-opacity" />
+    <TooltipProvider>
+      <main className="h-screen w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
+        {/* Header */}
+        {/* Floating Branding Island */}
+        <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 px-4 py-2 bg-slate-900/85 backdrop-blur-md border border-white/10 rounded-full shadow-2xl transition-all hover:scale-105 hover:bg-slate-900 duration-300 group select-none">
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <Image src="/brand-logo.svg" alt="Logo" width={24} height={24} className="w-6 h-6 object-contain relative z-10 opacity-90 group-hover:opacity-100 transition-opacity" />
+          </div>
+          <h1 className="text-sm font-medium tracking-wide text-slate-300/90 group-hover:text-slate-100 transition-colors">
+            MarkdownPDF
+          </h1>
         </div>
-        <h1 className="text-sm font-medium tracking-wide text-slate-300/90 group-hover:text-slate-100 transition-colors">
-          MarkdownPDF
-        </h1>
-      </div>
 
-      {/* Main Content Area - Full Height */}
-      <div className="flex-grow flex flex-col lg:flex-row gap-0 overflow-hidden">
-        {/* Editor Side */}
-        <div className="flex-1 flex flex-col border-r border-slate-800 overflow-hidden">
-          <div
-            className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
-          >
-            {/* Left Section - Label & Filename Badge */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
-                <FileCode className="w-3.5 h-3.5" /> Markdown
+        {/* Main Content Area - Full Height */}
+        <div className="flex-grow flex flex-col lg:flex-row gap-0 overflow-hidden">
+          {/* Editor Side */}
+          <div className="flex-1 flex flex-col border-r border-slate-800 overflow-hidden">
+            <div
+              className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
+            >
+              {/* Left Section - Label & Filename Badge */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
+                  <FileCode className="w-3.5 h-3.5" /> Markdown
+                </div>
+
+                {/* Filename Badge */}
+                <div 
+                  className={`group flex items-center gap-1.5 px-3 py-1 rounded-full transition-all duration-200 border ${
+                    isEditing 
+                      ? 'bg-slate-800 border-primary/50 ring-1 ring-primary/20' 
+                      : 'bg-slate-800/50 hover:bg-slate-800/70 border-white/5 hover:border-white/10'
+                  }`}
+                >
+                  {isEditing ? (
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={tempFilename}
+                          onChange={(e) => {
+                            if (e.target.value.length <= MAX_FILENAME_LENGTH) {
+                              setTempFilename(e.target.value);
+                            }
+                          }}
+                          onKeyDown={handleKeyDown}
+                          onBlur={() => {
+                            setTimeout(handleSave, 200);
+                          }}
+                          autoFocus
+                          maxLength={MAX_FILENAME_LENGTH}
+                          style={{ width: getInputWidth(tempFilename) }}
+                          className="bg-transparent border-none outline-none text-xs font-medium placeholder:text-slate-500 text-slate-100"
+                          placeholder="document"
+                        />
+                        <span className="text-[10px] tabular-nums select-none opacity-40 font-medium text-slate-400">
+                          {tempFilename.length}/{MAX_FILENAME_LENGTH}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 border-l border-slate-700 ml-1 pl-1">
+                        <button 
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={(e) => { e.stopPropagation(); handleSave(); }}
+                          className="p-0.5 cursor-pointer text-green-400/80 hover:text-green-400 transition-colors"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button 
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={(e) => { e.stopPropagation(); handleCancel(); }}
+                          className="p-0.5 cursor-pointer text-red-400/80 hover:text-red-400 transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="text-xs text-slate-300 font-medium">
+                        {getBaseName(filename)}
+                      </span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleStartEdit(); }}
+                            className="p-1 -mr-1 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer ml-2.5"
+                          >
+                            <PencilLine className="w-3 h-3" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Rename File</TooltipContent>
+                      </Tooltip>
+                    </>
+                  )}
+                </div>
               </div>
 
-              {/* Filename Badge */}
-              <div className="group flex items-center gap-1.5 px-3 py-1 bg-slate-800/50 hover:bg-slate-800/70 border border-white/5 hover:border-white/10 rounded-full transition-all duration-200">
-                <input
-                  type="text"
-                  value={getBaseName(filename)}
-                  onChange={handleFilenameChange}
-                  style={{ width: getInputWidth() }}
-                  className="bg-transparent border-none outline-none text-xs text-slate-300 placeholder:text-slate-500 transition-all duration-200"
-                  placeholder="document"
-                />
-                <PencilLine className="w-3 h-3 text-slate-500 group-hover:text-slate-400 transition-colors" />
-              </div>
+              {/* Right Section - Actions & Controls */}
+              <div className="flex items-center gap-5">
+                {/* Navigation Controls */}
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={scrollToStart}
+                        className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
+                      >
+                        <ChevronsUp className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Scroll to Top</TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={scrollToEnd}
+                        className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
+                      >
+                        <ChevronsDown className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Scroll to Bottom</TooltipContent>
+                  </Tooltip>
+                </div>
+
+                {/* Group 1: File Operations (IO) */}
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                  <input
+                    type="file"
+                    accept=".md"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
+                        className="h-7 w-[96px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                      >
+                        {isUploaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Upload className="w-3.5 h-3.5 mr-1.5" />}
+                        {isUploaded ? 'Uploaded' : 'Upload'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Upload Markdown</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleDownloadMd(); }}
+                        className="h-7 w-[105px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                      >
+                        {isDownloaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Download className="w-3.5 h-3.5 mr-1.5" />}
+                        {isDownloaded ? 'Downloaded' : 'Download'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Download Source</TooltipContent>
+                  </Tooltip>
+                </div>
+
+                {/* Group 2: Editor Utilities (Buffer) */}
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleCopy(); }}
+                        className="h-7 w-[85px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                      >
+                        {isCopied ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
+                        {isCopied ? 'Copied' : 'Copy'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy Source</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleReset(); }}
+                        className="h-7 w-[80px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                      >
+                        {isReset ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <RotateCcw className="w-3.5 h-3.5 mr-1.5" />}
+                        {isReset ? 'Done' : 'Reset'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Reset Content</TooltipContent>
+                  </Tooltip>
+                </div>
+            </div>
             </div>
 
-            {/* Right Section - Actions & Controls */}
-            <div className="flex items-center gap-2">
-              {/* Navigation Controls */}
-              <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-lg p-0.5 border border-white/5">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={scrollToStart}
-                  className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
-                  title="Jump to Start (Ctrl+Home)"
-                >
-                  <ChevronsUp className="w-3.5 h-3.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={scrollToEnd}
-                  className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
-                  title="Jump to End (Ctrl+End)"
-                >
-                  <ChevronsDown className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-
-              <div className="w-px h-4 bg-slate-700/50" />
-
-              {/* File Actions */}
-              <input
-                type="file"
-                accept=".md"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                className="hidden"
+            <div className="flex-grow relative overflow-hidden">
+              <Editor
+                innerRef={textareaRef}
+                value={rawContent}
+                onChange={handleContentChange}
+                className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
+                placeholder="Write your markdown here..."
               />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
-                className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
-              >
-                <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => { e.stopPropagation(); handleReset(); }}
-                className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
-              >
-                <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Reset
-              </Button>
-
-              <div className="w-px h-4 bg-slate-700/50" />
-
-              {/* Settings Toggle */}
-              <div
-                className={cn(
-                  "h-7 w-7 cursor-pointer rounded-md transition-all duration-200 active:scale-95 group flex items-center justify-center border",
-                  isSettingsOpen
-                    ? "bg-white/20 text-white border-white/20 shadow-inner"
-                    : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-200 hover:border-white/5"
-                )}
-                title={isSettingsOpen ? "Hide Metadata" : "Show Metadata"}
-                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-              >
-                {isSettingsOpen ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </div>
             </div>
           </div>
 
-          {isSettingsOpen && (
-            <div className="p-4 bg-slate-900/30 border-b border-slate-800 transition-all duration-300 ease-in-out">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Course Name</label>
-                  <input
-                    name="course"
-                    value={metadata.course}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.course?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Submission Date</label>
-                  <input
-                    name="date"
-                    value={metadata.date}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.date?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-4 gap-4 mt-4">
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Name</label>
-                  <input
-                    name="name"
-                    value={metadata.name}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.name?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Roll No</label>
-                  <input
-                    name="roll"
-                    value={metadata.roll}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.roll?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Reg No</label>
-                  <input
-                    name="reg"
-                    value={metadata.reg}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.reg?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Batch</label>
-                  <input
-                    name="batch"
-                    value={metadata.batch}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.batch?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Cover Title</label>
-                  <input
-                    name="title"
-                    value={metadata.title}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.title?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Cover Subtitle</label>
-                  <input
-                    name="subtitle"
-                    value={metadata.subtitle}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.subtitle?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="flex-grow relative overflow-hidden">
-            <Textarea
-              ref={textareaRef}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
-              placeholder="Write your markdown here..."
+          {/* Preview Side */}
+          <div className="flex-1 flex flex-col overflow-hidden bg-slate-900/20">
+            <MdPreview
+              content={content}
+              metadata={metadata}
+              showToolbar={true}
+              onDownload={handleDownloadPdf}
+              onGeneratePdf={generatePdfBlob}
+              isGenerating={isGenerating}
+              isMetadataValid={true}
+              isLoading={isLoading}
             />
           </div>
         </div>
-
-        {/* Preview Side */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-slate-900/20">
-          <MdPreview
-            content={content}
-            metadata={metadata}
-            showToolbar={true}
-            onDownload={handleDownloadPdf}
-            onGeneratePdf={generatePdfBlob}
-            isGenerating={isGenerating}
-            isMetadataValid={isMetadataValid}
-          />
-        </div>
-      </div>
-    </main>
+      </main>
+    </TooltipProvider>
   );
 }
-

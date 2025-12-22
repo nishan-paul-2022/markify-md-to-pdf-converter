@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 
 interface Metadata {
+  university?: string;
+  program?: string;
   title?: string;
   subtitle?: string;
   course?: string;
@@ -18,7 +20,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
   const page = await browser.newPage();
 
   // Load images as base64
-  const logoPath = path.join(process.cwd(), 'public', 'du-logo.png');
+  const logoPath = path.join(process.cwd(), 'public', 'university-logo.png');
   const bgPath = path.join(process.cwd(), 'public', 'cover-bg.png');
 
   let logoBase64 = '';
@@ -31,14 +33,18 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     console.error('Error reading images:', err);
   }
 
+  const hasMetadata = metadata && Object.values(metadata).some(val => val && val.trim().length > 0);
+
   const style = `
 
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora&display=swap');
     
+    ${hasMetadata ? `
     /* Page-specific margins: zero for first page (landing), standard for others */
     @page :first {
       margin: 0;
     }
+    ` : ''}
     
     @page {
       margin: 15mm;
@@ -53,16 +59,23 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     }
     .report-container { padding: 0; }
     
+    h1, h2, h3, h4, h5, h6 {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 28pt;
+      color: #0369a1;
+      margin-bottom: 0.4cm;
+    }
+
     h2 { 
       font-size: 24pt; 
       color: #0369a1; 
       border-left: 10px solid #0ea5e9; 
       padding: 10px 0 10px 20px; 
-      margin-top: 0; 
-      margin-bottom: 0.8cm; 
-      page-break-before: always; 
-      break-after: avoid-page;
-      page-break-after: avoid;
+      margin-top: 0.8cm; 
+      margin-bottom: 0.3cm; 
       background: #f8fafc;
       border-radius: 0 8px 8px 0;
       line-height: 1.3;
@@ -71,10 +84,8 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     h3 { 
       font-size: 16pt; 
       color: #0369a1; 
-      margin-top: 1cm; 
-      margin-bottom: 0.5cm; 
-      page-break-after: avoid; 
-      break-after: avoid;
+      margin-top: 0.6cm; 
+      margin-bottom: 0.2cm; 
       display: flex;
       align-items: center;
       line-height: 1.4;
@@ -90,6 +101,13 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       margin-right: 10px;
     }
 
+    h4, h5, h6 {
+      font-size: 13pt;
+      color: #0f172a;
+      margin-top: 0.5cm;
+      margin-bottom: 0.15cm;
+    }
+
     p { 
       text-align: justify; 
       -webkit-hyphens: auto;
@@ -98,22 +116,27 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       font-family: 'Lora', serif; 
       font-size: 11pt; 
       color: #334155;
-      margin-bottom: 0.6cm;
-      orphans: 3;
-      widows: 3;
+      margin-bottom: 0.4cm;
     }
 
     ul, ol {
-      margin-bottom: 0.6cm;
+      margin-bottom: 0.4cm;
       color: #334155;
       font-family: 'Lora', serif;
       font-size: 11pt;
       padding-left: 1.5cm;
+      page-break-inside: auto;
     }
     
-    li { margin-bottom: 0.2cm; line-height: 1.6; pl-2; }
+    li { 
+      margin-bottom: 0.2cm; 
+      line-height: 1.6;
+    }
 
-    .page-break { page-break-before: always; }
+    .page-break, .page-break-marker { 
+      page-break-before: always; 
+      break-before: page;
+    }
     
     pre { 
       background: #0f172a; 
@@ -122,14 +145,19 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       border-radius: 8px; 
       font-size: 9pt; 
       white-space: pre-wrap; 
-      margin: 0.8cm 0;
+      margin: 0.2cm 0 0.8cm 0;
       border: 1px solid rgba(255,255,255,0.05);
       line-height: 1.45;
-      page-break-inside: avoid;
     }
     
     code {
       font-family: 'Inter', monospace;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 0.8cm 0;
     }
 
 
@@ -139,7 +167,6 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       display: flex;
       justify-content: center;
       width: 100%;
-      page-break-inside: avoid;
     }
     
     /* Intermediate container from Mermaid */
@@ -164,7 +191,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 0.8cm 0;
+      margin: 0.2cm 0 0.6cm 0;
       font-size: 10pt;
       page-break-inside: auto;
     }
@@ -185,7 +212,6 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       color: #475569;
     }
     tr {
-      page-break-inside: avoid;
       page-break-after: auto;
     }
     thead {
@@ -196,13 +222,11 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       height: auto;
       border-radius: 8px;
       display: block;
-      margin: 1cm auto;
-      page-break-inside: avoid;
+      margin: 0.2cm auto 0.8cm auto;
     }
     
     .content-page { 
       padding: 0; 
-      page-break-after: always;
       word-break: break-word;
     }
 
@@ -255,7 +279,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       font-size: 32px;
       font-weight: 800;
       line-height: 1.2;
-      margin-bottom: 15px;
+      margin-bottom: 8px;
       padding: 0 20px;
       word-wrap: break-word;
     }
@@ -334,49 +358,72 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
             edgeLabelBackground: '#ffffff',
           }
         });
+
+        // Content grouping disabled as per user request
+        window.addEventListener('DOMContentLoaded', () => {
+          console.log('DOM loaded, awaiting manual pagebreaks');
+        });
       </script>
     </head>
     <body>
+      ${hasMetadata ? `
       <div class="cover-page">
         <div class="logo-container">
           <img src="data:image/png;base64,${logoBase64}" class="logo" />
         </div>
         
-        <div class="university">UNIVERSITY OF DHAKA</div>
-        <div class="program">Professional Masters in Information and Cyber Security</div>
+        ${metadata.university ? `<div class="university">${metadata.university}</div>` : ''}
+        ${metadata.program ? `<div class="program">${metadata.program}</div>` : ''}
         
+        ${metadata.title || metadata.subtitle ? `
         <div class="title-section">
-          <div class="report-title">${metadata.title}</div>
-          <div class="report-subtitle">${metadata.subtitle}</div>
+          ${metadata.title ? `<div class="report-title">${metadata.title}</div>` : ''}
+          ${metadata.subtitle ? `<div class="report-subtitle">${metadata.subtitle}</div>` : ''}
         </div>
+        ` : ''}
         
+        ${metadata.course ? `
         <div class="course-info">
           ${metadata.course}
         </div>
+        ` : ''}
         
+        ${metadata.name || metadata.roll || metadata.reg || metadata.batch || metadata.date ? `
         <div class="student-details">
+          ${metadata.name ? `
           <div class="details-row">
             <div class="details-label"><span>Name</span><span>:</span></div>
             <div class="details-value">${metadata.name}</div>
           </div>
+          ` : ''}
+          ${metadata.roll ? `
           <div class="details-row">
             <div class="details-label"><span>Roll No</span><span>:</span></div>
             <div class="details-value">${metadata.roll}</div>
           </div>
+          ` : ''}
+          ${metadata.reg ? `
           <div class="details-row">
             <div class="details-label"><span>Reg. No</span><span>:</span></div>
             <div class="details-value">${metadata.reg}</div>
           </div>
+          ` : ''}
+          ${metadata.batch ? `
           <div class="details-row">
             <div class="details-label"><span>Batch</span><span>:</span></div>
             <div class="details-value">${metadata.batch}</div>
           </div>
+          ` : ''}
+          ${metadata.date ? `
           <div class="details-row">
             <div class="details-label"><span>Submission Date</span><span>:</span></div>
             <div class="details-value">${metadata.date}</div>
           </div>
+          ` : ''}
         </div>
+        ` : ''}
       </div>
+      ` : ''}
       ${markdownHtml.trim() ? `
       <div class="report-container">
         <div class="content-page">
@@ -402,12 +449,12 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
   const pdf = await page.pdf({
     format: 'A4',
     printBackground: true,
-    // CSS @page rules handle per-page margins (0 for first page, 15mm for others)
-    margin: { top: '15mm', bottom: '15mm', left: '15mm', right: '15mm' },
+    // We set margin to 0 here to let the CSS @page rules handle the specific margins per page
+    margin: { top: 0, bottom: 0, left: 0, right: 0 },
     displayHeaderFooter: true,
     headerTemplate: '<div></div>',
     footerTemplate: `
-      <div style="font-family: 'Inter', sans-serif; font-size: 9px; width: 100%; display: flex; justify-content: flex-end; padding-right: 15mm; color: #64748b;">
+      <div style="font-family: 'Inter', sans-serif; font-size: 9px; width: 100%; display: flex; justify-content: flex-end; padding-right: 15mm; padding-bottom: 5mm; color: #64748b;">
         <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
       </div>`
   });
