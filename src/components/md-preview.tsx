@@ -383,9 +383,16 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
   const isInitializing = isLoading || isPaginating;
   const isPdfRendering = viewMode === 'preview' && (isPdfLoading || !isPdfReady || isInitializing);
 
+  const hasMetadataValues = (meta: MdPreviewProps['metadata']) => {
+    if (!meta) return false;
+    return Object.values(meta).some(val => val && val.trim().length > 0);
+  };
+  
+  const showCoverPage = metadata && hasMetadataValues(metadata);
+
   const totalPages = viewMode === 'preview'
     ? numPages
-    : (metadata
+    : (showCoverPage
       ? (content.trim() ? paginatedPages.length + 1 : 1)
       : Math.max(1, paginatedPages.length));
 
@@ -936,22 +943,22 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
                 viewMode === 'live' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
               )}>
-              {metadata && !isLoading && (
+              {showCoverPage && !isLoading && (
                 <div data-page-index={0} className="live-view-page shadow-xl">
                   <CoverPage metadata={metadata} />
                 </div>
               )}
               {content.trim() && paginatedPages.length > 0 && !isLoading && (
                 paginatedPages.map((pageHtml, index) => (
-                  <div key={index} data-page-index={index + (metadata ? 1 : 0)} className="live-view-page shadow-xl">
-                    <PageWrapper pageNumber={index + (metadata ? 2 : 1)} totalPages={totalPages}>
+                  <div key={index} data-page-index={index + (showCoverPage ? 1 : 0)} className="live-view-page shadow-xl">
+                    <PageWrapper pageNumber={index + (showCoverPage ? 2 : 1)} totalPages={totalPages}>
                       <div className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }} dangerouslySetInnerHTML={{ __html: pageHtml }} />
                     </PageWrapper>
                   </div>
                 ))
               )}
               {/* Filler for empty content case */}
-              {!metadata && !content.trim() && (
+              {!showCoverPage && !content.trim() && (
                 <div className="bg-white shadow-xl" style={{ width: A4_WIDTH_PX, height: A4_HEIGHT_PX }}></div>
               )}
             </div>

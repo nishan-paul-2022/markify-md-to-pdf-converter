@@ -33,14 +33,18 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     console.error('Error reading images:', err);
   }
 
+  const hasMetadata = metadata && Object.values(metadata).some(val => val && val.trim().length > 0);
+
   const style = `
 
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora&display=swap');
     
+    ${hasMetadata ? `
     /* Page-specific margins: zero for first page (landing), standard for others */
     @page :first {
       margin: 0;
     }
+    ` : ''}
     
     @page {
       margin: 15mm;
@@ -362,6 +366,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       </script>
     </head>
     <body>
+      ${hasMetadata ? `
       <div class="cover-page">
         <div class="logo-container">
           <img src="data:image/png;base64,${logoBase64}" class="logo" />
@@ -418,6 +423,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
         </div>
         ` : ''}
       </div>
+      ` : ''}
       ${markdownHtml.trim() ? `
       <div class="report-container">
         <div class="content-page">

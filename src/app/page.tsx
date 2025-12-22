@@ -236,22 +236,7 @@ export default function Home() {
     }
   }, []);
 
-  const validateMetadata = () => {
-    return !!(
-      metadata.university?.trim() &&
-      metadata.program?.trim() &&
-      metadata.title?.trim() &&
-      metadata.subtitle?.trim() &&
-      metadata.course?.trim() &&
-      metadata.name?.trim() &&
-      metadata.roll?.trim() &&
-      metadata.reg?.trim() &&
-      metadata.batch?.trim() &&
-      metadata.date?.trim()
-    );
-  };
 
-  const isMetadataValid = validateMetadata();
 
   return (
     <TooltipProvider>
@@ -481,7 +466,7 @@ export default function Home() {
               onDownload={handleDownloadPdf}
               onGeneratePdf={generatePdfBlob}
               isGenerating={isGenerating}
-              isMetadataValid={isMetadataValid}
+              isMetadataValid={true}
               isLoading={isLoading}
             />
           </div>
