@@ -724,7 +724,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                   <TooltipContent>Previous Page</TooltipContent>
                 </Tooltip>
 
-                <div className="px-1.5 min-w-[4.5rem] flex justify-center items-center relative h-8 overflow-hidden">
+                <div className="px-1.5 min-w-[4.5rem] flex justify-center items-center relative h-7 overflow-hidden">
                   {/* Spinner Reveal */}
                   <div className={cn(
                     "absolute transition-all duration-300 ease-in-out flex items-center justify-center",
@@ -890,7 +890,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       onClick={onDownload}
                       disabled={isGenerating || !isMetadataValid}
                       className={cn(
-                        "h-8 w-8 rounded-md transition-all duration-200 active:scale-95 group/download relative border",
+                        "h-7 w-7 rounded-md transition-all duration-200 active:scale-90 group/download relative border",
                         isGenerating || !isMetadataValid
                           ? "opacity-50 cursor-not-allowed"
                           : "",
@@ -902,7 +902,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       {isGenerating ? (
                         <Loader2 className="w-4 h-4 animate-spin text-white" />
                       ) : (
-                        <DownloadCloud className="w-[18px] h-[18px]" />
+                        <DownloadCloud className="w-4 h-4" />
                       )}
                     </Button>
                   </div>
