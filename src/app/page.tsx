@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { MdPreview } from '@/components/md-preview';
 import { Editor } from '@/components/editor';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
-import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy } from 'lucide-react';
+import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy, Download } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -192,6 +192,7 @@ export default function Home() {
   }, [handleContentChange]);
 
   const [isCopied, setIsCopied] = useState(false);
+  const [isDownloaded, setIsDownloaded] = useState(false);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -202,6 +203,21 @@ export default function Home() {
       console.error('Failed to copy content:', err);
     }
   }, [rawContent]);
+
+  // No loading state needed for client-side blob generation - it should be instant
+  const handleDownloadMd = useCallback(() => {
+    const blob = new Blob([rawContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename.endsWith('.md') ? filename : `${filename}.md`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+    setIsDownloaded(true);
+    setTimeout(() => setIsDownloaded(false), 2000);
+  }, [rawContent, filename]);
 
   const scrollToStart = useCallback(() => {
     if (textareaRef.current) {
@@ -337,9 +353,9 @@ export default function Home() {
               </div>
 
               {/* Right Section - Actions & Controls */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-5">
                 {/* Navigation Controls */}
-                <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-lg p-0.5 border border-white/5">
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -348,7 +364,7 @@ export default function Home() {
                         onClick={scrollToStart}
                         className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
                       >
-                        <ChevronsUp className="w-3.5 h-3.5" />
+                        <ChevronsUp className="w-4 h-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Jump to Start</TooltipContent>
@@ -362,69 +378,87 @@ export default function Home() {
                         onClick={scrollToEnd}
                         className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
                       >
-                        <ChevronsDown className="w-3.5 h-3.5" />
+                        <ChevronsDown className="w-4 h-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Jump to End</TooltipContent>
                   </Tooltip>
                 </div>
 
-                <div className="w-px h-4 bg-slate-700/50" />
+                {/* Group 1: File Operations (IO) */}
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                  <input
+                    type="file"
+                    accept=".md"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
+                        className="h-7 w-[96px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                      >
+                        {isUploaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Upload className="w-3.5 h-3.5 mr-1.5" />}
+                        {isUploaded ? 'Uploaded' : 'Upload'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Upload Markdown File</TooltipContent>
+                  </Tooltip>
 
-                {/* File Actions */}
-                <input
-                  type="file"
-                  accept=".md"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
-                      className="h-7 w-[96px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
-                    >
-                      {isUploaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Upload className="w-3.5 h-3.5 mr-1.5" />}
-                      {isUploaded ? 'Uploaded' : 'Upload'}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Upload Markdown File</TooltipContent>
-                </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleDownloadMd(); }}
+                        className="h-7 w-[105px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                      >
+                        {isDownloaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Download className="w-3.5 h-3.5 mr-1.5" />}
+                        {isDownloaded ? 'Downloaded' : 'Download'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Download as .md file</TooltipContent>
+                  </Tooltip>
+                </div>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); handleReset(); }}
-                      className="h-7 w-[80px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
-                    >
-                      {isReset ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <RotateCcw className="w-3.5 h-3.5 mr-1.5" />}
-                      {isReset ? 'Done' : 'Reset'}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Reset to Default Content</TooltipContent>
-                </Tooltip>
+                {/* Group 2: Editor Utilities (Buffer) */}
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleCopy(); }}
+                        className="h-7 w-[85px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                      >
+                        {isCopied ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
+                        {isCopied ? 'Copied' : 'Copy'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy Markdown Content</TooltipContent>
+                  </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); handleCopy(); }}
-                      className="h-7 w-[85px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
-                    >
-                      {isCopied ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
-                      {isCopied ? 'Copied' : 'Copy'}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Copy Markdown Content</TooltipContent>
-                </Tooltip>
-              </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleReset(); }}
+                        className="h-7 w-[80px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                      >
+                        {isReset ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <RotateCcw className="w-3.5 h-3.5 mr-1.5" />}
+                        {isReset ? 'Done' : 'Reset'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Reset to Default Content</TooltipContent>
+                  </Tooltip>
+                </div>
+            </div>
             </div>
 
             <div className="flex-grow relative overflow-hidden">

@@ -633,7 +633,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 </Tooltip>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-5">
               {viewMode === 'preview' && (
                 <>
                   <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
@@ -690,7 +690,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       </TooltipContent>
                     </Tooltip>
                   </div>
-                  <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
+
                 </>
               )}
               <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
@@ -786,7 +786,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 </Tooltip>
               </div>
 
-              <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
+
 
               <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
                 <Tooltip>
@@ -836,7 +836,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 </Tooltip>
               </div>
 
-              <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
+
 
               <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
                 <Tooltip>
@@ -874,7 +874,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 </Tooltip>
               </div>
 
-              <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
+
 
               <Tooltip>
                 <TooltipTrigger asChild>
