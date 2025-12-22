@@ -135,10 +135,6 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
         color: '#111827',
         fontFamily: 'var(--font-inter), sans-serif',
         padding: '15mm',
-        // Visual guide for physical page breaks (A4 height)
-        backgroundImage: `linear-gradient(to bottom, transparent calc(100% - 1px), #cbd5e1 calc(100% - 1px))`,
-        backgroundSize: `100% ${A4_HEIGHT_PX}px`,
-        backgroundRepeat: 'repeat-y'
       }}>
 
 
