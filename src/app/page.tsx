@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MdPreview } from '@/components/md-preview';
@@ -36,21 +36,30 @@ export default function Home() {
     return `${Math.max(charCount * 0.6, 5)}rem`; // ~0.6rem per character, min 5rem
   };
 
-  // Parse metadata from markdown whenever rawContent changes
-  React.useEffect(() => {
-    const parsedMetadata = parseMetadataFromMarkdown(rawContent);
-    const contentWithoutLandingPage = removeLandingPageSection(rawContent);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleContentChange = useCallback((newRawContent: string) => {
+    setRawContent(newRawContent);
+    const parsedMetadata = parseMetadataFromMarkdown(newRawContent);
+    const contentWithoutLandingPage = removeLandingPageSection(newRawContent);
     
     setMetadata(parsedMetadata);
     setContent(contentWithoutLandingPage);
-  }, [rawContent]);
+  }, []);
 
   React.useEffect(() => {
+    setIsLoading(true);
     fetch(DEFAULT_MARKDOWN_PATH)
       .then(res => res.text())
-      .then(text => setRawContent(text))
-      .catch(err => console.error('Failed to load default content:', err));
-  }, []);
+      .then(text => {
+        handleContentChange(text);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load default content:', err);
+        setIsLoading(false);
+      });
+  }, [handleContentChange]);
 
 
 
@@ -108,7 +117,7 @@ export default function Home() {
       reader.onload = (e) => {
         const text = e.target?.result;
         if (typeof text === 'string') {
-          setRawContent(text);
+          handleContentChange(text);
         }
       };
       reader.readAsText(file);
@@ -123,7 +132,8 @@ export default function Home() {
     try {
       const res = await fetch(DEFAULT_MARKDOWN_PATH);
       const text = await res.text();
-      setRawContent(text);
+      
+      handleContentChange(text);
       setFilename('document.md');
     } catch (err) {
       console.error('Failed to reset content:', err);
@@ -214,7 +224,7 @@ export default function Home() {
                   size="icon"
                   onClick={scrollToStart}
                   className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
-                  title="Jump to Start (Ctrl+Home)"
+                  title="Jump to Start"
                 >
                   <ChevronsUp className="w-3.5 h-3.5" />
                 </Button>
@@ -223,7 +233,7 @@ export default function Home() {
                   size="icon"
                   onClick={scrollToEnd}
                   className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
-                  title="Jump to End (Ctrl+End)"
+                  title="Jump to End"
                 >
                   <ChevronsDown className="w-3.5 h-3.5" />
                 </Button>
@@ -264,7 +274,7 @@ export default function Home() {
             <Textarea
               ref={textareaRef}
               value={rawContent}
-              onChange={(e) => setRawContent(e.target.value)}
+              onChange={(e) => handleContentChange(e.target.value)}
               className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
               placeholder="Write your markdown here..."
             />
@@ -281,6 +291,7 @@ export default function Home() {
             onGeneratePdf={generatePdfBlob}
             isGenerating={isGenerating}
             isMetadataValid={isMetadataValid}
+            isLoading={isLoading}
           />
         </div>
       </div>

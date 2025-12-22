@@ -37,6 +37,7 @@ interface MdPreviewProps {
   onGeneratePdf?: () => Promise<Blob>;
   isGenerating?: boolean;
   isMetadataValid?: boolean;
+  isLoading?: boolean;
 }
 
 
@@ -147,12 +148,12 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
   );
 };
 
-export const MdPreview = ({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isMetadataValid = true }: MdPreviewProps) => {
+export const MdPreview = ({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isMetadataValid = true, isLoading = false }: MdPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
   const [customZoom, setCustomZoom] = useState(100);
-  const [zoomInput, setZoomInput] = useState('100%');
+  const [zoomInput, setZoomInput] = useState('');
   const [fitWidthScale, setFitWidthScale] = useState(0.75);
   const [fitPageScale, setFitPageScale] = useState(0.5);
   const [viewMode, setViewMode] = useState<ViewMode>('live');
@@ -162,6 +163,8 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   const [paginatedPages, setPaginatedPages] = useState<string[]>([]);
   const [renderKey] = useState(0);
   const [isPdfReady, setIsPdfReady] = useState(false);
+  const [isPaginating, setIsPaginating] = useState(true);
+  const [isScaleCalculated, setIsScaleCalculated] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const stagingRef = useRef<HTMLDivElement>(null);
@@ -304,6 +307,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
 
   // Client-side Pagination Logic
   useEffect(() => {
+    setIsPaginating(true);
     const timer = setTimeout(() => {
       if (!stagingRef.current) return;
 
@@ -393,13 +397,15 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       }
 
       setPaginatedPages(pages);
+      setIsPaginating(false);
 
     }, 500);
 
     return () => clearTimeout(timer);
   }, [content, metadata]);
 
-  const isPdfRendering = viewMode === 'preview' && (isPdfLoading || !isPdfReady);
+  const isInitializing = isLoading || isPaginating;
+  const isPdfRendering = viewMode === 'preview' && (isPdfLoading || !isPdfReady || isInitializing);
 
   const totalPages = viewMode === 'preview'
     ? numPages
@@ -434,12 +440,20 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       const pageWidth = A4_WIDTH_PX;
       const pageHeight = A4_HEIGHT_PX;
 
-      setFitWidthScale(containerWidth / pageWidth);
+      const newFitWidthScale = containerWidth / pageWidth;
+      setFitWidthScale(newFitWidthScale);
 
       const padding = 32;
       const widthScaleWithPadding = (containerWidth - padding) / pageWidth;
       const heightScaleWithPadding = (containerHeight - padding) / pageHeight;
-      setFitPageScale(Math.min(widthScaleWithPadding, heightScaleWithPadding));
+      const newFitPageScale = Math.min(widthScaleWithPadding, heightScaleWithPadding);
+      setFitPageScale(newFitPageScale);
+
+      // Immediately sync zoom input with newly calculated scales to avoid flashes
+      const currentScale = zoomMode === 'fit-page' ? newFitPageScale : (zoomMode === 'fit-width' ? newFitWidthScale : customZoom / 100);
+      setZoomInput(`${Math.round(currentScale * 100)}%`);
+      
+      setIsScaleCalculated(true);
     };
 
     calculateScale();
@@ -448,14 +462,15 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Sync Zoom Input
+  // Sync Zoom Input for subsequent mode or value changes
   useEffect(() => {
+    if (!isScaleCalculated) return;
     let scale = 1;
     if (zoomMode === 'fit-page') scale = fitPageScale;
     else if (zoomMode === 'fit-width') scale = fitWidthScale;
     else scale = customZoom / 100;
     setZoomInput(`${Math.round(scale * 100)}%`);
-  }, [zoomMode, customZoom, fitPageScale, fitWidthScale]);
+  }, [zoomMode, customZoom, fitPageScale, fitWidthScale, isScaleCalculated]);
 
   // Intersection Observer for Current Page
   useEffect(() => {
@@ -544,7 +559,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     <div className={cn("pdf-viewer relative flex flex-col h-full bg-slate-900/50", className)}>
       {/* Global Loader Overlay - Centered in viewport, independent of scroll position */}
       <div className={cn(
-        "absolute inset-0 z-50 flex items-center justify-center transition-all duration-500 ease-in-out backdrop-blur-[2px] bg-slate-900/5",
+        "absolute inset-0 z-50 flex items-center justify-center transition-all duration-200 ease-in-out backdrop-blur-[2px] bg-slate-900/5",
         showToolbar ? "top-12" : "top-0",
         isPdfRendering ? "opacity-100" : "opacity-0 pointer-events-none"
       )}>
@@ -575,14 +590,6 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
             <div className="absolute top-1/2 -right-1 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
             <div className="absolute -bottom-1 left-1/3 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
           </div>
-
-          {/* Animated text */}
-          <div className="relative text-center">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-xl" />
-            <span className="relative text-xl font-bold bg-gradient-to-r from-slate-200 via-primary to-slate-200 bg-clip-text text-transparent animate-pulse bg-[length:200%_100%]" style={{ animation: 'pulse 2s ease-in-out infinite, shimmer 3s linear infinite' }}>
-              Rendering PDF...
-            </span>
-          </div>
         </div>
       </div>
 
@@ -607,6 +614,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
             <div className="flex bg-slate-950/40 rounded-lg p-1 border border-white/5 ml-3 shadow-inner">
               <button
                 onClick={() => setViewMode('live')}
+                title="Live Edit View"
                 className={cn(
                   "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer border",
                   viewMode === 'live'
@@ -639,7 +647,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(1)}
-                disabled={isPdfRendering || currentPage === 1}
+                disabled={isLoading || isPdfRendering || currentPage === 1}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="First Page"
               >
@@ -649,15 +657,17 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(currentPage - 1)}
-                disabled={isPdfRendering || currentPage === 1}
+                disabled={isLoading || isPdfRendering || currentPage === 1}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="Previous Page"
               >
                 <ChevronUp className="w-4 h-4" />
               </Button>
               <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1.5 min-w-[3.5rem] justify-center">
-                {isPdfRendering ? (
-                  <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
+                {isLoading || isPdfRendering ? (
+                  <div className="flex items-center justify-center w-12">
+                    <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
+                  </div>
                 ) : (
                   <>
                     <Input
@@ -675,7 +685,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(currentPage + 1)}
-                disabled={isPdfRendering || currentPage === totalPages || totalPages === 0}
+                disabled={isLoading || isPdfRendering || currentPage === totalPages || totalPages === 0}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="Next Page"
               >
@@ -685,7 +695,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(totalPages)}
-                disabled={isPdfRendering || currentPage === totalPages || totalPages === 0}
+                disabled={isLoading || isPdfRendering || currentPage === totalPages || totalPages === 0}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="Last Page"
               >
@@ -702,17 +712,24 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 onClick={() => handleZoomChange(-10)}
                 disabled={getScale() * 100 <= 25}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                title="Zoom Out"
               >
                 <ZoomOut className="w-3.5 h-3.5" />
               </Button>
               <form onSubmit={handleZoomInputSubmit} className="min-w-[3rem] flex justify-center">
-                <Input
-                  type="text"
-                  value={zoomInput}
-                  onChange={handleZoomInputChange}
-                  onBlur={handleZoomInputSubmit}
-                  className="h-5 w-10 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-primary/50 rounded-sm tabular-nums shadow-inner transition-all"
-                />
+                {!isScaleCalculated ? (
+                  <div className="flex items-center justify-center w-10 h-5">
+                    <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
+                  </div>
+                ) : (
+                  <Input
+                    type="text"
+                    value={zoomInput}
+                    onChange={handleZoomInputChange}
+                    onBlur={handleZoomInputSubmit}
+                    className="h-5 w-10 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-primary/50 rounded-sm tabular-nums shadow-inner transition-all"
+                  />
+                )}
               </form>
               <Button
                 variant="ghost"
@@ -720,6 +737,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 onClick={() => handleZoomChange(10)}
                 disabled={getScale() * 100 >= 400}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                title="Zoom In"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
               </Button>
@@ -736,6 +754,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                     ? "bg-white/20 text-white border-white/20 shadow-inner"
                     : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
                 )}
+                title="Fit Page"
               >
                 <Maximize className="w-3.5 h-3.5" />
               </button>
@@ -747,6 +766,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                     ? "bg-white/20 text-white border-white/20 shadow-inner"
                     : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
                 )}
+                title="Fit Width"
               >
                 <ArrowLeftRight className="w-3.5 h-3.5" />
               </button>
@@ -787,20 +807,20 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         </div>
       )}
 
-      <div ref={containerRef} className={cn("flex-grow overflow-auto flex justify-center bg-slate-900/40 custom-scrollbar", zoomMode === 'fit-width' ? "p-0 overflow-x-hidden" : "p-4")}>
+      <div ref={containerRef} className={cn("flex-grow overflow-y-scroll overflow-x-auto flex justify-center bg-slate-900/40 custom-scrollbar relative", zoomMode === 'fit-width' ? "p-0" : "p-4")}>
         <div className="grid grid-cols-1 grid-rows-1 origin-top transition-transform duration-300 ease-out" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
 
           {/* Live View Layer */}
           <div className={cn(
             "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
-            viewMode === 'live' ? "opacity-100" : "opacity-0 pointer-events-none"
+            viewMode === 'live' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
           )}>
-            {metadata && (
+            {metadata && !isLoading && (
               <div data-page-index={0} className="live-view-page shadow-xl">
                 <CoverPage metadata={metadata} />
               </div>
             )}
-            {content.trim() && paginatedPages.length > 0 && (
+            {content.trim() && paginatedPages.length > 0 && !isLoading && (
               paginatedPages.map((pageHtml, index) => (
                 <div key={index} data-page-index={index + (metadata ? 1 : 0)} className="live-view-page shadow-xl">
                   <PageWrapper pageNumber={index + (metadata ? 2 : 1)} totalPages={totalPages}>
@@ -818,11 +838,11 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
           {/* PDF Preview Layer */}
           <div className={cn(
             "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
-            viewMode === 'preview' ? "opacity-100" : "opacity-0 pointer-events-none"
+            viewMode === 'preview' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
           )}>
             <div className="relative" key={`pdf-view-${renderKey}`}>
               {/* Note: We keep PdfViewer mounted if pdfBlobUrl exists, even in live mode, for instant switch */}
-              {pdfBlobUrl && (
+              {pdfBlobUrl && !isLoading && (
                 <div className={cn(
                   "pdf-view-page-container transition-opacity duration-700 ease-in-out",
                   isPdfReady ? "opacity-100" : "opacity-0"
