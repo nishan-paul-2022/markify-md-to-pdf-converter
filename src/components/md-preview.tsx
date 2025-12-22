@@ -268,9 +268,9 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
     // Handle the custom divider if we decide to use it, but keeping it simple for now
   }), []);
 
-  const handlePdfLoadSuccess = ({ numPages }: { numPages: number }) => {
+  const handlePdfLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
-  };
+  }, []);
 
   const onPdfRenderSuccess = useCallback(() => {
     setIsPdfReady(true);
@@ -319,6 +319,11 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
 
   // Client-side Pagination Logic
   useEffect(() => {
+    if (viewMode === 'preview') {
+      setIsPaginating(false);
+      return;
+    }
+
     // We no longer set isPaginating(true) here because it's so fast it just causes flicker.
     // The previous pages stay visible until the new ones are ready.
     const timer = setTimeout(() => {
@@ -354,7 +359,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
     }, 0); 
 
     return () => clearTimeout(timer);
-  }, [content, metadata]);
+  }, [content, metadata, viewMode]);
 
   const isInitializing = isLoading || isPaginating;
   const isPdfRendering = viewMode === 'preview' && (isPdfLoading || !isPdfReady || isInitializing);
@@ -547,17 +552,19 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
         </div>
 
         {/* Hidden Staging Area */}
-        <div
-          className="fixed top-0 left-0 overflow-hidden pointer-events-none opacity-0 -z-50 bg-white"
-          style={{ width: `${A4_WIDTH_PX}px`, padding: '15mm' }}
-          aria-hidden="true"
-        >
-          <div ref={stagingRef} className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-              {content}
-            </ReactMarkdown>
+        {viewMode === 'live' && (
+          <div
+            className="fixed top-0 left-0 overflow-hidden pointer-events-none opacity-0 -z-50 bg-white"
+            style={{ width: `${A4_WIDTH_PX}px`, padding: '15mm' }}
+            aria-hidden="true"
+          >
+            <div ref={stagingRef} className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                {content}
+              </ReactMarkdown>
+            </div>
           </div>
-        </div>
+        )}
 
         {showToolbar && (
           <div className="flex items-center justify-between px-4 h-12 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm">
@@ -831,10 +838,11 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
           <div className="grid grid-cols-1 grid-rows-1 origin-top transition-transform duration-300 ease-out" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
 
             {/* Live View Layer */}
-            <div className={cn(
-              "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
-              viewMode === 'live' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
-            )}>
+            {(viewMode === 'live' || !isPdfReady) && (
+              <div className={cn(
+                "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
+                viewMode === 'live' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+              )}>
               {metadata && !isLoading && (
                 <div data-page-index={0} className="live-view-page shadow-xl">
                   <CoverPage metadata={metadata} />
@@ -854,6 +862,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 <div className="bg-white shadow-xl" style={{ width: A4_WIDTH_PX, height: A4_HEIGHT_PX }}></div>
               )}
             </div>
+          )}
 
             {/* PDF Preview Layer */}
             <div className={cn(
