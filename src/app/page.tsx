@@ -386,7 +386,7 @@ export default function Home() {
                       variant="ghost"
                       size="sm"
                       onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
-                      className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                      className="h-7 w-[96px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
                     >
                       {isUploaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Upload className="w-3.5 h-3.5 mr-1.5" />}
                       {isUploaded ? 'Uploaded' : 'Upload'}
@@ -401,7 +401,7 @@ export default function Home() {
                       variant="ghost"
                       size="sm"
                       onClick={(e) => { e.stopPropagation(); handleReset(); }}
-                      className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                      className="h-7 w-[80px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
                     >
                       {isReset ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <RotateCcw className="w-3.5 h-3.5 mr-1.5" />}
                       {isReset ? 'Done' : 'Reset'}
@@ -416,7 +416,7 @@ export default function Home() {
                       variant="ghost"
                       size="sm"
                       onClick={(e) => { e.stopPropagation(); handleCopy(); }}
-                      className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                      className="h-7 w-[85px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
                     >
                       {isCopied ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
                       {isCopied ? 'Copied' : 'Copy'}
