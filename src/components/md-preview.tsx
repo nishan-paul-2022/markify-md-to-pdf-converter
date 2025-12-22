@@ -171,6 +171,9 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
 
   const containerRef = useRef<HTMLDivElement>(null);
   const stagingRef = useRef<HTMLDivElement>(null);
+  const lastViewModeRef = useRef<ViewMode>(viewMode);
+  const lastIsPdfReadyRef = useRef<boolean>(isPdfReady);
+  const transitionTargetPageRef = useRef<number | null>(null);
   const [lastRenderedSignature, setLastRenderedSignature] = useState<string>('');
   const [renderSuccess, setRenderSuccess] = useState(false);
 
@@ -412,6 +415,69 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
     setPageInput(currentPage.toString());
   }, [currentPage]);
 
+  const scrollToPage = useCallback((pageNum: number, behavior: ScrollBehavior = 'smooth') => {
+    if (pageNum >= 1 && pageNum <= totalPages && containerRef.current) {
+      // Only target the layer that is currently active and relative to avoid targeting hidden elements
+      const selector = (viewMode === 'live' || !isPdfReady)
+        ? `.live-view-page[data-page-index="${pageNum - 1}"]`
+        : `.pdf-view-page[data-page-index="${pageNum - 1}"]`;
+
+      const pageEl = containerRef.current.querySelector(selector);
+      if (pageEl) {
+        pageEl.scrollIntoView({ behavior, block: 'start' });
+      }
+    }
+  }, [totalPages, viewMode, isPdfReady]);
+
+  // Clamp current page when total pages decrease or view mode changes
+  useEffect(() => {
+    const isModeSwitch = lastViewModeRef.current !== viewMode;
+    const isPdfJustReady = !lastIsPdfReadyRef.current && isPdfReady;
+    
+    // When we start a mode switch, remember the page we were on to prevent "drifting" 
+    // caused by observers during the transition
+    if (isModeSwitch) {
+      transitionTargetPageRef.current = currentPage;
+    }
+
+    lastViewModeRef.current = viewMode;
+    lastIsPdfReadyRef.current = isPdfReady;
+
+    // Determine what page we should be looking at. 
+    // If we are in a transition, we stay locked to the page we were on.
+    const targetPage = transitionTargetPageRef.current !== null 
+      ? transitionTargetPageRef.current 
+      : currentPage;
+      
+    let needsScroll = isModeSwitch || isPdfJustReady;
+
+    // Safety check for target page vs total pages
+    let clampedTarget = targetPage;
+    if (targetPage > totalPages && totalPages > 0) {
+      clampedTarget = totalPages;
+      if (transitionTargetPageRef.current === null) {
+        setCurrentPage(clampedTarget);
+      }
+      needsScroll = true;
+    }
+
+    if (needsScroll && totalPages > 0) {
+      // PDF swap uses instant scroll to avoid visual drift
+      const behavior = isPdfJustReady ? 'auto' : 'smooth';
+      
+      const timer = setTimeout(() => {
+        scrollToPage(clampedTarget, behavior);
+        
+        // Once we've attempted the scroll in the "final" state (PDF ready), 
+        // we can unlock the observer.
+        if (!isModeSwitch || (isModeSwitch && isPdfReady)) {
+          transitionTargetPageRef.current = null;
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [totalPages, viewMode, currentPage, scrollToPage, isPdfReady]);
+
   // Calculate Scale for fit modes
   const calculateScale = useCallback(() => {
     if (!containerRef.current) return;
@@ -469,6 +535,11 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
           }
         });
         if (maxRatio > 0.3) {
+          // IMPORTANT: If we are in the middle of a view transition, 
+          // ignore observer updates to prevent the "page 11 to 12" jump
+          if (transitionTargetPageRef.current !== null) {
+            return;
+          }
           setCurrentPage(visiblePageIndex + 1);
         }
       },
@@ -491,14 +562,6 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
     };
   }, [paginatedPages, metadata, viewMode, numPages, pdfBlobUrl, renderKey]); // Re-observe when pages change, PDF loads, or mode switches
 
-  const scrollToPage = (pageNum: number) => {
-    if (pageNum >= 1 && pageNum <= totalPages && containerRef.current) {
-      const pageEl = containerRef.current.querySelector(`[data-page-index="${pageNum - 1}"]`);
-      if (pageEl) {
-        pageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-  };
 
   const handlePageInputSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -935,12 +998,14 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
         )}
 
         <div ref={containerRef} className={cn("flex-grow overflow-y-scroll overflow-x-auto flex justify-center bg-slate-900/40 custom-scrollbar relative", zoomMode === 'fit-width' ? "p-0" : "p-4")}>
-          <div className="grid grid-cols-1 grid-rows-1 origin-top transition-transform duration-300 ease-out" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
+          <div className="grid grid-cols-1 grid-rows-1 origin-top transition-transform duration-300 ease-out relative" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
 
             {/* Live View Layer */}
             {(viewMode === 'live' || !isPdfReady) && (
               <div className={cn(
                 "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
+                // If we are in live mode OR the PDF isn't ready yet, this layer should be relative to hold the height
+                (viewMode === 'live' || !isPdfReady) ? "relative" : "absolute inset-x-0 top-0 h-0 overflow-hidden",
                 viewMode === 'live' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
               )}>
               {showCoverPage && !isLoading && (
@@ -967,6 +1032,8 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
             {/* PDF Preview Layer */}
             <div className={cn(
               "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
+              // Only relative when in preview mode AND the PDF is actually ready
+              (viewMode === 'preview' && isPdfReady) ? "relative" : "absolute inset-x-0 top-0 h-0 overflow-hidden",
               viewMode === 'preview' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
             )}>
               <div className="relative" key={`pdf-view-${renderKey}`}>
