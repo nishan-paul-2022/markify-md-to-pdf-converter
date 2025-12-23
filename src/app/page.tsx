@@ -17,6 +17,22 @@ import {
 
 const MAX_FILENAME_LENGTH = 30;
 
+// Get filename without extension for display
+const getBaseName = (name: string) => {
+  return name.replace(/\.md$/i, '');
+};
+
+// Get filename with timestamp for downloads
+const getTimestampedFilename = (name: string, ext: string) => {
+  const now = new Date();
+  const dateTimeString = now.toISOString()
+    .replace(/T/, '-')
+    .replace(/:/g, '-')
+    .replace('.', '-')
+    .replace('Z', ''); // Format: YYYY-MM-DD-HH-MM-SS-mmm
+  return `${getBaseName(name)}-${dateTimeString}.${ext}`;
+};
+
 export default function Home() {
   const [rawContent, setRawContent] = useState(''); // Full markdown including Landing Page section
   const [content, setContent] = useState(''); // Content without Landing Page section
@@ -30,10 +46,6 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Get filename without extension for display
-  const getBaseName = (name: string) => {
-    return name.replace(/\.md$/i, '');
-  };
 
 
 
@@ -138,13 +150,7 @@ export default function Home() {
       a.href = url;
 
       // Generate filename with date and time
-      const now = new Date();
-      const dateTimeString = now.toISOString()
-        .replace(/T/, '-')
-        .replace(/:/g, '-')
-        .replace(/\..+/, ''); // Format: YYYY-MM-DD-HH-MM-SS
-      const baseName = getBaseName(filename);
-      a.download = `${baseName}-${dateTimeString}.pdf`;
+      a.download = getTimestampedFilename(filename, 'pdf');
 
       document.body.appendChild(a);
       a.click();
@@ -210,7 +216,7 @@ export default function Home() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = filename.endsWith('.md') ? filename : `${filename}.md`;
+    a.download = getTimestampedFilename(filename, 'md');
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
