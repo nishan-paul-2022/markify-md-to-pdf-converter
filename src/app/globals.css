@@ -148,4 +148,30 @@
   .dark-editor {
     color-scheme: dark;
   }
+
+  /* Force wrapping in Markdown Preview to prevent horizontal scrollbars */
+  .prose pre {
+    white-space: pre-wrap !important;
+    word-break: break-all !important; /* Forces break everywhere if needed */
+    overflow-wrap: break-word !important;
+    overflow-x: hidden !important;
+  }
+  
+  .prose code {
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .prose table {
+    display: table !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+  }
+
+  .prose td, .prose th {
+    word-break: break-all !important;
+    overflow-wrap: break-word !important;
+  }
 }

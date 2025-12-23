@@ -81,12 +81,12 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
         {(metadata.title || metadata.subtitle) && (
           <div className="mt-[2cm] mb-[2cm] w-full flex flex-col items-center">
             {metadata.title && (
-              <div className="text-[32px] font-extrabold leading-[1.2] mb-[8px] w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
+              <div className="text-[32px] font-extrabold leading-[1.2] mb-[8px] w-full px-8 break-words text-center">
                 {metadata.title}
               </div>
             )}
             {metadata.subtitle && (
-              <div className="text-[18px] font-semibold opacity-95 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
+              <div className="text-[18px] font-semibold opacity-95 w-full px-8 break-words text-center">
                 {metadata.subtitle}
               </div>
             )}
@@ -94,7 +94,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
         )}
 
         {metadata.course && (
-          <div className="mt-[1cm] text-[15px] w-[85%] border-b border-white/20 pb-[10px] whitespace-nowrap overflow-hidden text-ellipsis">
+          <div className="mt-[1cm] text-[15px] w-[85%] border-b border-white/20 pb-[10px] break-words">
             {metadata.course}
           </div>
         )}
@@ -114,7 +114,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
                     {detail.label}
                     <span className="mr-2">:</span>
                   </div>
-                  <div className="w-[58%] font-medium text-white pl-2">{detail.value}</div>
+                  <div className="w-[58%] font-medium text-white pl-2 break-words text-left">{detail.value}</div>
                 </div>
               ))}
             </div>
@@ -187,7 +187,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
       return (
         <code
           className={cn(
-            inline ? "bg-slate-100 text-[#0c4a6e] px-1.5 py-0.5 rounded font-mono text-[0.9em] border border-slate-200" : "bg-transparent p-0 border-0 text-inherit",
+            inline ? "bg-slate-100 text-[#0c4a6e] px-1.5 py-0.5 rounded font-mono text-[0.9em] border border-slate-200 break-words" : "bg-transparent p-0 border-0 text-inherit",
             className
           )}
           {...props}
@@ -197,7 +197,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
       );
     },
     pre: ({ children }: React.ComponentPropsWithoutRef<'pre'>) => (
-      <pre className="mt-[0.2cm] mb-[0.8cm] relative bg-[#0f172a] text-[#f8fafc] p-[15px] rounded-lg overflow-x-auto text-[9pt] font-mono shadow-sm border border-white/5 leading-[1.45]">
+      <pre className="mt-[0.2cm] mb-[0.8cm] relative bg-[#0f172a] text-[#f8fafc] p-[15px] rounded-lg text-[9pt] font-mono shadow-sm border border-white/5 leading-[1.45] whitespace-pre-wrap break-words overflow-hidden">
         {children}
       </pre>
     ),
@@ -245,19 +245,19 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
       </li>
     ),
     table: ({ children }: React.ComponentPropsWithoutRef<'table'>) => (
-      <div className="mt-[0.2cm] mb-[0.6cm] w-full">
+      <div className="mt-[0.2cm] mb-[0.6cm] w-full overflow-hidden">
         <table className="w-full border-collapse text-[10pt] font-sans">
           {children}
         </table>
       </div>
     ),
     th: ({ children }: React.ComponentPropsWithoutRef<'th'>) => (
-      <th className="bg-[#f8fafc] text-[#0369a1] font-bold uppercase tracking-[0.05em] text-[8.5pt] p-[10px] border-b-2 border-[#e2e8f0] text-left">
+      <th className="bg-[#f8fafc] text-[#0369a1] font-bold uppercase tracking-[0.05em] text-[8.5pt] p-[10px] border-b-2 border-[#e2e8f0] text-left break-words">
         {children}
       </th>
     ),
     td: ({ children }: React.ComponentPropsWithoutRef<'td'>) => (
-      <td className="p-[10px] border-b border-[#f1f5f9] color-[#475569]">
+      <td className="p-[10px] border-b border-[#f1f5f9] text-[#475569] break-words">
         {children}
       </td>
     ),
