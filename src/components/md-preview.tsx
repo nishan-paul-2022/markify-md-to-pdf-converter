@@ -668,10 +668,8 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
 
         {showToolbar && (
           <div className="flex items-center justify-between px-4 h-12 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm">
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
-              <Eye className="w-3.5 h-3.5 mb-0.5" />
-              <span className="hidden sm:inline">PDF</span>
-              <div className="flex bg-slate-950/40 rounded-full p-[2px] border border-white/5 lg:ml-3 shadow-inner">
+            <div className="flex items-center gap-2">
+              <div className="flex bg-slate-950/40 rounded-full p-[2px] border border-white/5 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button

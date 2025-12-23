@@ -293,12 +293,8 @@ export default function Home() {
             <div
               className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
             >
-              {/* Left Section - Label & Filename Badge */}
+              {/* Left Section - Filename Badge */}
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
-                  <FileCode className="w-3.5 h-3.5" /> Markdown
-                </div>
-
                 {/* Filename Badge - Hidden on very small mobile screens */}
                 <div 
                   className={`group hidden sm:flex items-center gap-1.5 px-3 h-[30px] rounded-full transition-all duration-200 border ${
