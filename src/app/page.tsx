@@ -7,13 +7,19 @@ import { Button } from '@/components/ui/button';
 import { MdPreview } from '@/components/md-preview';
 import { Editor } from '@/components/editor';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
-import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy, Download } from 'lucide-react';
+import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy, Download, Eye, MoreVertical } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const MAX_FILENAME_LENGTH = 30;
 
@@ -43,6 +49,7 @@ export default function Home() {
   const [isUploaded, setIsUploaded] = useState(false);
   const [isReset, setIsReset] = useState(false);
   const [tempFilename, setTempFilename] = useState('');
+  const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -246,10 +253,10 @@ export default function Home() {
 
   return (
     <TooltipProvider>
-      <main className="h-screen w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
+      <main className="h-screen-safe w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden relative">
         {/* Header */}
         {/* Floating Branding Island */}
-        <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 px-4 h-8 bg-slate-900/80 backdrop-blur-md border border-white/5 rounded-full shadow-lg transition-all hover:bg-slate-900 duration-300 group select-none">
+        <div className="fixed bottom-6 right-6 lg:bottom-6 lg:right-6 z-[60] flex items-center gap-3 px-3 lg:px-4 h-7 lg:h-8 bg-slate-900/80 backdrop-blur-md border border-white/5 rounded-full shadow-lg transition-all hover:bg-slate-900 duration-300 group select-none max-lg:bottom-4 max-lg:right-4">
           <div className="relative">
             <Image src="/brand-logo.svg" alt="Logo" width={18} height={18} className="w-4.5 h-4.5 object-contain opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
@@ -258,10 +265,31 @@ export default function Home() {
           </h1>
         </div>
 
-        {/* Main Content Area - Full Height */}
-        <div className="flex-grow flex flex-col lg:flex-row gap-0 overflow-hidden">
+        {/* Mobile View Toggle */}
+        <div className="lg:hidden flex items-center p-1 bg-slate-900 border-b border-slate-800">
+          <button
+            onClick={() => setActiveTab('editor')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold uppercase tracking-widest rounded-md transition-all ${
+              activeTab === 'editor' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <FileCode className="w-3.5 h-3.5" /> Editor
+          </button>
+          <button
+            onClick={() => setActiveTab('preview')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold uppercase tracking-widest rounded-md transition-all ${
+              activeTab === 'preview' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" /> Preview
+          </button>
+        </div>
+
+        <div className="flex-grow flex flex-col lg:flex-row gap-0 overflow-hidden relative">
           {/* Editor Side */}
-          <div className="flex-1 flex flex-col border-r border-slate-800 overflow-hidden">
+          <div className={`flex-1 flex flex-col border-r border-slate-800 overflow-hidden transition-all duration-300 ${
+            activeTab === 'editor' ? 'flex' : 'hidden lg:flex'
+          }`}>
             <div
               className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
             >
@@ -271,9 +299,9 @@ export default function Home() {
                   <FileCode className="w-3.5 h-3.5" /> Markdown
                 </div>
 
-                {/* Filename Badge */}
+                {/* Filename Badge - Hidden on very small mobile screens */}
                 <div 
-                  className={`group flex items-center gap-1.5 px-3 h-[30px] rounded-full transition-all duration-200 border ${
+                  className={`group hidden sm:flex items-center gap-1.5 px-3 h-[30px] rounded-full transition-all duration-200 border ${
                     isEditing 
                       ? 'bg-slate-800 border-primary/50 ring-1 ring-primary/20' 
                       : 'bg-slate-800/50 hover:bg-slate-800/70 border-white/5 hover:border-white/10'
@@ -343,9 +371,9 @@ export default function Home() {
               </div>
 
               {/* Right Section - Actions & Controls */}
-              <div className="flex items-center gap-5">
-                {/* Navigation Controls */}
-                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+              <div className="flex items-center gap-2 lg:gap-5">
+                {/* Navigation Controls - Hidden on very small screens, shown as group on others */}
+                <div className="hidden sm:flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -416,8 +444,8 @@ export default function Home() {
                   </Tooltip>
                 </div>
 
-                {/* Group 2: Editor Utilities (Buffer) */}
-                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+                {/* Group 2: Editor Utilities (Buffer) - Hidden on mobile, in dropdown */}
+                <div className="hidden md:flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -448,6 +476,32 @@ export default function Home() {
                     <TooltipContent>Reset Content</TooltipContent>
                   </Tooltip>
                 </div>
+
+                {/* Mobile Overflow Menu */}
+                <div className="md:hidden">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-slate-400">
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
+                      <DropdownMenuItem onClick={handleCopy} className="gap-2 text-xs">
+                        {isCopied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        {isCopied ? 'Copied' : 'Copy Source'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleReset} className="gap-2 text-xs">
+                        <RotateCcw className="w-3.5 h-3.5" /> Reset Content
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={scrollToStart} className="gap-2 text-xs sm:hidden">
+                        <ChevronsUp className="w-3.5 h-3.5" /> Scroll to Top
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={scrollToEnd} className="gap-2 text-xs sm:hidden">
+                        <ChevronsDown className="w-3.5 h-3.5" /> Scroll to Bottom
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
             </div>
             </div>
 
@@ -456,14 +510,16 @@ export default function Home() {
                 innerRef={textareaRef}
                 value={rawContent}
                 onChange={handleContentChange}
-                className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
+                className="absolute inset-0 w-full h-full resize-none border-none p-4 lg:p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
                 placeholder="Write your markdown here..."
               />
             </div>
           </div>
 
           {/* Preview Side */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-slate-900/20">
+          <div className={`flex-1 flex flex-col overflow-hidden bg-slate-900/20 transition-all duration-300 ${
+            activeTab === 'preview' ? 'flex' : 'hidden lg:flex'
+          }`}>
             <MdPreview
               content={content}
               metadata={metadata}

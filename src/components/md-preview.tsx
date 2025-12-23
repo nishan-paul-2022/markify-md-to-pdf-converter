@@ -7,15 +7,22 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, RefreshCw, Play, Pause, Check } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "./ui/tooltip";
+} from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, RefreshCw, Play, Pause, Check, MoreVertical } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const PdfViewer = dynamic(() => import('./pdf-viewer'), {
@@ -644,15 +651,15 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
         {showToolbar && (
           <div className="flex items-center justify-between px-4 h-12 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm">
             <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
-              <Eye className="w-3.5 h-3.5" />
-              PDF
-              <div className="flex bg-slate-950/40 rounded-full p-[2px] border border-white/5 ml-3 shadow-inner">
+              <Eye className="w-3.5 h-3.5 mb-0.5" />
+              <span className="hidden sm:inline">PDF</span>
+              <div className="flex bg-slate-950/40 rounded-full p-[2px] border border-white/5 lg:ml-3 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => setViewMode('live')}
                       className={cn(
-                        "px-3 h-[24px] rounded-full text-[10px] font-bold tracking-wider transition-all duration-200 cursor-pointer border flex items-center justify-center",
+                        "px-2 sm:px-3 h-[24px] rounded-full text-[10px] sm:text-[10px] font-bold tracking-wider transition-all duration-200 cursor-pointer border flex items-center justify-center",
                         viewMode === 'live'
                           ? "bg-white/10 text-white border-white/20 shadow-sm"
                           : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200"
@@ -669,7 +676,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       onClick={() => isMetadataValid && setViewMode('preview')}
                       disabled={!isMetadataValid}
                       className={cn(
-                        "px-3 h-[24px] rounded-full text-[10px] font-bold tracking-wider transition-all duration-200 border ml-1 flex items-center justify-center",
+                        "px-2 sm:px-3 h-[24px] rounded-full text-[10px] sm:text-[10px] font-bold tracking-wider transition-all duration-200 border ml-1 flex items-center justify-center",
                         !isMetadataValid
                           ? "text-slate-700 border-transparent cursor-not-allowed opacity-40"
                           : viewMode === 'preview'
@@ -686,74 +693,71 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 </Tooltip>
               </div>
             </div>
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-1.5 lg:gap-5">
               {viewMode === 'preview' && (
-                <>
-                  <div className="flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                <div className="hidden md:flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsAutoRender(!isAutoRender)}
+                        className={cn(
+                          "h-[24px] w-[24px] rounded-full transition-all duration-200 active:scale-90 border flex items-center justify-center",
+                          isAutoRender
+                            ? "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
+                            : "bg-white/10 text-white border-white/20 shadow-sm hover:bg-white/15"
+                        )}
+                      >
+                        {isAutoRender ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {isAutoRender ? "Pause Auto-Sync" : "Resume Auto-Sync"}
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="flex">
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => setIsAutoRender(!isAutoRender)}
+                          onClick={() => !renderSuccess && handleManualRefresh()}
+                          disabled={!renderSuccess && (isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges)}
                           className={cn(
-                            "h-[24px] w-[24px] rounded-full transition-all duration-200 active:scale-90 border flex items-center justify-center",
-                            isAutoRender
-                              ? "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
-                              : "bg-white/10 text-white border-white/20 shadow-sm hover:bg-white/15"
+                            "h-[24px] w-[24px] rounded-full transition-all duration-200 active:scale-90 border border-transparent flex items-center justify-center",
+                            renderSuccess
+                              ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
+                              : !isAutoRender && !isPdfRendering && hasChanges
+                                ? "text-blue-400 hover:bg-blue-400/10 hover:border-white/10"
+                                : "text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 disabled:opacity-20 disabled:hover:bg-transparent"
                           )}
                         >
-                          {isAutoRender ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                          {renderSuccess ? (
+                            <Check className="w-3.5 h-3.5" />
+                          ) : (
+                            <RefreshCw className={cn(
+                              "w-3.5 h-3.5",
+                              isPdfRendering && "animate-spin"
+                            )} />
+                          )}
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {isAutoRender ? "Pause Auto-Sync" : "Resume Auto-Sync"}
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="flex">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => !renderSuccess && handleManualRefresh()}
-                            disabled={!renderSuccess && (isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges)}
-                            className={cn(
-                              "h-[24px] w-[24px] rounded-full transition-all duration-200 active:scale-90 border border-transparent flex items-center justify-center",
-                              renderSuccess
-                                ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
-                                : !isAutoRender && !isPdfRendering && hasChanges
-                                  ? "text-blue-400 hover:bg-blue-400/10 hover:border-white/10"
-                                  : "text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 disabled:opacity-20 disabled:hover:bg-transparent"
-                            )}
-                          >
-                            {renderSuccess ? (
-                              <Check className="w-3.5 h-3.5" />
-                            ) : (
-                              <RefreshCw className={cn(
-                                "w-3.5 h-3.5",
-                                isPdfRendering && "animate-spin"
-                              )} />
-                            )}
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {renderSuccess 
-                          ? "Sync Complete" 
-                          : isPdfRendering
-                            ? "Syncing" 
-                            : !hasChanges
-                              ? "No Changes Detected" 
-                              : isAutoRender 
-                                ? "Auto-Sync Enabled"
-                                : "Sync Pending Changes"}
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-
-                </>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {renderSuccess 
+                        ? "Sync Complete" 
+                        : isPdfRendering
+                          ? "Syncing" 
+                          : !hasChanges
+                            ? "No Changes Detected" 
+                            : isAutoRender 
+                              ? "Auto-Sync Enabled"
+                              : "Sync Pending Changes"}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               )}
                 <div className="flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
                 <Tooltip>
@@ -839,7 +843,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(totalPages)}
                       disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
-                      className="h-[24px] w-[24px] rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
+                      className="hidden sm:flex h-[24px] w-[24px] rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ChevronsDown className="w-3.5 h-3.5" />
                     </Button>
@@ -850,7 +854,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
 
 
 
-              <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+              <div className="hidden lg:flex items-center gap-0.5 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -898,9 +902,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 </Tooltip>
               </div>
 
-
-
-              <div className="flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+              <div className="hidden md:flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
@@ -936,8 +938,6 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 </Tooltip>
               </div>
 
-
-
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
@@ -972,6 +972,49 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                   {!isMetadataValid ? "Complete metadata to download" : "Download PDF"}
                 </TooltipContent>
               </Tooltip>
+
+              {/* Mobile PDF Options */}
+              <div className="lg:hidden flex items-center">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-slate-400">
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
+                    {viewMode === 'preview' && (
+                      <>
+                        <DropdownMenuItem onClick={() => setIsAutoRender(!isAutoRender)} className="gap-2 text-xs">
+                          {isAutoRender ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                          {isAutoRender ? 'Pause Auto-Sync' : 'Resume Auto-Sync'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          disabled={isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges} 
+                          onClick={handleManualRefresh} 
+                          className="gap-2 text-xs"
+                        >
+                          <RefreshCw className={cn("w-3.5 h-3.5", isPdfRendering && "animate-spin")} />
+                          Sync Changes
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-slate-800" />
+                      </>
+                    )}
+                    <DropdownMenuItem onClick={() => setZoomMode('fit-page')} className="gap-2 text-xs">
+                      <Maximize className="w-3.5 h-3.5" /> Fit Page
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setZoomMode('fit-width')} className="gap-2 text-xs">
+                      <ArrowLeftRight className="w-3.5 h-3.5" /> Fit Width
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-slate-800" />
+                    <DropdownMenuItem onClick={() => handleZoomChange(10)} className="gap-2 text-xs">
+                      <ZoomIn className="w-3.5 h-3.5" /> Zoom In
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleZoomChange(-10)} className="gap-2 text-xs">
+                      <ZoomOut className="w-3.5 h-3.5" /> Zoom Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
         )}

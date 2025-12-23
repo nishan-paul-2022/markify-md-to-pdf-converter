@@ -174,4 +174,21 @@
     word-break: break-all !important;
     overflow-wrap: break-word !important;
   }
+
+  .h-screen-safe {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  @media (max-width: 1023px) {
+    .mobile-hidden {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .desktop-hidden {
+      display: none !important;
+    }
+  }
 }
