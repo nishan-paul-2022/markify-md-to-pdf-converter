@@ -368,8 +368,8 @@ export default function Home() {
 
               {/* Right Section - Actions & Controls */}
               <div className="flex items-center gap-2 lg:gap-5">
-                {/* Navigation Controls - Hidden on very small screens, shown as group on others */}
-                <div className="hidden sm:flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+                {/* Navigation Group */}
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -488,12 +488,6 @@ export default function Home() {
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleReset} className="gap-2 text-xs">
                         <RotateCcw className="w-3.5 h-3.5" /> Reset Content
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={scrollToStart} className="gap-2 text-xs sm:hidden">
-                        <ChevronsUp className="w-3.5 h-3.5" /> Scroll to Top
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={scrollToEnd} className="gap-2 text-xs sm:hidden">
-                        <ChevronsDown className="w-3.5 h-3.5" /> Scroll to Bottom
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
