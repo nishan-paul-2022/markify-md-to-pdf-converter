@@ -175,8 +175,10 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
   const [isPaginating, setIsPaginating] = useState(true);
   const [isScaleCalculated, setIsScaleCalculated] = useState(false);
   const [isAutoRender, setIsAutoRender] = useState(true);
+  const [contentHeight, setContentHeight] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const stagingRef = useRef<HTMLDivElement>(null);
   const lastViewModeRef = useRef<ViewMode>(viewMode);
   const lastIsPdfReadyRef = useRef<boolean>(isPdfReady);
@@ -517,6 +519,22 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
     if (containerRef.current) resizeObserver.observe(containerRef.current);
     return () => resizeObserver.disconnect();
   }, [calculateScale]);
+
+  // Track content height for layout compensation
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        // We use scrollHeight to get the full height of the untransformed content
+        setContentHeight(entry.target.scrollHeight);
+      }
+    });
+
+    resizeObserver.observe(el);
+    return () => resizeObserver.disconnect();
+  }, []);
 
   // Sync Zoom Input for subsequent mode or value changes
   useEffect(() => {
@@ -1020,7 +1038,19 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
         )}
 
         <div ref={containerRef} className={cn("flex-grow overflow-y-scroll overflow-x-auto flex justify-center bg-slate-900/40 custom-scrollbar relative", zoomMode === 'fit-width' ? "p-0" : "p-4")}>
-          <div className="grid grid-cols-1 grid-rows-1 origin-top transition-transform duration-300 ease-out relative" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
+          <div 
+            style={{ 
+              height: contentHeight > 0 ? `${contentHeight * getScale()}px` : 'auto',
+              width: `${A4_WIDTH_PX * getScale()}px`,
+              transition: 'height 0.3s ease-out, width 0.3s ease-out',
+              overflow: 'hidden'
+            }}
+          >
+            <div 
+              ref={contentRef}
+              className="grid grid-cols-1 grid-rows-1 origin-top-left transition-transform duration-300 ease-out relative" 
+              style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}
+            >
 
             {/* Live View Layer */}
             {(viewMode === 'live' || !isPdfReady) && (
@@ -1080,6 +1110,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
           </div>
         </div>
       </div>
+    </div>
     </TooltipProvider>
   );
 });
