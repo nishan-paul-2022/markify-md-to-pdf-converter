@@ -31,11 +31,15 @@ const getBaseName = (name: string) => {
 // Get filename with timestamp for downloads
 const getTimestampedFilename = (name: string, ext: string) => {
   const now = new Date();
-  const dateTimeString = now.toISOString()
-    .replace(/T/, '-')
-    .replace(/:/g, '-')
-    .replace('.', '-')
-    .replace('Z', ''); // Format: YYYY-MM-DD-HH-MM-SS-mmm
+  // Format: YYYY-MM-DD-HH-mm-ss using local time
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  
+  const dateTimeString = `${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
   return `${getBaseName(name)}-${dateTimeString}.${ext}`;
 };
 
