@@ -1,6 +1,6 @@
 .PHONY: build run stop clean
 
-APP_NAME = md-to-pdf-generator
+APP_NAME = markdownpdf
 PORT = 3000
 
 # Default target

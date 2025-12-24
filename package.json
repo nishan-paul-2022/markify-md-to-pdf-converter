@@ -1,5 +1,5 @@
 {
-  "name": "md-to-pdf-generator",
+  "name": "markdownpdf",
   "version": "0.1.0",
   "private": true,
   "scripts": {
