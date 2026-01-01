@@ -23,8 +23,8 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "Markdown to PDF Generator",
-  description: "Professional markdown to PDF report generator with custom styling and brand identity.",
+  title: "Markify",
+  description: "Markdown to PDF generator",
   icons: {
     icon: "/brand-logo.svg",
     apple: "/brand-logo.svg",

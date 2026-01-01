@@ -7,15 +7,22 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, Sparkles, RefreshCw, Play, Pause, Check } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "./ui/tooltip";
+} from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, DownloadCloud, Loader2, RefreshCw, Play, Pause, Check, MoreVertical, Eye, Printer } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const PdfViewer = dynamic(() => import('./pdf-viewer'), {
@@ -42,7 +49,7 @@ interface MdPreviewProps {
   onDownload?: () => void;
   onGeneratePdf?: () => Promise<Blob>;
   isGenerating?: boolean;
-  isMetadataValid?: boolean;
+  isDownloaded?: boolean;
   isLoading?: boolean;
 }
 
@@ -81,12 +88,12 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
         {(metadata.title || metadata.subtitle) && (
           <div className="mt-[2cm] mb-[2cm] w-full flex flex-col items-center">
             {metadata.title && (
-              <div className="text-[32px] font-extrabold leading-[1.2] mb-[8px] w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
+              <div className="text-[32px] font-extrabold leading-[1.2] mb-[8px] w-full px-8 break-words text-center">
                 {metadata.title}
               </div>
             )}
             {metadata.subtitle && (
-              <div className="text-[18px] font-semibold opacity-95 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
+              <div className="text-[18px] font-semibold opacity-95 w-full px-8 break-words text-center">
                 {metadata.subtitle}
               </div>
             )}
@@ -94,7 +101,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
         )}
 
         {metadata.course && (
-          <div className="mt-[1cm] text-[15px] w-[85%] border-b border-white/20 pb-[10px] whitespace-nowrap overflow-hidden text-ellipsis">
+          <div className="mt-[1cm] text-[15px] w-[85%] border-b border-white/20 pb-[10px] break-words">
             {metadata.course}
           </div>
         )}
@@ -114,7 +121,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
                     {detail.label}
                     <span className="mr-2">:</span>
                   </div>
-                  <div className="w-[58%] font-medium text-white pl-2">{detail.value}</div>
+                  <div className="w-[58%] font-medium text-white pl-2 break-words text-left">{detail.value}</div>
                 </div>
               ))}
             </div>
@@ -150,7 +157,7 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
   );
 };
 
-export const MdPreview = React.memo(({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isMetadataValid = true, isLoading = false }: MdPreviewProps) => {
+export const MdPreview = React.memo(({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isDownloaded = false, isLoading = false }: MdPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
@@ -168,8 +175,10 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
   const [isPaginating, setIsPaginating] = useState(true);
   const [isScaleCalculated, setIsScaleCalculated] = useState(false);
   const [isAutoRender, setIsAutoRender] = useState(true);
+  const [contentHeight, setContentHeight] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const stagingRef = useRef<HTMLDivElement>(null);
   const lastViewModeRef = useRef<ViewMode>(viewMode);
   const lastIsPdfReadyRef = useRef<boolean>(isPdfReady);
@@ -187,7 +196,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
       return (
         <code
           className={cn(
-            inline ? "bg-slate-100 text-[#0c4a6e] px-1.5 py-0.5 rounded font-mono text-[0.9em] border border-slate-200" : "bg-transparent p-0 border-0 text-inherit",
+            inline ? "bg-slate-100 text-[#0c4a6e] px-1.5 py-0.5 rounded font-mono text-[0.9em] border border-slate-200 break-words" : "bg-transparent p-0 border-0 text-inherit",
             className
           )}
           {...props}
@@ -197,7 +206,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
       );
     },
     pre: ({ children }: React.ComponentPropsWithoutRef<'pre'>) => (
-      <pre className="mt-[0.2cm] mb-[0.8cm] relative bg-[#0f172a] text-[#f8fafc] p-[15px] rounded-lg overflow-x-auto text-[9pt] font-mono shadow-sm border border-white/5 leading-[1.45]">
+      <pre className="mt-[0.2cm] mb-[0.8cm] relative bg-[#0f172a] text-[#f8fafc] p-[15px] rounded-lg text-[9pt] font-mono shadow-sm border border-white/5 leading-[1.45] whitespace-pre-wrap break-words overflow-hidden">
         {children}
       </pre>
     ),
@@ -245,19 +254,19 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
       </li>
     ),
     table: ({ children }: React.ComponentPropsWithoutRef<'table'>) => (
-      <div className="mt-[0.2cm] mb-[0.6cm] w-full">
+      <div className="mt-[0.2cm] mb-[0.6cm] w-full overflow-hidden">
         <table className="w-full border-collapse text-[10pt] font-sans">
           {children}
         </table>
       </div>
     ),
     th: ({ children }: React.ComponentPropsWithoutRef<'th'>) => (
-      <th className="bg-[#f8fafc] text-[#0369a1] font-bold uppercase tracking-[0.05em] text-[8.5pt] p-[10px] border-b-2 border-[#e2e8f0] text-left">
+      <th className="bg-[#f8fafc] text-[#0369a1] font-bold uppercase tracking-[0.05em] text-[8.5pt] p-[10px] border-b-2 border-[#e2e8f0] text-left break-words">
         {children}
       </th>
     ),
     td: ({ children }: React.ComponentPropsWithoutRef<'td'>) => (
-      <td className="p-[10px] border-b border-[#f1f5f9] color-[#475569]">
+      <td className="p-[10px] border-b border-[#f1f5f9] text-[#475569] break-words">
         {children}
       </td>
     ),
@@ -327,12 +336,6 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
     setIsPdfReady(false);
   }, []);
 
-  // Auto-switch to LIVE view if metadata becomes invalid while in PRINT view
-  useEffect(() => {
-    if (viewMode === 'preview' && !isMetadataValid) {
-      setViewMode('live');
-    }
-  }, [isMetadataValid, viewMode]);
 
   // Ensure observer is refreshed when view mode changes
   useEffect(() => {
@@ -511,6 +514,22 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
     return () => resizeObserver.disconnect();
   }, [calculateScale]);
 
+  // Track content height for layout compensation
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        // We use scrollHeight to get the full height of the untransformed content
+        setContentHeight(entry.target.scrollHeight);
+      }
+    });
+
+    resizeObserver.observe(el);
+    return () => resizeObserver.disconnect();
+  }, []);
+
   // Sync Zoom Input for subsequent mode or value changes
   useEffect(() => {
     if (!isScaleCalculated) return;
@@ -609,36 +628,19 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
       <div className={cn("pdf-viewer relative flex flex-col h-full bg-slate-900/50", className)}>
         {/* Global Loader Overlay - Centered in viewport, independent of scroll position */}
         <div className={cn(
-          "absolute inset-0 z-50 flex items-center justify-center transition-all duration-200 ease-in-out backdrop-blur-[2px] bg-slate-900/5",
+          "absolute inset-0 z-50 flex items-center justify-center transition-all duration-300 ease-in-out backdrop-blur-[2px] bg-slate-950/20",
           showToolbar ? "top-12" : "top-0",
           isPdfRendering ? "opacity-100" : "opacity-0 pointer-events-none"
         )}>
           <div className="relative flex flex-col items-center gap-8 -translate-y-6">
-            {/* Radial gradient glow background */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-64 h-64 bg-gradient-radial from-primary/20 via-blue-500/10 to-transparent rounded-full blur-3xl animate-pulse" />
-            </div>
-
-            {/* Orbital spinner system */}
-            <div className="relative w-24 h-24 scale-110">
-              {/* Outer ring */}
-              <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin" style={{ animationDuration: '3s' }} />
-
-              {/* Middle ring */}
-              <div className="absolute inset-2 rounded-full border-2 border-blue-400/30 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
-
-              {/* Inner glow */}
-              <div className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/40 to-blue-500/40 blur-md animate-pulse" />
-
-              {/* Center spinner */}
+            <div className="relative w-16 h-16">
+              {/* Simplifed Rings */}
+              <div className="absolute inset-0 rounded-full border border-white/10 animate-spin" style={{ animationDuration: '3s' }} />
+              <div className="absolute inset-2 rounded-full border border-primary/20 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
+              
               <div className="absolute inset-0 flex items-center justify-center">
-                <Loader2 className="w-10 h-10 animate-spin text-primary drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]" style={{ animationDuration: '1.5s' }} />
+                <Loader2 className="w-7 h-7 animate-spin text-slate-400" style={{ animationDuration: '1.5s' }} />
               </div>
-
-              {/* Floating particles */}
-              <div className="absolute -top-1 left-1/2 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDuration: '2s' }} />
-              <div className="absolute top-1/2 -right-1 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
-              <div className="absolute -bottom-1 left-1/3 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
             </div>
           </div>
         </div>
@@ -660,122 +662,115 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
 
         {showToolbar && (
           <div className="flex items-center justify-between px-4 h-12 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm">
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
-              <Eye className="w-3.5 h-3.5" />
-              PDF
-              <div className="flex bg-slate-950/40 rounded-lg p-1 border border-white/5 ml-3 shadow-inner">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setViewMode('live')}
                       className={cn(
-                        "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer border",
+                        "h-6 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 rounded-full border border-transparent flex items-center justify-center gap-1.5",
                         viewMode === 'live'
-                          ? "bg-white/20 text-white border-white/20 shadow-inner"
-                          : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
+                          ? "bg-white/10 text-white border-white/20 shadow-sm"
+                          : "text-slate-500 hover:text-slate-100 hover:bg-white/5 hover:border-white/10"
                       )}
                     >
+                      <Eye className="w-3.5 h-3.5" />
                       LIVE
-                    </button>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>Switch to Live Preview</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
-                      onClick={() => isMetadataValid && setViewMode('preview')}
-                      disabled={!isMetadataValid}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setViewMode('preview')}
                       className={cn(
-                        "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 border ml-1",
-                        !isMetadataValid
-                          ? "text-slate-700 border-transparent cursor-not-allowed opacity-40"
-                          : viewMode === 'preview'
-                            ? "bg-white/20 text-white border-white/20 shadow-inner cursor-pointer"
-                            : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100 cursor-pointer"
+                        "h-6 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 rounded-full border border-transparent flex items-center justify-center gap-1.5",
+                        viewMode === 'preview'
+                            ? "bg-white/10 text-white border-white/20 shadow-sm"
+                            : "text-slate-500 hover:text-slate-100 hover:bg-white/5 hover:border-white/10"
                       )}
                     >
+                      <Printer className="w-3.5 h-3.5" />
                       PRINT
-                    </button>
+                    </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    {!isMetadataValid ? "Complete metadata to preview" : "Switch to Print Preview"}
-                  </TooltipContent>
+                  <TooltipContent>Switch to Print Preview</TooltipContent>
                 </Tooltip>
               </div>
             </div>
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-1.5 lg:gap-5">
               {viewMode === 'preview' && (
-                <>
-                  <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                <div className="hidden md:flex items-center gap-1 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsAutoRender(!isAutoRender)}
+                        className={cn(
+                          "h-6 w-6 rounded-full transition-all duration-200 active:scale-90 border flex items-center justify-center",
+                          isAutoRender
+                            ? "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
+                            : "bg-white/10 text-white border-white/20 shadow-sm hover:bg-white/15"
+                        )}
+                      >
+                        {isAutoRender ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {isAutoRender ? "Pause Auto-Sync" : "Resume Auto-Sync"}
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="flex">
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => setIsAutoRender(!isAutoRender)}
+                          onClick={() => !renderSuccess && handleManualRefresh()}
+                          disabled={!renderSuccess && (isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges)}
                           className={cn(
-                            "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border",
-                            isAutoRender
-                              ? "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
-                              : "bg-white/10 text-white border-white/20 hover:bg-white/20 shadow-inner"
+                            "h-6 w-6 rounded-full transition-all duration-200 active:scale-90 border border-transparent flex items-center justify-center",
+                            renderSuccess
+                              ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
+                              : !isAutoRender && !isPdfRendering && hasChanges
+                                ? "text-blue-400 hover:bg-blue-400/10 hover:border-white/10"
+                                : "text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 disabled:opacity-20 disabled:hover:bg-transparent"
                           )}
                         >
-                          {isAutoRender ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                          {renderSuccess ? (
+                            <Check className="w-3.5 h-3.5" />
+                          ) : (
+                            <RefreshCw className={cn(
+                              "w-3.5 h-3.5",
+                              isPdfRendering && "animate-spin"
+                            )} />
+                          )}
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {isAutoRender ? "Pause Auto-Sync" : "Resume Auto-Sync"}
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="flex">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => !renderSuccess && handleManualRefresh()}
-                            disabled={!renderSuccess && (isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges)}
-                            className={cn(
-                              "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border group",
-                              renderSuccess
-                                ? "bg-green-500/10 border-transparent hover:bg-green-500/20"
-                                : !isAutoRender && !isPdfRendering && hasChanges
-                                  ? "hover:bg-blue-500/10 border-transparent"
-                                  : "border-transparent hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent hover:border-white/5"
-                            )}
-                          >
-                            {renderSuccess ? (
-                              <Check className="w-3.5 h-3.5 text-green-400" />
-                            ) : (
-                              <RefreshCw className={cn(
-                                "w-3.5 h-3.5",
-                                isPdfRendering && "animate-spin",
-                                !isAutoRender && !isPdfRendering && hasChanges
-                                  ? "text-blue-400 group-hover:text-blue-300"
-                                  : "text-slate-500 group-hover:text-slate-100"
-                              )} />
-                            )}
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {renderSuccess 
-                          ? "Sync Complete" 
-                          : isPdfRendering
-                            ? "Syncing" 
-                            : !hasChanges
-                              ? "No Changes Detected" 
-                              : isAutoRender 
-                                ? "Auto-Sync Enabled"
-                                : "Sync Pending Changes"}
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-
-                </>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {renderSuccess 
+                        ? "Sync Complete" 
+                        : isPdfRendering
+                          ? "Syncing" 
+                          : !hasChanges
+                            ? "No Changes Detected" 
+                            : isAutoRender 
+                              ? "Auto-Sync Enabled"
+                              : "Sync Pending Changes"}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               )}
-              <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -783,9 +778,9 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(1)}
                       disabled={isInitializing || isPdfRendering || currentPage === 1}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                      className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
-                      <ChevronsUp className="w-4 h-4" />
+                      <ChevronsUp className="w-3.5 h-3.5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>First Page</TooltipContent>
@@ -798,15 +793,15 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(currentPage - 1)}
                       disabled={isInitializing || isPdfRendering || currentPage === 1}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                      className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
-                      <ChevronUp className="w-4 h-4" />
+                      <ChevronUp className="w-3.5 h-3.5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Previous Page</TooltipContent>
                 </Tooltip>
 
-                <div className="px-1.5 min-w-[4.5rem] flex justify-center items-center relative h-7 overflow-hidden">
+                <div className="px-1.5 min-w-[4.5rem] flex justify-center items-center relative h-6 overflow-hidden">
                   {/* Spinner Reveal */}
                   <div className={cn(
                     "absolute transition-all duration-300 ease-in-out flex items-center justify-center",
@@ -814,7 +809,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       ? "opacity-100 scale-100 blur-0" 
                       : "opacity-0 scale-75 blur-sm pointer-events-none"
                   )}>
-                    <Sparkles className="w-4 h-4 animate-pulse text-blue-400" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
                   </div>
 
                   {/* Numbers Reveal */}
@@ -830,7 +825,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                         value={pageInput}
                         onChange={handlePageInputChange}
                         onBlur={handlePageInputSubmit}
-                        className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all hover:bg-white/10"
+                        className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
                       />
                       <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
                     </form>
@@ -844,9 +839,9 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(currentPage + 1)}
                       disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                      className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
-                      <ChevronDown className="w-4 h-4" />
+                      <ChevronDown className="w-3.5 h-3.5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Next Page</TooltipContent>
@@ -859,9 +854,9 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(totalPages)}
                       disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                      className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
-                      <ChevronsDown className="w-4 h-4" />
+                      <ChevronsDown className="w-3.5 h-3.5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Last Page</TooltipContent>
@@ -870,7 +865,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
 
 
 
-              <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+              <div className="hidden lg:flex items-center gap-0.5 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -878,7 +873,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => handleZoomChange(-10)}
                       disabled={getScale() * 100 <= 25}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                      className="h-[24px] w-[24px] rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ZoomOut className="w-3.5 h-3.5" />
                     </Button>
@@ -889,7 +884,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 <form onSubmit={handleZoomInputSubmit} className="min-w-[3rem] flex justify-center">
                   {!isScaleCalculated ? (
                     <div className="flex items-center justify-center w-10 h-5">
-                      <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
                     </div>
                   ) : (
                     <Input
@@ -897,7 +892,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       value={zoomInput}
                       onChange={handleZoomInputChange}
                       onBlur={handleZoomInputSubmit}
-                      className="h-5 w-10 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-primary/50 rounded-sm tabular-nums shadow-inner transition-all"
+                      className="h-5 w-10 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
                     />
                   )}
                 </form>
@@ -909,7 +904,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => handleZoomChange(10)}
                       disabled={getScale() * 100 >= 400}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                      className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ZoomIn className="w-3.5 h-3.5" />
                     </Button>
@@ -918,87 +913,140 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 </Tooltip>
               </div>
 
-
-
-              <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+              <div className="hidden md:flex items-center gap-1 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => setZoomMode('fit-page')}
                       className={cn(
-                        "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
+                        "h-6 w-6 flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 border cursor-pointer outline-none",
                         zoomMode === 'fit-page'
-                          ? "bg-white/20 text-white border-white/20 shadow-inner"
-                          : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
+                          ? "bg-white/10 text-white border-white/20 shadow-sm"
+                          : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
                       )}
                     >
                       <Maximize className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>Fit Page</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => setZoomMode('fit-width')}
                       className={cn(
-                        "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
+                        "h-6 w-6 flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 border cursor-pointer outline-none",
                         zoomMode === 'fit-width'
-                          ? "bg-white/20 text-white border-white/20 shadow-inner"
-                          : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
+                          ? "bg-white/10 text-white border-white/20 shadow-sm"
+                          : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
                       )}
                     >
                       <ArrowLeftRight className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>Fit Width</TooltipContent>
                 </Tooltip>
               </div>
 
-
-
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div
-                    className={cn(
-                      "inline-block",
-                      (isGenerating || !isMetadataValid) && "cursor-not-allowed"
-                    )}
-                  >
+                  <div className={cn(
+                    "flex items-center bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner",
+                    isGenerating && "opacity-50 cursor-not-allowed"
+                  )}>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={onDownload}
-                      disabled={isGenerating || !isMetadataValid}
+                      disabled={isGenerating}
                       className={cn(
-                        "h-7 w-7 rounded-md transition-all duration-200 active:scale-90 group/download relative border",
-                        isGenerating || !isMetadataValid
-                          ? "opacity-50 cursor-not-allowed"
-                          : "",
-                        isGenerating
-                          ? "bg-white/20 text-white border-white/20 shadow-inner"
-                          : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
+                        "h-6 w-6 rounded-full transition-all duration-200 active:scale-90 group/download relative border border-transparent flex items-center justify-center",
+                        isDownloaded 
+                          ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
+                          : !isGenerating ? "text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10" : "",
+                        isGenerating && "bg-white/10 text-white border-white/20 shadow-sm"
                       )}
                     >
                       {isGenerating ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                      ) : isDownloaded ? (
+                        <Check className="w-3.5 h-3.5" />
                       ) : (
-                        <DownloadCloud className="w-4 h-4" />
+                        <DownloadCloud className="w-3.5 h-3.5" />
                       )}
                     </Button>
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {!isMetadataValid ? "Complete metadata to download" : "Download PDF"}
+                  {isGenerating ? "Downloading" : "Download PDF"}
                 </TooltipContent>
               </Tooltip>
+
+              {/* Mobile PDF Options */}
+              <div className="lg:hidden flex items-center">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-slate-400">
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100 min-w-44">
+                    {viewMode === 'preview' && (
+                      <>
+                        <DropdownMenuItem onClick={() => setIsAutoRender(!isAutoRender)} className="gap-2 text-xs">
+                          {isAutoRender ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                          {isAutoRender ? 'Pause Auto-Sync' : 'Resume Auto-Sync'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          disabled={isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges} 
+                          onClick={handleManualRefresh} 
+                          className="gap-2 text-xs"
+                        >
+                          <RefreshCw className={cn("w-3.5 h-3.5", isPdfRendering && "animate-spin")} />
+                          Sync Changes
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-slate-800" />
+                      </>
+                    )}
+                    <DropdownMenuItem onClick={() => setZoomMode('fit-page')} className="gap-2 text-xs">
+                      <Maximize className="w-3.5 h-3.5" /> Fit Page
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setZoomMode('fit-width')} className="gap-2 text-xs">
+                      <ArrowLeftRight className="w-3.5 h-3.5" /> Fit Width
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-slate-800" />
+                    <DropdownMenuItem onClick={() => handleZoomChange(10)} className="gap-2 text-xs">
+                      <ZoomIn className="w-3.5 h-3.5" /> Zoom In
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleZoomChange(-10)} className="gap-2 text-xs">
+                      <ZoomOut className="w-3.5 h-3.5" /> Zoom Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
         )}
 
         <div ref={containerRef} className={cn("flex-grow overflow-y-scroll overflow-x-auto flex justify-center bg-slate-900/40 custom-scrollbar relative", zoomMode === 'fit-width' ? "p-0" : "p-4")}>
-          <div className="grid grid-cols-1 grid-rows-1 origin-top transition-transform duration-300 ease-out relative" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
+          <div 
+            style={{ 
+              height: contentHeight > 0 ? `${contentHeight * getScale()}px` : 'auto',
+              width: `${A4_WIDTH_PX * getScale()}px`,
+              transition: 'height 0.3s ease-out, width 0.3s ease-out',
+              overflow: 'hidden'
+            }}
+          >
+            <div 
+              ref={contentRef}
+              className="grid grid-cols-1 grid-rows-1 origin-top-left transition-transform duration-300 ease-out relative" 
+              style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}
+            >
 
             {/* Live View Layer */}
             {(viewMode === 'live' || !isPdfReady) && (
@@ -1058,6 +1106,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
           </div>
         </div>
       </div>
+    </div>
     </TooltipProvider>
   );
 });
