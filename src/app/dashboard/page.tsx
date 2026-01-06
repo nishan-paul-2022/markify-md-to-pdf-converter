@@ -1,10 +1,10 @@
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import UserNav from "@/components/UserNav"
+import UserNav from "@/features/auth/components/UserNav"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import prisma from "@/lib/prisma"
-import FileUpload from "@/components/FileUpload"
-import FileList from "@/components/FileList"
+import FileUpload from "@/features/file-manager/components/FileUpload"
+import FileList from "@/features/file-manager/components/FileList"
 
 export default async function DashboardPage(): Promise<React.JSX.Element> {
   const session = await auth()

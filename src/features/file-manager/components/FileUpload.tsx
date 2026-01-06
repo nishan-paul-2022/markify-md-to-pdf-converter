@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useUpload } from "@/hooks/use-upload"
-import { FileUploadView } from "@/components/FileUploadView"
+import { FileUploadView } from "./FileUploadView"
 
 export default function FileUpload(): React.JSX.Element {
   const uploadState = useUpload()

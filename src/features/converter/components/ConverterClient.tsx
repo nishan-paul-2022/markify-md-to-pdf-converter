@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useConverter } from '@/hooks/use-converter';
-import { ConverterView } from '@/components/ConverterView';
+import { ConverterView } from './ConverterView';
 
 interface ConverterClientProps {
   user: {

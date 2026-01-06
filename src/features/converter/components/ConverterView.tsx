@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import MdPreview from '@/components/MdPreview';
-import Editor from '@/components/Editor';
+import MdPreview from './MdPreview';
+import Editor from './Editor';
 import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy, Download, Eye, MoreVertical, FolderOpen } from 'lucide-react';
 import {
   Tooltip,
@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import UserNav from '@/components/UserNav';
+import UserNav from '@/features/auth/components/UserNav';
 import { Metadata } from '@/constants/default-content';
 import { formatDateTime } from '@/lib/formatters';
 
