@@ -11,7 +11,7 @@ interface EditorProps {
   innerRef?: React.RefObject<HTMLTextAreaElement | null>;
 }
 
-export const Editor = React.memo(({ value, onChange, className, placeholder, innerRef }: EditorProps) => {
+const Editor = React.memo(({ value, onChange, className, placeholder, innerRef }: EditorProps) => {
   // We use a local state to handle the immediate typing for 0ms lag
   const [localValue, setLocalValue] = React.useState(value);
 
@@ -39,3 +39,4 @@ export const Editor = React.memo(({ value, onChange, className, placeholder, inn
 });
 
 Editor.displayName = 'Editor';
+export default Editor;

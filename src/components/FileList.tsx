@@ -43,7 +43,7 @@ interface FileListResponse {
   }
 }
 
-export function FileList() {
+export default function FileList() {
   const router = useRouter()
   const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState(true)

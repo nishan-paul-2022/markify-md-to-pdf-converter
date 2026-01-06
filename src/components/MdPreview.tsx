@@ -5,7 +5,7 @@ import Image from 'next/image';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { MermaidDiagram } from './mermaid-diagram';
+import MermaidDiagram from './MermaidDiagram';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,7 @@ import {
 import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, DownloadCloud, Loader2, RefreshCw, Play, Pause, Check, MoreVertical, Eye, Printer } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
-const PdfViewer = dynamic(() => import('./pdf-viewer'), {
+const PdfViewer = dynamic(() => import('./PdfViewer'), {
   ssr: false,
   loading: () => <div className="h-[800px] w-[600px] animate-pulse bg-slate-800/20 rounded-lg" />,
 });
@@ -158,7 +158,7 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
   );
 };
 
-export const MdPreview = React.memo(({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isDownloaded = false, isLoading = false, basePath = '' }: MdPreviewProps) => {
+const MdPreview = React.memo(({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isDownloaded = false, isLoading = false, basePath = '' }: MdPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
@@ -1125,3 +1125,4 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
 });
 
 MdPreview.displayName = 'MdPreview';
+export default MdPreview;

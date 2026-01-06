@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { ConverterClient } from "@/components/converter-client";
+import ConverterClient from "@/components/ConverterClient";
 
 export default async function ConverterPage() {
   const session = await auth();

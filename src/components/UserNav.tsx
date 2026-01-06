@@ -21,7 +21,7 @@ interface UserNavProps {
   }
 }
 
-export function UserNav({ user }: UserNavProps) {
+export default function UserNav({ user }: UserNavProps) {
   const initials = user.name
     ?.split(" ")
     .map((n) => n[0])

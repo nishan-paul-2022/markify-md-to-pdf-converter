@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Upload, X, FileText, Image as ImageIcon, FolderOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export function FileUpload() {
+export default function FileUpload() {
   const router = useRouter()
   const [isDragging, setIsDragging] = useState(false)
   const [files, setFiles] = useState<File[]>([])

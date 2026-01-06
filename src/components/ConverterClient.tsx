@@ -2,8 +2,8 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { MdPreview } from '@/components/md-preview';
-import { Editor } from '@/components/editor';
+import MdPreview from '@/components/MdPreview';
+import Editor from '@/components/Editor';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
 import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy, Download, Eye, MoreVertical, FolderOpen } from 'lucide-react';
 import {
@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserNav } from '@/components/user-nav';
+import UserNav from '@/components/UserNav';
 
 const MAX_FILENAME_LENGTH = 30;
 
@@ -47,7 +47,7 @@ interface ConverterClientProps {
   }
 }
 
-export function ConverterClient({ user }: ConverterClientProps) {
+export default function ConverterClient({ user }: ConverterClientProps) {
   const [rawContent, setRawContent] = useState('');
   const [content, setContent] = useState('');
   const [metadata, setMetadata] = useState<Metadata>(DEFAULT_METADATA);
