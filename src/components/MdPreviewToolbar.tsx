@@ -119,6 +119,7 @@ export const MdPreviewToolbar = ({
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsAutoRender(!isAutoRender)}
+                  aria-label="Toggle auto-render"
                   className={cn(
                     "h-6 w-6 rounded-full transition-all duration-200 active:scale-90 border flex items-center justify-center",
                     isAutoRender
@@ -142,6 +143,7 @@ export const MdPreviewToolbar = ({
                     size="icon"
                     onClick={() => !renderSuccess && handleManualRefresh()}
                     disabled={!renderSuccess && (isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges)}
+                    aria-label="Manual refresh"
                     className={cn(
                       "h-6 w-6 rounded-full transition-all duration-200 active:scale-90 border border-transparent flex items-center justify-center",
                       renderSuccess
@@ -184,6 +186,7 @@ export const MdPreviewToolbar = ({
                 size="icon"
                 onClick={() => scrollToPage(1)}
                 disabled={isInitializing || isPdfRendering || currentPage === 1}
+                aria-label="First page"
                 className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
               >
                 <ChevronsUp className="w-3.5 h-3.5" />
@@ -199,6 +202,7 @@ export const MdPreviewToolbar = ({
                 size="icon"
                 onClick={() => scrollToPage(currentPage - 1)}
                 disabled={isInitializing || isPdfRendering || currentPage === 1}
+                aria-label="Previous page"
                 className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
               >
                 <ChevronUp className="w-3.5 h-3.5" />
@@ -243,6 +247,7 @@ export const MdPreviewToolbar = ({
                 size="icon"
                 onClick={() => scrollToPage(currentPage + 1)}
                 disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
+                aria-label="Next page"
                 className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
               >
                 <ChevronDown className="w-3.5 h-3.5" />
@@ -258,6 +263,7 @@ export const MdPreviewToolbar = ({
                 size="icon"
                 onClick={() => scrollToPage(totalPages)}
                 disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
+                aria-label="Last page"
                 className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
               >
                 <ChevronsDown className="w-3.5 h-3.5" />
@@ -275,6 +281,7 @@ export const MdPreviewToolbar = ({
                 size="icon"
                 onClick={() => handleZoomChange(-10)}
                 disabled={getScale() * 100 <= 25}
+                aria-label="Zoom out"
                 className="h-[24px] w-[24px] rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
               >
                 <ZoomOut className="w-3.5 h-3.5" />
@@ -306,6 +313,7 @@ export const MdPreviewToolbar = ({
                 size="icon"
                 onClick={() => handleZoomChange(10)}
                 disabled={getScale() * 100 >= 400}
+                aria-label="Zoom in"
                 className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
@@ -322,6 +330,7 @@ export const MdPreviewToolbar = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => setZoomMode('fit-page')}
+                aria-label="Fit page"
                 className={cn(
                   "h-6 w-6 flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 border cursor-pointer outline-none",
                   zoomMode === 'fit-page'
@@ -341,6 +350,7 @@ export const MdPreviewToolbar = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => setZoomMode('fit-width')}
+                aria-label="Fit width"
                 className={cn(
                   "h-6 w-6 flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 border cursor-pointer outline-none",
                   zoomMode === 'fit-width'
@@ -366,6 +376,7 @@ export const MdPreviewToolbar = ({
                 size="icon"
                 onClick={onDownload}
                 disabled={isGenerating}
+                aria-label="Download"
                 className={cn(
                   "h-6 w-6 rounded-full transition-all duration-200 active:scale-90 group/download relative border border-transparent flex items-center justify-center",
                   isDownloaded 
@@ -392,7 +403,7 @@ export const MdPreviewToolbar = ({
         <div className="lg:hidden flex items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-slate-400">
+              <Button variant="ghost" size="icon" aria-label="Menu" className="h-7 w-7 rounded-full text-slate-400">
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>

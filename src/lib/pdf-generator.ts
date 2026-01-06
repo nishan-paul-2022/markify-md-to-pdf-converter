@@ -361,7 +361,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
 
         // Content grouping disabled as per user request
         window.addEventListener('DOMContentLoaded', () => {
-          console.log('DOM loaded, awaiting manual pagebreaks');
+          // DOM loaded
         });
       </script>
     </head>
@@ -441,7 +441,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
   try {
     await page.waitForSelector('.mermaid svg, .mermaid[data-processed="true"]', { timeout: 5000 });
   } catch {
-    console.log('Mermaid wait timeout, proceeding anyway...');
+    // Mermaid wait timeout, proceeding anyway...
   }
   // Extra buffer
   await page.waitForTimeout(1000);

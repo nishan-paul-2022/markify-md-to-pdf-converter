@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import UserNav from '@/components/UserNav';
 import { Metadata } from '@/constants/default-content';
+import { formatDateTime } from '@/lib/formatters';
 
 interface ConverterViewProps {
   user: {
@@ -116,19 +117,6 @@ export function ConverterView({
   MAX_FILENAME_LENGTH,
   getBaseName,
 }: ConverterViewProps) {
-  const formatDateTime = (date: Date | null): string => {
-    if (!date) return '—';
-    return date.toLocaleTimeString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    }).replace(',', '');
-  };
-
   const getInputWidth = (name: string): string => {
     const charCount = name.length || 8;
     return `${Math.max(charCount * 0.65, 5)}rem`;
@@ -221,6 +209,7 @@ export function ConverterView({
                         <Button 
                           variant="ghost"
                           size="icon"
+                          aria-label="Save filename"
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={(e) => { e.stopPropagation(); handleSave(); }}
                           className="h-6 w-6 p-0 cursor-pointer text-green-400/80 hover:text-green-400 hover:bg-green-400/10 rounded-full transition-all border-transparent"
@@ -230,6 +219,7 @@ export function ConverterView({
                         <Button 
                           variant="ghost"
                           size="icon"
+                          aria-label="Cancel rename"
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={(e) => { e.stopPropagation(); handleCancel(); }}
                           className="h-6 w-6 p-0 cursor-pointer text-red-400/80 hover:text-red-400 hover:bg-red-400/10 rounded-full transition-all border-transparent"
@@ -248,6 +238,7 @@ export function ConverterView({
                           <Button
                             variant="ghost"
                             size="icon"
+                            aria-label="Rename file"
                             onClick={(e) => { e.stopPropagation(); handleStartEdit(); }}
                             className="h-6 w-6 p-0 text-slate-500 hover:text-slate-300 hover:bg-white/5 border border-transparent hover:border-white/10 rounded-full transition-all cursor-pointer ml-2"
                           >
@@ -268,6 +259,7 @@ export function ConverterView({
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label="Scroll to top"
                         onClick={scrollToStart}
                         className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-90 transition-all duration-200"
                       >
@@ -282,6 +274,7 @@ export function ConverterView({
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label="Scroll to bottom"
                         onClick={scrollToEnd}
                         className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-90 transition-all duration-200"
                       >
@@ -391,7 +384,7 @@ export function ConverterView({
                 <div className="md:hidden">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-slate-400">
+                      <Button variant="ghost" size="icon" aria-label="Menu" className="h-7 w-7 rounded-full text-slate-400">
                         <MoreVertical className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>

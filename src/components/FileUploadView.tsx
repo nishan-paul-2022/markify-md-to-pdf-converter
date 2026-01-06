@@ -4,6 +4,7 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { Upload, X, FileText, Image as ImageIcon, FolderOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { formatFileSize } from "@/lib/formatters"
 
 interface FileUploadViewProps {
   isDragging: boolean;
@@ -36,13 +37,7 @@ export function FileUploadView({
   removeFile,
   uploadFiles,
 }: FileUploadViewProps) {
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes"
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i]
-  }
+  /* formatFileSize removed */
 
   const getFileIcon = (file: File): React.JSX.Element => {
     if (file.type.startsWith("image/")) {
@@ -149,6 +144,7 @@ export function FileUploadView({
                   size="icon"
                   onClick={() => removeFile(index)}
                   disabled={uploading}
+                  aria-label="Remove file"
                   className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <X className="h-4 w-4" />
