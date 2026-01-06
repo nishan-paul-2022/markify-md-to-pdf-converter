@@ -6,7 +6,7 @@ export default async function AuthErrorPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>
-}) {
+}): Promise<React.JSX.Element> {
   const { error } = await searchParams;
 
   const errorMessages: Record<string, { title: string; description: string }> = {

@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma"
 import FileUpload from "@/components/FileUpload"
 import FileList from "@/components/FileList"
 
-export default async function DashboardPage() {
+export default async function DashboardPage(): Promise<React.JSX.Element> {
   const session = await auth()
 
   if (!session?.user) {
@@ -24,7 +24,7 @@ export default async function DashboardPage() {
     }),
   ])
 
-  const formatBytes = (bytes: number) => {
+  const formatBytes = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes"
     const k = 1024
     const sizes = ["Bytes", "KB", "MB", "GB"]

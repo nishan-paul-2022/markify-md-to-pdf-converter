@@ -62,7 +62,7 @@ type ZoomMode = 'fit-page' | 'fit-width' | 'custom';
 const A4_WIDTH_PX = 794; // 210mm at 96 DPI
 const A4_HEIGHT_PX = 1123; // 297mm at 96 DPI
 
-const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
+const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }): React.JSX.Element | null => {
   if (!metadata) return null;
 
   return (
@@ -133,7 +133,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
   );
 };
 
-const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.ReactNode, pageNumber: number, totalPages: number }) => {
+const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.ReactNode, pageNumber: number, totalPages: number }): React.JSX.Element => {
   return (
     <div className="pdf-page relative bg-white mx-auto flex flex-col shrink-0 shadow-sm"
       style={{
@@ -158,7 +158,7 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
   );
 };
 
-const MdPreview = React.memo(({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isDownloaded = false, isLoading = false, basePath = '' }: MdPreviewProps) => {
+const MdPreview = React.memo(({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isDownloaded = false, isLoading = false, basePath = '' }: MdPreviewProps): React.JSX.Element => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
@@ -316,7 +316,7 @@ const MdPreview = React.memo(({ content, metadata, className, showToolbar = true
           // Mark this content as "rendered"
           setLastRenderedSignature(JSON.stringify({ content, metadata }));
         })
-        .catch(err => console.error(err))
+        .catch((err: unknown) => console.error(err))
         .finally(() => setIsPdfLoading(false));
     }
   }, [viewMode, onGeneratePdf, pdfBlobUrl, content, metadata]);
@@ -402,7 +402,7 @@ const MdPreview = React.memo(({ content, metadata, className, showToolbar = true
   const isInitializing = isLoading || isPaginating;
   const isPdfRendering = viewMode === 'preview' && (isPdfLoading || !isPdfReady || isInitializing);
 
-  const hasMetadataValues = (meta: MdPreviewProps['metadata']) => {
+  const hasMetadataValues = (meta: MdPreviewProps['metadata']): boolean => {
     if (!meta) return false;
     return Object.values(meta).some(val => val && val.trim().length > 0);
   };
@@ -595,7 +595,7 @@ const MdPreview = React.memo(({ content, metadata, className, showToolbar = true
   }, [paginatedPages, metadata, viewMode, numPages, pdfBlobUrl, renderKey]); // Re-observe when pages change, PDF loads, or mode switches
 
 
-  const handlePageInputSubmit = (e: React.FormEvent) => {
+  const handlePageInputSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     const pageNum = parseInt(pageInput);
     if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
@@ -605,15 +605,15 @@ const MdPreview = React.memo(({ content, metadata, className, showToolbar = true
     }
   };
 
-  const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setPageInput(e.target.value);
   };
 
-  const handleZoomInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleZoomInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setZoomInput(e.target.value);
   };
 
-  const handleZoomInputSubmit = (e: React.FormEvent) => {
+  const handleZoomInputSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     const cleanValue = zoomInput.replace(/[^0-9]/g, '');
     const zoomVal = parseInt(cleanValue);
@@ -627,7 +627,7 @@ const MdPreview = React.memo(({ content, metadata, className, showToolbar = true
     }
   };
 
-  const getScale = () => {
+  const getScale = (): number => {
     if (zoomMode === 'fit-page') return fitPageScale;
     if (zoomMode === 'fit-width') return fitWidthScale;
     return customZoom / 100;

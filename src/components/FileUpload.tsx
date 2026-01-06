@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Upload, X, FileText, Image as ImageIcon, FolderOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export default function FileUpload() {
+export default function FileUpload(): React.JSX.Element {
   const router = useRouter()
   const [isDragging, setIsDragging] = useState(false)
   const [files, setFiles] = useState<File[]>([])
@@ -100,7 +100,7 @@ export default function FileUpload() {
     setFiles((prev) => prev.filter((_, i) => i !== index))
   }, [])
 
-  const uploadFiles = async () => {
+  const uploadFiles = async (): Promise<void> => {
     if (files.length === 0) return
 
     setUploading(true)
@@ -140,7 +140,7 @@ export default function FileUpload() {
       setFiles([])
       setUploadProgress(0)
       router.refresh()
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Upload error:", error)
       alert(error instanceof Error ? error.message : "Failed to upload files")
     } finally {
@@ -148,7 +148,7 @@ export default function FileUpload() {
     }
   }
 
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes"
     const k = 1024
     const sizes = ["Bytes", "KB", "MB", "GB"]
@@ -156,7 +156,7 @@ export default function FileUpload() {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i]
   }
 
-  const getFileIcon = (file: File) => {
+  const getFileIcon = (file: File): React.JSX.Element => {
     if (file.type.startsWith("image/")) {
       return <ImageIcon className="h-8 w-8 text-blue-500" />
     }

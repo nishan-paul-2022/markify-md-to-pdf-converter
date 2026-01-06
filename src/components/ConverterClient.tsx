@@ -22,11 +22,11 @@ import UserNav from '@/components/UserNav';
 
 const MAX_FILENAME_LENGTH = 30;
 
-const getBaseName = (name: string) => {
+const getBaseName = (name: string): string => {
   return name.replace(/\.md$/i, '');
 };
 
-const getTimestampedFilename = (name: string, ext: string) => {
+const getTimestampedFilename = (name: string, ext: string): string => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -47,7 +47,7 @@ interface ConverterClientProps {
   }
 }
 
-export default function ConverterClient({ user }: ConverterClientProps) {
+export default function ConverterClient({ user }: ConverterClientProps): React.JSX.Element {
   const [rawContent, setRawContent] = useState('');
   const [content, setContent] = useState('');
   const [metadata, setMetadata] = useState<Metadata>(DEFAULT_METADATA);
@@ -87,7 +87,7 @@ export default function ConverterClient({ user }: ConverterClientProps) {
     return { chars, words };
   }, [rawContent]);
 
-  const formatDateTime = (date: Date | null) => {
+  const formatDateTime = (date: Date | null): string => {
     if (!date) return '—';
     return date.toLocaleTimeString('en-GB', {
       day: '2-digit',
@@ -100,17 +100,17 @@ export default function ConverterClient({ user }: ConverterClientProps) {
     }).replace(',', '');
   };
 
-  const getInputWidth = (name: string) => {
+  const getInputWidth = (name: string): string => {
     const charCount = name.length || 8;
     return `${Math.max(charCount * 0.65, 5)}rem`;
   };
 
-  const handleStartEdit = () => {
+  const handleStartEdit = (): void => {
     setTempFilename(getBaseName(filename));
     setIsEditing(true);
   };
 
-  const handleSave = () => {
+  const handleSave = (): void => {
     if (tempFilename.trim()) {
       setFilename(`${tempFilename.trim()}.md`);
     } else {
@@ -119,11 +119,11 @@ export default function ConverterClient({ user }: ConverterClientProps) {
     setIsEditing(false);
   };
 
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     setIsEditing(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent): void => {
     if (e.key === 'Enter') handleSave();
     if (e.key === 'Escape') handleCancel();
   };
@@ -167,13 +167,13 @@ export default function ConverterClient({ user }: ConverterClientProps) {
         
         setIsLoading(false);
       })
-      .catch(err => {
+      .catch((err: unknown) => {
         console.error('Failed to load default content:', err);
         setIsLoading(false);
       });
   }, []);
 
-  const generatePdfBlob = useCallback(async () => {
+  const generatePdfBlob = useCallback(async (): Promise<Blob> => {
     const response = await fetch('/api/generate-pdf', {
       method: 'POST',
       headers: {
@@ -195,7 +195,7 @@ export default function ConverterClient({ user }: ConverterClientProps) {
 
   const [isPdfDownloaded, setIsPdfDownloaded] = useState(false);
 
-  const handleDownloadPdf = useCallback(async () => {
+  const handleDownloadPdf = useCallback(async (): Promise<void> => {
     setIsGenerating(true);
     try {
       const blob = await generatePdfBlob();
@@ -209,14 +209,14 @@ export default function ConverterClient({ user }: ConverterClientProps) {
       
       setIsPdfDownloaded(true);
       setTimeout(() => setIsPdfDownloaded(false), 2000);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error downloading PDF:', error);
     } finally {
       setIsGenerating(false);
     }
   }, [generatePdfBlob, filename]);
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
     const file = event.target.files?.[0];
     if (file) {
       setFilename(file.name);
@@ -236,7 +236,7 @@ export default function ConverterClient({ user }: ConverterClientProps) {
     }
   }, [handleContentChange]);
 
-  const handleFolderUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFolderUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const files = event.target.files;
     if (files && files.length > 0) {
       const mdFile = Array.from(files).find(f => f.name.endsWith('.md'));
@@ -263,15 +263,15 @@ export default function ConverterClient({ user }: ConverterClientProps) {
     }
   }, [handleContentChange]);
 
-  const triggerFileUpload = useCallback(() => {
+  const triggerFileUpload = useCallback((): void => {
     fileInputRef.current?.click();
   }, []);
 
-  const triggerFolderUpload = useCallback(() => {
+  const triggerFolderUpload = useCallback((): void => {
     folderInputRef.current?.click();
   }, []);
 
-  const handleReset = useCallback(async () => {
+  const handleReset = useCallback(async (): Promise<void> => {
     try {
       const res = await fetch(DEFAULT_MARKDOWN_PATH);
       const text = await res.text();
@@ -282,7 +282,7 @@ export default function ConverterClient({ user }: ConverterClientProps) {
       setLastModifiedTime(new Date());
       setIsReset(true);
       setTimeout(() => setIsReset(false), 2000);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to reset content:', err);
     }
   }, [handleContentChange]);
@@ -290,17 +290,17 @@ export default function ConverterClient({ user }: ConverterClientProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
 
-  const handleCopy = useCallback(async () => {
+  const handleCopy = useCallback(async (): Promise<void> => {
     try {
       await navigator.clipboard.writeText(rawContent);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to copy content:', err);
     }
   }, [rawContent]);
 
-  const handleDownloadMd = useCallback(() => {
+  const handleDownloadMd = useCallback((): void => {
     const blob = new Blob([rawContent], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -314,7 +314,7 @@ export default function ConverterClient({ user }: ConverterClientProps) {
     setTimeout(() => setIsDownloaded(false), 2000);
   }, [rawContent, filename]);
 
-  const scrollToStart = useCallback(() => {
+  const scrollToStart = useCallback((): void => {
     if (textareaRef.current) {
       textareaRef.current.scrollTop = 0;
       textareaRef.current.setSelectionRange(0, 0);
@@ -322,7 +322,7 @@ export default function ConverterClient({ user }: ConverterClientProps) {
     }
   }, []);
 
-  const scrollToEnd = useCallback(() => {
+  const scrollToEnd = useCallback((): void => {
     if (textareaRef.current) {
       const length = textareaRef.current.value.length;
       textareaRef.current.scrollTop = textareaRef.current.scrollHeight;

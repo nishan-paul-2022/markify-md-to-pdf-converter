@@ -21,7 +21,7 @@ interface UserNavProps {
   }
 }
 
-export default function UserNav({ user }: UserNavProps) {
+export default function UserNav({ user }: UserNavProps): React.JSX.Element {
   const initials = user.name
     ?.split(" ")
     .map((n) => n[0])

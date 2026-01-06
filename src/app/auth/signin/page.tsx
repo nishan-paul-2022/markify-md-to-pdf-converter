@@ -6,7 +6,7 @@ export default async function SignInPage({
   searchParams,
 }: {
   searchParams: Promise<{ callbackUrl?: string; error?: string }>
-}) {
+}): Promise<React.JSX.Element> {
   const { callbackUrl = '/dashboard', error } = await searchParams;
 
   return (

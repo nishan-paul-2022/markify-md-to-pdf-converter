@@ -60,7 +60,7 @@ async function processHtmlImages(html: string, basePath?: string): Promise<strin
   return processedHtml;
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const session = await auth();
     
@@ -89,8 +89,8 @@ export async function POST(req: NextRequest) {
         'Content-Disposition': 'attachment; filename="report.pdf"',
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('PDF Generation Error:', error);
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
   }
 }

@@ -8,7 +8,7 @@ import { randomUUID } from "crypto"
 // Note: Prisma Client was regenerated to include batchId and relativePath.
 // If you see errors below, please restart your IDE's TypeScript server.
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const session = await auth()
     
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
         createdAt: fileRecord.createdAt,
       },
     })
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("File upload error:", error)
     return NextResponse.json(
       { error: "Failed to upload file" },
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const session = await auth()
     
@@ -180,7 +180,7 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
     })
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("File fetch error:", error)
     return NextResponse.json(
       { error: "Failed to fetch files" },

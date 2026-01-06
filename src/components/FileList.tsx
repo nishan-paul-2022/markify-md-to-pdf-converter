@@ -43,7 +43,7 @@ interface FileListResponse {
   }
 }
 
-export default function FileList() {
+export default function FileList(): React.JSX.Element {
   const router = useRouter()
   const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState(true)
@@ -54,21 +54,21 @@ export default function FileList() {
     fetchFiles()
   }, [])
 
-  const fetchFiles = async () => {
+  const fetchFiles = async (): Promise<void> => {
     try {
       const response = await fetch("/api/files")
       if (!response.ok) throw new Error("Failed to fetch files")
       
       const data: FileListResponse = await response.json()
       setFiles(data.files)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching files:", error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string): Promise<void> => {
     setDeleting(true)
     try {
       const response = await fetch(`/api/files/${id}`, {
@@ -82,7 +82,7 @@ export default function FileList() {
 
       setFiles((prev) => prev.filter((file) => file.id !== id))
       router.refresh()
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Delete error:", error)
       alert(error instanceof Error ? error.message : "Failed to delete file")
     } finally {
@@ -91,7 +91,7 @@ export default function FileList() {
     }
   }
 
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes"
     const k = 1024
     const sizes = ["Bytes", "KB", "MB", "GB"]
@@ -99,7 +99,7 @@ export default function FileList() {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i]
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string): string => {
     const date = new Date(dateString)
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
@@ -110,7 +110,7 @@ export default function FileList() {
     }).format(date)
   }
 
-  const getFileIcon = (type: string) => {
+  const getFileIcon = (type: string): React.JSX.Element => {
     if (type.startsWith("image/")) {
       return <ImageIcon className="h-5 w-5 text-blue-500" />
     }

@@ -7,7 +7,7 @@ import { join } from "path"
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const { id: fileId } = await params
     const session = await auth()
@@ -42,7 +42,7 @@ export async function DELETE(
     try {
       const filePath = join(process.cwd(), "public", file.storageKey)
       await unlink(filePath)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error deleting file from disk:", error)
       // Continue with database deletion even if file doesn't exist on disk
     }
@@ -56,7 +56,7 @@ export async function DELETE(
       success: true,
       message: "File deleted successfully",
     })
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("File deletion error:", error)
     return NextResponse.json(
       { error: "Failed to delete file" },
@@ -68,7 +68,7 @@ export async function DELETE(
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const { id: fileId } = await params
     const session = await auth()
@@ -111,7 +111,7 @@ export async function GET(
     }
 
     return NextResponse.json({ file })
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("File fetch error:", error)
     return NextResponse.json(
       { error: "Failed to fetch file" },
