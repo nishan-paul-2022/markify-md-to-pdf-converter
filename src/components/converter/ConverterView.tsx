@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import UserNav from '@/features/auth/components/UserNav';
+import UserNav from '@/components/auth/UserNav';
 import { Metadata } from '@/constants/default-content';
 import { formatDateTime } from '@/lib/formatters';
 
