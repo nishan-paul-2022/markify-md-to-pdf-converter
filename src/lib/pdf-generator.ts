@@ -26,6 +26,10 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
     console.log('✅ Browser launched successfully');
     
     const page = await browser.newPage();
+    
+    // Capture browser console logs for debugging
+    page.on('console', msg => console.log('Browser console:', msg.text()));
+    page.on('pageerror', error => console.error('Browser page error:', error));
 
     // Load images as base64
     const logoPath = path.join(process.cwd(), 'public', 'university-logo.png');

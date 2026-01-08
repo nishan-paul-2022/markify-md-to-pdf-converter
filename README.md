@@ -37,7 +37,22 @@ A professional web application built with Next.js, Shadcn UI, and Playwright to 
 npm install
 ```
 
-### 2. Set Up Database
+### 2. Set Up PDF Generation (Playwright)
+
+Markify uses Playwright for high-fidelity PDF generation. You must install the browser binaries and system dependencies:
+
+```bash
+# 1. Install browser binaries (Chromium)
+npx playwright install chromium
+
+# 2. Install system dependencies (Linux only)
+# This requires sudo privileges to install necessary libs for the headless browser
+sudo npx playwright install-deps chromium
+```
+
+*Note: On Windows or macOS, `npx playwright install chromium` is usually sufficient.*
+
+### 3. Set Up Database
 
 **Using Docker (Recommended)**:
 ```bash
@@ -51,7 +66,7 @@ docker run --name markify-postgres \
 
 **Or install PostgreSQL locally** - See [docs/quick-start.md](docs/quick-start.md)
 
-### 3. Configure Environment Variables
+### 4. Configure Environment Variables
 
 Create a `.env` file:
 
@@ -70,7 +85,7 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
 See [docs/environment-setup.md](docs/environment-setup.md) for detailed configuration.
 
-### 4. Set Up Google OAuth
+### 5. Set Up Google OAuth
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project
@@ -80,13 +95,13 @@ See [docs/environment-setup.md](docs/environment-setup.md) for detailed configur
 
 **Detailed guide**: [docs/auth-setup.md](docs/auth-setup.md#google-oauth-configuration)
 
-### 5. Run Database Migrations
+### 6. Run Database Migrations
 
 ```bash
 npm run db:migrate
 ```
 
-### 6. Start Development Server
+### 7. Start Development Server
 
 ```bash
 npm run dev
@@ -176,14 +191,17 @@ markify/
 ### Build and Run
 
 ```bash
-# Build image
-make build
+# Build and start all services
+make up
 
-# Run container
-make run
+# View logs
+make logs
 
-# Stop container
-make stop
+# Stop and remove containers
+make down
+
+# Full setup (install + up + db push)
+make setup
 ```
 
 ### Docker Compose (with PostgreSQL)
