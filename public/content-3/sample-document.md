@@ -2,8 +2,8 @@
 
 - **University:** University of Dhaka
 - **Program:** Professional Master’s in Information & Cybersecurity (PMICS)
-- **Title:** Network Traffic Analysis, Threat Mitigation & EDR Integration
-- **Subtitle:** Comprehensive Laboratory Report on Proactive Defense and Incident Response
+- **Title:** CSE 804 (2nd Mid on Lab)
+- **Subtitle:** Network Traffic Analysis, Threat Mitigation & EDR Integration
 - **Course:** CSE 804: Network & Internet Security
 - **Name:** Nishan Paul
 - **Roll No:** 50028

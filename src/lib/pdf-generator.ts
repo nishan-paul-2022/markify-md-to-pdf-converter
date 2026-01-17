@@ -2,7 +2,12 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
 
-interface Metadata {
+export interface GroupMember {
+  name: string;
+  roll: string;
+}
+
+export interface Metadata {
   university?: string;
   program?: string;
   title?: string;
@@ -13,6 +18,7 @@ interface Metadata {
   reg?: string;
   batch?: string;
   date?: string;
+  groupMembers?: GroupMember[];
 }
 
 export async function generatePdf(markdownHtml: string, metadata: Metadata): Promise<Buffer> {
@@ -45,14 +51,13 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
       console.error('Error reading images:', err);
     }
 
-    const hasMetadata = metadata && Object.values(metadata).some(val => val && val.trim().length > 0);
+    const hasMetadata = metadata && Object.keys(metadata).length > 0;
 
+    // Exact same styling as PageTemplates.tsx but in CSS
     const style = `
-
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lora&display=swap');
       
       ${hasMetadata ? `
-      /* Page-specific margins: zero for first page (landing), standard for others */
       @page :first {
         margin: 0;
       }
@@ -62,13 +67,20 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
         margin: 15mm;
       }
       
+      * {
+        box-sizing: border-box;
+      }
+      
       body { 
         font-family: 'Inter', sans-serif;
         padding: 0;
         margin: 0;
         color: #1a1a1a;
         background: white;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
       }
+      
       .report-container { padding: 0; }
       
       h1, h2, h3, h4, h5, h6 {
@@ -172,34 +184,6 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
         margin: 0.8cm 0;
       }
 
-
-      .mermaid-wrapper {
-        margin: 0.5cm 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        width: 100%;
-      }
-      
-      /* Intermediate container from Mermaid */
-      .mermaid {
-        display: flex !important;
-        justify-content: center !important;
-        width: 100% !important;
-      }
-      
-      /* Ensure only SVGs are visible and scaled */
-      .mermaid svg {
-         max-width: 100% !important;
-         max-height: 11cm !important; /* More aggressive cap to travel with Headers */
-         height: auto !important;
-         width: auto !important;
-         display: block;
-         margin: 0 auto;
-      }
-
-      .diagram-container { margin: 0; text-align: center; width: 100%; }
-
       table {
         width: 100%;
         border-collapse: collapse;
@@ -242,106 +226,319 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
         word-break: break-word;
       }
 
-      .cover-page { 
-        width: 100%;
-        min-height: 100vh;
+      /* Cover Page - Exact match to PageTemplates.tsx */
+      .cover-page {
+        width: 794px;
+        height: 1123px;
+        background-color: #020617;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 0;
+        page-break-after: always;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .bg-blur-1 {
+        position: absolute;
+        top: -10%;
+        left: -10%;
+        width: 40%;
+        height: 40%;
+        background: rgba(37, 99, 235, 0.2);
+        border-radius: 50%;
+        filter: blur(120px);
+      }
+      
+      .bg-blur-2 {
+        position: absolute;
+        bottom: -10%;
+        right: -10%;
+        width: 50%;
+        height: 50%;
+        background: rgba(79, 70, 229, 0.1);
+        border-radius: 50%;
+        filter: blur(140px);
+      }
+      
+      .cover-bg-image {
+        position: absolute;
+        inset: 0;
         background-image: url('data:image/png;base64,${bgBase64}');
         background-size: cover;
         background-position: center;
-        color: white; 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        text-align: center; 
-        padding: 0; 
-        page-break-after: always;
+        mix-blend-mode: overlay;
+        opacity: 0.4;
+      }
+      
+      .cover-content {
         position: relative;
-        box-sizing: border-box;
-      }
-      .logo-container {
-        margin-top: 1cm;
-        padding: 15px;
-        display: flex;
-        justify-content: center;
-      }
-      .logo {
-        width: 120px;
-        height: auto;
-        margin: 0; /* Reset img margin */
-      }
-      .university { 
-        font-size: 28px; 
-        letter-spacing: 2px; 
-        font-weight: 700; 
-        margin-top: 10px;
-        text-transform: uppercase;
-      }
-      .program {
-        font-size: 16px;
-        font-weight: 400;
-        margin-top: 8px;
-        opacity: 0.9;
-      }
-      .title-section {
-        margin-top: 2cm;
-        margin-bottom: 2cm;
+        z-index: 10;
         width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 56px;
       }
-      .report-title {
-        font-size: 32px;
-        font-weight: 800;
-        line-height: 1.2;
-        margin-bottom: 8px;
-        padding: 0 20px;
-        word-wrap: break-word;
-      }
-      .report-subtitle {
-        font-size: 18px;
-        font-weight: 600;
-        opacity: 0.95;
-        padding: 0 20px;
-        word-wrap: break-word;
-      }
-      .course-info {
-        margin-top: 1cm;
-        font-size: 15px;
-        width: 85%;
-        border-bottom: 1px solid rgba(255,255,255,0.2);
-        padding-bottom: 10px;
-        display: inline-block;
-        word-wrap: break-word;
-      }
-      .student-details {
-        margin-top: 1cm;
-        width: 70%;
-        background: rgba(255,255,255,0.1);
-        border-radius: 12px;
-        padding: 20px;
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255,255,255,0.1);
-      }
-      .details-row {
-        display: flex; 
-        margin-bottom: 8px;
-        text-align: left;
-        font-size: 14px;
-      }
-      .details-row:last-child { margin-bottom: 0; }
-      .details-label {
-        width: 42%;
-        font-weight: 600;
-        color: rgba(255,255,255,0.9);
+      
+      .cover-header {
+        width: 100%;
         display: flex;
         justify-content: space-between;
-        padding-right: 8px;
+        align-items: flex-start;
+        margin-bottom: 40px;
       }
-      .details-value {
-        width: 58%;
+      
+      .logo {
+        width: 100px;
+        height: auto;
+      }
+      
+      .session-info {
+        text-align: right;
+      }
+      
+      .session-tag {
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: #60a5fa;
+        margin-bottom: 4px;
+      }
+      
+      .date-tag {
+        font-size: 12px;
         font-weight: 500;
-        padding-left: 8px;
+        color: rgba(255,255,255,0.4);
+        letter-spacing: 0.1em;
       }
-      /* ... other styles ... */
+      
+      .university-section {
+        margin-bottom: 56px;
+        text-align: center;
+        width: 100%;
+      }
+      
+      .university-name {
+        font-size: 28px;
+        font-weight: 900;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: white;
+        line-height: 1.1;
+      }
+      
+      .program-name {
+        font-size: 16px;
+        font-weight: 700;
+        margin-top: 16px;
+        color: rgba(255,255,255,0.6);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 16px;
+        display: inline-block;
+        white-space: nowrap;
+      }
+      
+      .hero-section {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        max-width: 95%;
+        text-align: center;
+      }
+      
+      .title-wrapper {
+        margin-bottom: 48px;
+        width: 100%;
+      }
+      
+      .report-title-hero {
+        font-size: 40px;
+        font-weight: 900;
+        line-height: 1.2;
+        margin-bottom: 24px;
+        letter-spacing: -0.02em;
+        color: white;
+        padding: 0 16px;
+      }
+      
+      .report-subtitle-hero {
+        font-size: 20px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.9);
+        line-height: 1.5;
+        white-space: nowrap;
+        padding: 0 16px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .course-box {
+        display: inline-flex;
+        align-items: center;
+        padding: 12px 24px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(20px);
+        font-weight: 900;
+        font-size: 16px;
+        color: #60a5fa;
+        white-space: nowrap;
+      }
+      
+      .footer-grid {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 32px;
+        align-items: end;
+        margin-top: 48px;
+        padding-top: 32px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        text-align: left;
+      }
+      
+      .submitter-column {
+        grid-column: span 5;
+      }
+      
+      .label-pill {
+        display: inline-block;
+        padding: 6px 14px;
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        margin-bottom: 16px;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+      }
+      
+      .info-group {
+        margin-bottom: 14px;
+      }
+      
+      .info-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.4);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 4px;
+        display: block;
+      }
+      
+      .info-value-big {
+        font-size: 16px;
+        font-weight: 900;
+        color: white;
+      }
+      
+      .info-value-small {
+        font-size: 14px;
+        font-weight: 700;
+        color: white;
+      }
+      
+      .group-column {
+        grid-column: span 7;
+      }
+      
+      .group-card {
+        background: rgba(255,255,255,0.05);
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 20px;
+        backdrop-filter: blur(20px);
+      }
+      
+      .group-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding: 0 4px;
+      }
+      
+      .group-card-title {
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+        color: #60a5fa;
+        letter-spacing: 0.2em;
+      }
+      
+      .group-count {
+        font-size: 10px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.4);
+      }
+      
+      .member-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .member-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.05);
+      }
+      
+      .member-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      
+      .member-index {
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+        background: rgba(59, 130, 246, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 900;
+        color: #60a5fa;
+      }
+      
+      .member-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.9);
+      }
+      
+      .member-roll {
+        font-size: 12px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.4);
+      }
     `;
+
+    // Process metadata
+    const groupMembers = metadata.groupMembers || [];
+    const courseText = metadata.course ? metadata.course.replace(',', ':') : '';
 
     const html = `
       <!DOCTYPE html>
@@ -349,97 +546,95 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
       <head>
         <meta charset="UTF-8">
         <style>${style}</style>
-        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-        <script>
-          mermaid.initialize({ 
-            startOnLoad: true, 
-            theme: 'base',
-            themeVariables: {
-              primaryColor: '#e0f2fe',
-              primaryTextColor: '#0369a1',
-              primaryBorderColor: '#0ea5e9',
-              lineColor: '#0ea5e9',
-              secondaryColor: '#f0f9ff',
-              tertiaryColor: '#ffffff',
-              fontFamily: 'Inter, sans-serif',
-              fontSize: '14px',
-              mainBkg: '#ffffff',
-              nodeBorder: '#cbd5e1',
-              clusterBkg: '#f1f5f9',
-              titleColor: '#0f172a',
-              edgeLabelBackground: '#ffffff',
-            }
-          });
-
-          // Content grouping disabled as per user request
-          window.addEventListener('DOMContentLoaded', () => {
-            // DOM loaded
-          });
-        </script>
       </head>
       <body>
         ${hasMetadata ? `
         <div class="cover-page">
-          <div class="logo-container">
-            <img src="data:image/png;base64,${logoBase64}" class="logo" />
-          </div>
+          <div class="bg-blur-1"></div>
+          <div class="bg-blur-2"></div>
+          <div class="cover-bg-image"></div>
           
-          ${metadata.university ? `<div class="university">${metadata.university}</div>` : ''}
-          ${metadata.program ? `<div class="program">${metadata.program}</div>` : ''}
-          
-          ${metadata.title || metadata.subtitle ? `
-          <div class="title-section">
-            ${metadata.title ? `<div class="report-title">${metadata.title}</div>` : ''}
-            ${metadata.subtitle ? `<div class="report-subtitle">${metadata.subtitle}</div>` : ''}
+          <div class="cover-content">
+            <div class="cover-header">
+              <img src="data:image/png;base64,${logoBase64}" class="logo" />
+              <div class="session-info">
+                <div class="session-tag">Session 2025-26</div>
+                <div class="date-tag">${metadata.date || ''}</div>
+              </div>
+            </div>
+            
+            <div class="university-section">
+              <div class="university-name">${metadata.university || ''}</div>
+              <div class="program-name">${metadata.program || ''}</div>
+            </div>
+            
+            <div class="hero-section">
+              <div class="title-wrapper">
+                <h1 class="report-title-hero">${metadata.title || ''}</h1>
+                <div class="report-subtitle-hero">${metadata.subtitle || ''}</div>
+              </div>
+              
+              <div class="course-box">
+                ${courseText}
+              </div>
+            </div>
+            
+            <div class="footer-grid">
+              <div class="submitter-column">
+                <div class="label-pill">Submitted By</div>
+                <div class="info-group">
+                  <span class="info-label">Name of Student</span>
+                  <span class="info-value-big">${metadata.name || ''}</span>
+                </div>
+                <div style="display: flex; gap: 32px;">
+                  <div class="info-group">
+                    <span class="info-label">Roll Number</span>
+                    <span class="info-value-small">${metadata.roll || ''}</span>
+                  </div>
+                  <div class="info-group">
+                    <span class="info-label">Reg. No</span>
+                    <span class="info-value-small">${metadata.reg || ''}</span>
+                  </div>
+                </div>
+                <div class="info-group">
+                  <span class="info-label">Batch</span>
+                  <span class="info-value-small">${metadata.batch || ''}</span>
+                </div>
+              </div>
+              
+              <div class="group-column">
+                ${groupMembers.length > 0 ? `
+                <div class="group-card">
+                  <div class="group-card-header">
+                    <div class="group-card-title">Collaborative Group</div>
+                    <div class="group-count">${groupMembers.length} Members</div>
+                  </div>
+                  <div class="member-list">
+                    ${groupMembers.map((m: GroupMember, i: number) => `
+                    <div class="member-row">
+                      <div class="member-info">
+                        <div class="member-index">${i + 1}</div>
+                        <span class="member-name">${m.name}</span>
+                      </div>
+                      <span class="member-roll">${m.roll}</span>
+                    </div>
+                    `).join('')}
+                  </div>
+                </div>
+                ` : `
+                <div style="text-align: right;">
+                  <div class="label-pill">Confidential</div>
+                </div>
+                `}
+              </div>
+            </div>
           </div>
-          ` : ''}
-          
-          ${metadata.course ? `
-          <div class="course-info">
-            ${metadata.course}
-          </div>
-          ` : ''}
-          
-          ${metadata.name || metadata.roll || metadata.reg || metadata.batch || metadata.date ? `
-          <div class="student-details">
-            ${metadata.name ? `
-            <div class="details-row">
-              <div class="details-label"><span>Name</span><span>:</span></div>
-              <div class="details-value">${metadata.name}</div>
-            </div>
-            ` : ''}
-            ${metadata.roll ? `
-            <div class="details-row">
-              <div class="details-label"><span>Roll No</span><span>:</span></div>
-              <div class="details-value">${metadata.roll}</div>
-            </div>
-            ` : ''}
-            ${metadata.reg ? `
-            <div class="details-row">
-              <div class="details-label"><span>Reg. No</span><span>:</span></div>
-              <div class="details-value">${metadata.reg}</div>
-            </div>
-            ` : ''}
-            ${metadata.batch ? `
-            <div class="details-row">
-              <div class="details-label"><span>Batch</span><span>:</span></div>
-              <div class="details-value">${metadata.batch}</div>
-            </div>
-            ` : ''}
-            ${metadata.date ? `
-            <div class="details-row">
-              <div class="details-label"><span>Submission Date</span><span>:</span></div>
-              <div class="details-value">${metadata.date}</div>
-            </div>
-            ` : ''}
-          </div>
-          ` : ''}
         </div>
         ` : ''}
         ${markdownHtml.trim() ? `
         <div class="report-container">
           <div class="content-page">
-            ${markdownHtml.replace(/<code class="language-mermaid">([\s\S]*?)<\/code>/g, '<div class="mermaid-wrapper"><div class="mermaid">$1</div></div>')}
+            ${markdownHtml}
           </div>
         </div>
         ` : ''}
@@ -449,21 +644,12 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
 
     console.log('📄 Setting page content...');
     await page.setContent(html, { waitUntil: 'networkidle' });
-
-    // Robust wait for mermaid
-    try {
-      await page.waitForSelector('.mermaid svg, .mermaid[data-processed="true"]', { timeout: 5000 });
-    } catch {
-      // Mermaid wait timeout, proceeding anyway...
-    }
-    // Extra buffer
     await page.waitForTimeout(1000);
 
     console.log('🖨️ Generating PDF...');
     const pdf = await page.pdf({
       format: 'A4',
       printBackground: true,
-      // We set margin to 0 here to let the CSS @page rules handle the specific margins per page
       margin: { top: 0, bottom: 0, left: 0, right: 0 },
       displayHeaderFooter: true,
       headerTemplate: '<div></div>',
