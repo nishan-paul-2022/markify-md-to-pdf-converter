@@ -296,6 +296,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
       .logo {
         width: 100px;
         height: auto;
+        filter: drop-shadow(0 25px 25px rgba(0, 0, 0, 0.15));
       }
       
       .session-info {
@@ -556,7 +557,9 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
           
           <div class="cover-content">
             <div class="cover-header">
-              <img src="data:image/png;base64,${logoBase64}" class="logo" />
+              <div>
+                <img src="data:image/png;base64,${logoBase64}" class="logo" />
+              </div>
               <div class="session-info">
                 <div class="session-tag">Session 2025-26</div>
                 <div class="date-tag">${metadata.date || ''}</div>
