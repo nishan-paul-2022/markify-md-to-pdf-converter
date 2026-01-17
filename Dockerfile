@@ -21,7 +21,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Production stage
-FROM mcr.microsoft.com/playwright:v1.49.1-noble AS runner
+FROM mcr.microsoft.com/playwright:v1.57.0-noble AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -31,6 +31,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN apt-get update && apt-get install -y \
     fonts-inter \
     fonts-liberation \
+    fonts-noto-color-emoji \
+    fonts-freefont-ttf \
     openssl \
     && rm -rf /var/lib/apt/lists/*
 
