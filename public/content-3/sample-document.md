@@ -180,8 +180,6 @@ The laboratory environment was architected using **VirtualBox** with a bridged n
 
 This configuration ensures bidirectional communication without NAT traversal complications, simulating a realistic internal network compromise scenario.
 
-![Infrastructure: Network Topology Diagram](images/img-015-network-topology.png)
-
 **Validation:**  
 Both systems were verified to be on the same subnet through ICMP echo requests and ARP table analysis, confirming Layer 2 adjacency and eliminating potential routing-related detection failures.
 
@@ -326,6 +324,8 @@ The phishing email was successfully delivered to the victim's inbox, appearing a
 
 ![Attack Vector: Phishing Email in Victim Inbox](images/img-020-phishing-email.png)
 
+![Social Engineering: Calendar Event Successfully Added](images/img-020b-calendar-added.png)
+
 ---
 
 ### **3.5 Phase 3: Attack Execution & Command and Control**
@@ -370,9 +370,7 @@ Logged On Users : 2
 Meterpreter     : x86/windows
 ```
 
-![Post-Exploitation: Metasploit Listener Configuration](images/img-022-metasploit-listener.png)
-
-![Command and Control: Active Meterpreter Session](images/img-023-reverse-shell.png)
+![Actionable Intelligence: Successful Command and Control (C2) Session Establishment](images/img-022-metasploit-listener.png)
 
 **Post-Exploitation Capabilities:**  
 The established Meterpreter session provided comprehensive system access, including:
@@ -456,39 +454,13 @@ The **Wazuh agent** deployed on the victim system successfully identified multip
 - **Severity:** Critical (Level 15)
 - **Tactics:** Defense Evasion, Privilege Escalation
 
-![Host Detection: Wazuh Malware Behavior Alerts](images/img-027-wazuh-detection-1.png)
+**Alert Timeline & Forensic Correlation:**  
+Wazuh's behavioral analysis engine automatically correlated multiple low-level events into high-severity security alerts. The platform provided granular forensic data, including:
+- **Detection Window:** January 17, 2026, 05:45 - 05:48
+- **Alert Rule IDs:** 61634, 61638, 92213
+- **Forensic Artifacts:** Process IDs, parent-child relationships, and MITRE ATT&CK technique mapping (T1055).
 
-**Alert Timeline & Correlation:**
-- **Detection Window:** January 17, 2026, 05:45 - 05:48 (3-minute window)
-- **Alert Volume:** Multiple high-severity alerts within short timeframe
-- **Rule IDs Triggered:** 61634, 61638, 92213
-- **Alert Descriptions:**
-  - "Malware-like behavior detected"
-  - "Suspicious process creation"
-  - "Potential process injection attempt"
-
-![Host Detection: Wazuh Alert Correlation](images/img-028-wazuh-detection-2.png)
-
-**MITRE ATT&CK Integration:**  
-Wazuh's built-in MITRE ATT&CK mapping automatically correlated the detected behaviors with known adversary tactics:
-
-- **Tactic:** Defense Evasion
-- **Technique:** T1055 - Process Injection
-- **Sub-Technique:** T1055.012 - Process Hollowing
-- **Detection Method:** Behavioral analysis of process creation and memory manipulation
-
-![Host Detection: Detailed Alert Timeline](images/img-029-wazuh-timeline.png)
-
-**Forensic Evidence:**  
-The Wazuh alerts provided comprehensive forensic data including:
-- Process execution timestamps
-- Parent-child process relationships
-- Command-line arguments
-- User context (DESKTOP-IF7FUAJ\HP)
-- Network connection metadata
-- File system modifications
-
-![Host Detection: Comprehensive Alert Metadata](images/img-030-wazuh-details.png)
+![Host-Based Detection: Wazuh EDR Security Alerts and MITRE ATT&CK Mapping](images/img-027-wazuh-detection-1.png)
 
 **Detection Efficacy:**  
 The Wazuh EDR successfully identified the malicious activity through multiple detection mechanisms:
