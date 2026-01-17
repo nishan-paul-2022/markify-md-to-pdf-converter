@@ -16,6 +16,7 @@ export default {
       }
     }),
   ],
+  secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: '/auth/signin',
     error: '/auth/error',
