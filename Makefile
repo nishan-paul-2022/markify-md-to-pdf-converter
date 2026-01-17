@@ -11,24 +11,24 @@ all: help
 
 # Build and start all services
 up:
-	docker-compose up -d --build
+	docker compose up -d --build
 	@echo "Services are running. Access app at http://localhost:3000"
 
 # Stop and remove all containers, networks, and images
 down:
-	docker-compose down
+	docker compose down
 
 # Restart services
 restart:
-	docker-compose restart
+	docker compose restart
 
 # View logs for the application
 logs:
-	docker-compose logs -f app
+	docker compose logs -f app
 
 # Show running containers
 ps:
-	docker-compose ps
+	docker compose ps
 
 # --- Database / Prisma Commands ---
 
@@ -66,7 +66,7 @@ setup: install up db-push
 
 # Clean up docker images and volumes
 clean:
-	docker-compose down -v
+	docker compose down -v
 	docker rmi $(APP_NAME) || true
 
 # Help command
