@@ -9,8 +9,76 @@ interface CoverPageProps {
   metadata: Metadata | undefined;
 }
 
-export const CoverPage = ({ metadata }: CoverPageProps): React.JSX.Element | null => {
-  if (!metadata) return null;
+const IndividualCoverPage = ({ metadata }: CoverPageProps): React.JSX.Element => {
+  return (
+    <div className="pdf-page relative bg-white overflow-hidden flex flex-col items-center text-center p-0 mx-auto shrink-0 shadow-2xl"
+      style={{ width: `${A4_WIDTH_PX}px`, height: `${A4_HEIGHT_PX}px`, color: 'white', fontFamily: 'var(--font-inter), sans-serif' }}>
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center"
+        style={{ backgroundImage: `url('/cover-bg.png')` }}
+      />
+
+      <div className="relative z-10 w-full h-full flex flex-col items-center">
+        <div className="mt-[2cm] p-4 flex justify-center">
+          <Image src="/university-logo.png" alt="University Logo" width={120} height={120} className="w-[120px] h-auto drop-shadow-2xl" />
+        </div>
+
+        {metadata?.university && (
+          <div className="text-[28px] font-bold tracking-[2px] mt-[10px] uppercase drop-shadow-lg">{metadata.university}</div>
+        )}
+        {metadata?.program && (
+          <div className="text-[16px] font-normal mt-[8px] opacity-90 drop-shadow-md">{metadata.program}</div>
+        )}
+
+        {(metadata?.title || metadata?.subtitle) && (
+          <div className="mt-[2cm] mb-[2cm] w-full flex flex-col items-center">
+            {metadata.title && (
+              <div className="text-[32px] font-extrabold leading-[1.2] mb-[8px] w-full px-8 break-words text-center drop-shadow-xl">
+                {metadata.title}
+              </div>
+            )}
+            {metadata.subtitle && (
+              <div className="text-[18px] font-semibold opacity-95 w-full px-8 break-words text-center drop-shadow-lg">
+                {metadata.subtitle}
+              </div>
+            )}
+          </div>
+        )}
+
+        {metadata?.course && (
+          <div className="mt-[1cm] text-[15px] w-[85%] border-b border-white/20 pb-[10px] break-words drop-shadow-md">
+            {metadata.course}
+          </div>
+        )}
+
+        {(metadata?.name || metadata?.roll || metadata?.reg || metadata?.batch || metadata?.date) && (
+          <div className="mt-[1cm] w-[70%] p-[25px] bg-white/10 border border-white/10 rounded-2xl backdrop-blur-md shadow-2xl">
+            <div className="space-y-[12px]">
+              {[
+                { label: 'Name', value: metadata.name },
+                { label: 'Roll No', value: metadata.roll },
+                { label: 'Reg. No', value: metadata.reg },
+                { label: 'Batch', value: metadata.batch },
+                { label: 'Submission Date', value: metadata.date },
+              ].filter(detail => detail.value).map((detail, idx) => (
+                <div key={idx} className="flex text-left text-[14px]">
+                  <div className="w-[42%] font-bold text-white/90 flex justify-between">
+                    {detail.label}
+                    <span className="mr-2">:</span>
+                  </div>
+                  <div className="w-[58%] font-semibold text-white pl-2 break-words text-left">{detail.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const GroupCoverPage = ({ metadata }: CoverPageProps): React.JSX.Element => {
+  if (!metadata) return <></>;
 
   return (
     <div className="pdf-page relative bg-[#020617] overflow-hidden flex flex-col items-center text-center p-0 mx-auto shrink-0 shadow-2xl"
@@ -110,7 +178,7 @@ export const CoverPage = ({ metadata }: CoverPageProps): React.JSX.Element | nul
 
           {/* Right Column: Collaborative Group Members */}
           <div className="col-span-7">
-            {metadata.groupMembers && metadata.groupMembers.length > 0 ? (
+            {metadata.groupMembers && metadata.groupMembers.length > 0 && (
               <div className="bg-white/5 rounded-2xl border border-white/10 p-5 backdrop-blur-xl shadow-2xl">
                 <div className="flex items-center justify-between mb-4 px-1">
                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-400">Collaborative Group</h3>
@@ -131,15 +199,6 @@ export const CoverPage = ({ metadata }: CoverPageProps): React.JSX.Element | nul
                   ))}
                 </div>
               </div>
-            ) : (
-                <div className="text-right flex flex-col items-end">
-                  <div className="inline-block px-3 py-1 bg-white/5 text-white/40 rounded-md text-[10px] font-black uppercase tracking-[0.2em] mb-4 border border-white/10">
-                    Confidential
-                  </div>
-                  <div className="mt-8 pt-6 border-t border-white/5 w-full">
-                      <div className="text-[20px] font-black text-white/20 uppercase tracking-[0.3em]">Confidential</div>
-                  </div>
-                </div>
             )}
           </div>
         </div>
@@ -147,6 +206,19 @@ export const CoverPage = ({ metadata }: CoverPageProps): React.JSX.Element | nul
     </div>
   );
 };
+
+export const CoverPage = ({ metadata }: CoverPageProps): React.JSX.Element | null => {
+  if (!metadata) return null;
+
+  const isGroupSubmission = metadata.groupMembers && metadata.groupMembers.length > 0;
+
+  if (isGroupSubmission) {
+    return <GroupCoverPage metadata={metadata} />;
+  }
+
+  return <IndividualCoverPage metadata={metadata} />;
+};
+
 
 export const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.ReactNode, pageNumber: number, totalPages: number }): React.JSX.Element => {
   return (

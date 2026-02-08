@@ -539,17 +539,10 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
 
     // Process metadata
     const groupMembers = metadata.groupMembers || [];
+    const isGroupSubmission = groupMembers.length > 0;
     const courseText = metadata.course ? metadata.course.replace(',', ':') : '';
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <style>${style}</style>
-      </head>
-      <body>
-        ${hasMetadata ? `
+    const coverPageHtml = isGroupSubmission ? `
         <div class="cover-page">
           <div class="bg-blur-1"></div>
           <div class="bg-blur-2"></div>
@@ -606,7 +599,6 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
               </div>
               
               <div class="group-column">
-                ${groupMembers.length > 0 ? `
                 <div class="group-card">
                   <div class="group-card-header">
                     <div class="group-card-title">Collaborative Group</div>
@@ -624,16 +616,72 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
                     `).join('')}
                   </div>
                 </div>
-                ` : `
-                <div style="text-align: right;">
-                  <div class="label-pill">Confidential</div>
-                </div>
-                `}
               </div>
             </div>
           </div>
         </div>
-        ` : ''}
+    ` : `
+        <div class="cover-page" style="background-color: white;">
+          <div class="cover-bg-image" style="mix-blend-mode: normal; opacity: 1;"></div>
+          
+          <div class="cover-content" style="padding: 0;">
+            <div style="margin-top: 2cm; padding: 16px; display: flex; justify-content: center;">
+              <img src="data:image/png;base64,${logoBase64}" class="logo" style="width: 120px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));" />
+            </div>
+
+            <div style="margin-top: 10px; text-transform: uppercase; font-size: 28px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+              ${metadata.university || ''}
+            </div>
+            <div style="margin-top: 8px; font-size: 16px; font-weight: 400; opacity: 0.9; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+              ${metadata.program || ''}
+            </div>
+
+            <div style="margin-top: 2cm; margin-bottom: 2cm; width: 100%; display: flex; flex-direction: column; align-items: center;">
+              <div style="font-size: 32px; font-weight: 800; line-height: 1.2; margin-bottom: 8px; width: 100%; padding: 0 32px; word-break: break-word; text-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+                ${metadata.title || ''}
+              </div>
+              <div style="font-size: 18px; font-weight: 600; opacity: 0.95; width: 100%; padding: 0 32px; word-break: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                ${metadata.subtitle || ''}
+              </div>
+            </div>
+
+            <div style="margin-top: 1cm; font-size: 15px; width: 85%; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; word-break: break-word; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+              ${metadata.course || ''}
+            </div>
+
+            <div style="margin-top: 1cm; width: 70%; padding: 25px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; backdrop-filter: blur(10px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${[
+                  { label: 'Name', value: metadata.name },
+                  { label: 'Roll No', value: metadata.roll },
+                  { label: 'Reg. No', value: metadata.reg },
+                  { label: 'Batch', value: metadata.batch },
+                  { label: 'Submission Date', value: metadata.date },
+                ].filter(detail => detail.value).map(detail => `
+                  <div style="display: flex; text-align: left; font-size: 14px;">
+                    <div style="width: 42%; font-weight: 700; color: rgba(255,255,255,0.9); display: flex; justify-content: space-between;">
+                      ${detail.label} <span>:</span>
+                    </div>
+                    <div style="width: 58%; font-weight: 600; color: white; padding-left: 8px; word-break: break-word;">
+                      ${detail.value}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+    `;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>${style}</style>
+      </head>
+      <body>
+        ${hasMetadata ? coverPageHtml : ''}
         ${markdownHtml.trim() ? `
         <div class="report-container">
           <div class="content-page">
@@ -644,6 +692,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
       </body>
       </html>
     `;
+
 
     console.log('📄 Setting page content...');
     await page.setContent(html, { waitUntil: 'networkidle' });
