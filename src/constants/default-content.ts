@@ -1,3 +1,8 @@
+export interface GroupMember {
+  name: string;
+  roll: string;
+}
+
 export interface Metadata {
   university?: string;
   program?: string;
@@ -9,6 +14,7 @@ export interface Metadata {
   reg?: string;
   batch?: string;
   date?: string;
+  groupMembers?: GroupMember[];
 }
 
 /**
@@ -17,12 +23,14 @@ export interface Metadata {
  * - **Key:** Value
  * or
  * - **Key:** "Value",
+ * And also looks for a "Collaborative Group Members" table.
  */
 export function parseMetadataFromMarkdown(markdown: string): Metadata {
   const metadata: Metadata = {};
   
   // Find the Landing Page section
-  const landingPageMatch = markdown.match(/^#\s+Landing\s+Page\s*\n([\s\S]*?)(?=\n#\s+|\n---|\Z)/im);
+  // It starts with # Landing Page and ends at the next main heading (#) or horizontal rule (---)
+  const landingPageMatch = markdown.match(/^#\s+Landing\s+Page\s*\n([\s\S]*?)(?=\n#\s+|(?:\r?\n){2}---|\Z)/im);
   
   if (!landingPageMatch) {
     return metadata;
@@ -30,13 +38,7 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
   
   const landingPageContent = landingPageMatch[1];
   
-  // Parse each line with format: - **Key:** Value (with or without quotes and commas)
-
-  // This regex handles both formats:
-  // - **Key:** "Value",
-  // - **Key:** Value
-  // We use [ \t] instead of \s after the colon to avoid matching newlines, 
-  // preventing the regex from consuming the next line if the value is empty.
+  // 1. Parse Key-Value pairs: - **Key:** Value
   const lineRegex = /^-\s+\*\*(.+?):\*\*[ \t]*(.*)$/gm;
   let match;
   
@@ -66,7 +68,33 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
     
     const metadataKey = keyMap[key];
     if (metadataKey && value) {
-      metadata[metadataKey] = value;
+      (metadata as Record<string, unknown>)[metadataKey] = value;
+    }
+  }
+
+  // 2. Parse Collaborative Group Members table
+  // Look for the specific header, then capture everything that looks like a table row
+  const tableHeaderIndex = landingPageContent.indexOf('**Collaborative Group Members:**');
+  if (tableHeaderIndex !== -1) {
+    const contentAfterHeader = landingPageContent.substring(tableHeaderIndex);
+    const tableRows = contentAfterHeader.match(/\|[^|]+\|[^|]+\|/g);
+    
+    if (tableRows && tableRows.length >= 3) { // Header + Separator + At least one member
+      const memberRows = tableRows.slice(2);
+      const members: GroupMember[] = memberRows.map(row => {
+        const cells = row.split('|').map(c => c.trim()).filter(c => c !== '');
+        if (cells.length >= 2) {
+          return {
+            name: cells[0],
+            roll: cells[1]
+          };
+        }
+        return null;
+      }).filter((m): m is GroupMember => m !== null);
+      
+      if (members.length > 0) {
+        metadata.groupMembers = members;
+      }
     }
   }
   
@@ -77,9 +105,10 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
  * Removes the Landing Page section from markdown content
  */
 export function removeLandingPageSection(markdown: string): string {
+  // More robust removal that handles different termination markers
   return markdown.replace(/^#\s+Landing\s+Page\s*\n[\s\S]*?(?=\n#\s+[^#]|\n---|\Z)/im, '').trim();
 }
 
 export const DEFAULT_METADATA: Metadata = {};
 
-export const DEFAULT_MARKDOWN_PATH = '/content-1/sample-document.md';
+export const DEFAULT_MARKDOWN_PATH = '/content-3/sample-document.md';
