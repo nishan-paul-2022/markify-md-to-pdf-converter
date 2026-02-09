@@ -35,7 +35,7 @@ interface ConverterViewProps {
   };
   files: AppFile[];
   filesLoading: boolean;
-  handleFileDelete: (id: string) => void;
+  handleFileDelete: (id: string | string[]) => void;
   onFileSelect: (node: FileTreeNode) => void;
   refreshFiles: () => Promise<void>;
   rawContent: string;

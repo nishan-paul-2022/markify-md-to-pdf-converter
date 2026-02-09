@@ -237,3 +237,65 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     )
   }
 }
+
+export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  try {
+    const session = await auth()
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
+    const { ids } = await request.json()
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json(
+        { error: "No IDs provided" },
+        { status: 400 }
+      )
+    }
+
+    // Find all files to get their storage keys
+    const files = await prisma.file.findMany({
+      where: {
+        id: { in: ids },
+        userId: session.user.id,
+      },
+    })
+
+    // Delete files from disk
+    const deletePromises = files.map(async (file) => {
+      try {
+        const filePath = join(process.cwd(), "public", file.storageKey)
+        await unlink(filePath)
+      } catch (error: unknown) {
+        console.error(`Error deleting file from disk: ${file.storageKey}`, error)
+      }
+    })
+
+    const { unlink } = await import("fs/promises")
+    await Promise.all(deletePromises)
+
+    // Delete records from database
+    await prisma.file.deleteMany({
+      where: {
+        id: { in: files.map(f => f.id) },
+        userId: session.user.id,
+      },
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: `${files.length} files deleted successfully`,
+    })
+  } catch (error: unknown) {
+    console.error("Bulk deletion error:", error)
+    return NextResponse.json(
+      { error: "Failed to delete files" },
+      { status: 500 }
+    )
+  }
+}

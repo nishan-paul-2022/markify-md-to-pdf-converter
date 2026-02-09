@@ -16,7 +16,7 @@ interface FileTreeProps {
   nodes: FileTreeNode[];
   level?: number;
   onFileSelect: (node: FileTreeNode) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string | string[]) => void;
   selectedFileId?: string;
 }
 
@@ -38,6 +38,19 @@ export function FileTree({
     }
     setExpandedFolders(newExpanded)
   }
+
+  const collectFileIds = (node: FileTreeNode): string[] => {
+    if (node.type === "file") {
+      return [node.id];
+    }
+    let ids: string[] = [];
+    if (node.children) {
+      for (const child of node.children) {
+        ids = [...ids, ...collectFileIds(child)];
+      }
+    }
+    return ids;
+  };
 
   // Auto-expand folders containing the selected file
   React.useEffect(() => {
@@ -89,24 +102,58 @@ export function FileTree({
         const isSelected = selectedFileId === node.id
 
         if (node.type === "folder") {
+          const folderFileIds = collectFileIds(node);
+          const isDefaultFolder = node.id.startsWith("folder-no-batch") || 
+            folderFileIds.some(id => id.startsWith("default-"));
+
           return (
-            <div key={node.path} className="flex flex-col">
-              <button
-                onClick={() => toggleFolder(node.path)}
+            <div key={node.path} className="flex flex-col group/folder">
+              <div
                 className={cn(
-                  "flex items-center gap-2 px-4 py-1.5 text-sm hover:bg-white/5 transition-colors text-slate-400 hover:text-slate-100",
+                  "flex items-center justify-between hover:bg-white/5 transition-colors text-slate-400 hover:text-slate-100",
                   level > 0 && `ml-${level * 2}`
                 )}
                 style={{ paddingLeft: `${(level + 1) * 1}rem` }}
               >
-                {isExpanded ? (
-                  <ChevronDown className="h-3.5 w-3.5" />
-                ) : (
-                  <ChevronRight className="h-3.5 w-3.5" />
-                )}
-                <Folder className="h-4 w-4 text-amber-500/80" />
-                <span className="truncate">{node.name}</span>
-              </button>
+                <button
+                  onClick={() => toggleFolder(node.path)}
+                  className="flex-1 flex items-center gap-2 py-1.5 text-sm text-left truncate"
+                >
+                  {isExpanded ? (
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  )}
+                  <Folder className="h-4 w-4 text-amber-500/80" />
+                  <span className="truncate">{node.name}</span>
+                </button>
+                <div className="opacity-0 group-hover/folder:opacity-100 flex items-center px-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
+                        <MoreVertical className="h-3.5 w-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
+                      {!isDefaultFolder && folderFileIds.length > 0 && (
+                        <DropdownMenuItem 
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to delete the folder "${node.name}" and all its contents?`)) {
+                              onDelete(folderFileIds);
+                            }
+                          }} 
+                          className="gap-2 text-xs text-red-400 focus:text-red-400"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" /> Delete Folder
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem onClick={() => toggleFolder(node.path)} className="gap-2 text-xs">
+                        {isExpanded ? "Collapse" : "Expand"}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
               {isExpanded && node.children && (
                 <FileTree
                   nodes={node.children}
@@ -148,7 +195,14 @@ export function FileTree({
                     <ExternalLink className="h-3.5 w-3.5" /> Open
                   </DropdownMenuItem>
                   {!node.id.startsWith("default-") && (
-                    <DropdownMenuItem onClick={() => onDelete(node.id)} className="gap-2 text-xs text-red-400 focus:text-red-400">
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        if (window.confirm(`Are you sure you want to delete "${node.name}"?`)) {
+                          onDelete(node.id);
+                        }
+                      }} 
+                      className="gap-2 text-xs text-red-400 focus:text-red-400"
+                    >
                       <Trash2 className="h-3.5 w-3.5" /> Delete
                     </DropdownMenuItem>
                   )}

@@ -14,7 +14,15 @@ interface ConverterClientProps {
 
 export default function ConverterClient({ user }: ConverterClientProps): React.JSX.Element {
   const converterState = useConverter();
-  const { files, loading: filesLoading, handleDelete, refreshFiles } = useFiles();
+  const { files, loading: filesLoading, handleDelete, handleBulkDelete, refreshFiles } = useFiles();
+
+  const handleUnifiedDelete = useCallback((id: string | string[]) => {
+    if (Array.isArray(id)) {
+      handleBulkDelete(id);
+    } else {
+      handleDelete(id);
+    }
+  }, [handleDelete, handleBulkDelete]);
 
   const handleFileSelect = useCallback(async (node: FileTreeNode) => {
     if (node.type === 'file' && node.file) {
@@ -61,7 +69,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       user={user}
       files={files}
       filesLoading={filesLoading}
-      handleFileDelete={handleDelete}
+      handleFileDelete={handleUnifiedDelete}
       onFileSelect={handleFileSelect}
       refreshFiles={refreshFiles}
       {...converterState}

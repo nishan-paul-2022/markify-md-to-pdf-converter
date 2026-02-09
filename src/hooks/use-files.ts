@@ -84,6 +84,30 @@ export function useFiles() {
     }
   }, [router]);
 
+  const handleBulkDelete = useCallback(async (ids: string[]): Promise<void> => {
+    setDeleting(true);
+    try {
+      const response = await fetch("/api/files", {
+        method: "DELETE",
+        body: JSON.stringify({ ids }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to delete files");
+      }
+
+      setFiles((prev) => prev.filter((file) => !ids.includes(file.id)));
+      router.refresh();
+    } catch (error: unknown) {
+      console.error("Bulk delete error:", error);
+      alert(error instanceof Error ? error.message : "Failed to delete files");
+    } finally {
+      setDeleting(false);
+      setDeleteId(null);
+    }
+  }, [router]);
+
   return {
     files,
     loading,
@@ -91,6 +115,7 @@ export function useFiles() {
     deleting,
     setDeleteId,
     handleDelete,
+    handleBulkDelete,
     refreshFiles: fetchFiles
   };
 }
