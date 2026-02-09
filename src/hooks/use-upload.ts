@@ -36,26 +36,103 @@ export function useUpload() {
     const items = Array.from(e.dataTransfer.items);
     const newFiles: File[] = [];
 
-    const traverseFileTree = async (item: FileSystemEntry, path = "") => {
+    const ALLOWED_IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'];
+
+    const traverseFileTree = async (item: FileSystemEntry, path = "", depth = 0) => {
       if (item.isFile) {
         return new Promise<void>((resolve) => {
           ;(item as FileSystemFileEntry).file((file) => {
-            Object.defineProperty(file, 'webkitRelativePath', {
-              value: path + file.name,
-              writable: false
-            });
-            newFiles.push(file);
+            const fileName = file.name.toLowerCase();
+            const fullPath = path + file.name;
+            const pathParts = fullPath.split('/');
+
+            // Skip hidden files
+            if (file.name.startsWith('.')) {
+              resolve();
+              return;
+            }
+
+            // Determine if this is a folder upload (has path) or file upload
+            const isFolderUpload = pathParts.length > 1;
+
+            console.log(`📁 Processing file: ${fullPath}, isFolderUpload: ${isFolderUpload}, pathParts:`, pathParts);
+
+            if (!isFolderUpload) {
+              // Direct file upload - only accept .md files
+              if (fileName.endsWith('.md')) {
+                console.log(`✅ Accepted (direct .md file): ${file.name}`);
+                Object.defineProperty(file, 'webkitRelativePath', {
+                  value: fullPath,
+                  writable: false
+                });
+                newFiles.push(file);
+              } else {
+                console.log(`❌ Rejected (direct non-.md file): ${file.name}`);
+              }
+            } else {
+              // Folder upload - apply strict filtering
+              const subPath = pathParts.slice(1); // Remove root folder name
+              
+              if (subPath.length === 1) {
+                // File at root level - only accept .md files
+                if (fileName.endsWith('.md')) {
+                  console.log(`✅ Accepted (root .md file): ${fullPath}`);
+                  Object.defineProperty(file, 'webkitRelativePath', {
+                    value: fullPath,
+                    writable: false
+                  });
+                  newFiles.push(file);
+                } else {
+                  console.log(`❌ Rejected (root non-.md file): ${fullPath}`);
+                }
+              } else if (subPath.length === 2 && subPath[0] === 'images') {
+                // File inside images/ folder - only accept image files
+                const isImage = ALLOWED_IMAGE_EXTENSIONS.some(ext => fileName.endsWith(ext));
+                if (isImage) {
+                  console.log(`✅ Accepted (image in images/): ${fullPath}`);
+                  Object.defineProperty(file, 'webkitRelativePath', {
+                    value: fullPath,
+                    writable: false
+                  });
+                  newFiles.push(file);
+                } else {
+                  console.log(`❌ Rejected (non-image in images/): ${fullPath}`);
+                }
+              } else {
+                console.log(`❌ Rejected (invalid path structure): ${fullPath}, subPath:`, subPath);
+              }
+              // All other files/paths are ignored
+            }
+
             resolve();
           });
         });
       } else if (item.isDirectory) {
-        const dirReader = (item as FileSystemDirectoryEntry).createReader();
-        const entries = await new Promise<FileSystemEntry[]>((resolve) => {
-          dirReader.readEntries((entries) => resolve(Array.from(entries)));
-        });
-        for (const entry of entries) {
-          await traverseFileTree(entry, path + item.name + "/");
+        const dirName = item.name.toLowerCase();
+        const fullPath = path + item.name;
+        const pathParts = fullPath.split('/');
+        
+        // For folder uploads, only traverse root level and images/ subdirectory
+        if (pathParts.length === 1) {
+          // Root folder - traverse it
+          const dirReader = (item as FileSystemDirectoryEntry).createReader();
+          const entries = await new Promise<FileSystemEntry[]>((resolve) => {
+            dirReader.readEntries((entries) => resolve(Array.from(entries)));
+          });
+          for (const entry of entries) {
+            await traverseFileTree(entry, path + item.name + "/", depth + 1);
+          }
+        } else if (pathParts.length === 2 && dirName === 'images') {
+          // images/ folder at root level - traverse it
+          const dirReader = (item as FileSystemDirectoryEntry).createReader();
+          const entries = await new Promise<FileSystemEntry[]>((resolve) => {
+            dirReader.readEntries((entries) => resolve(Array.from(entries)));
+          });
+          for (const entry of entries) {
+            await traverseFileTree(entry, path + item.name + "/", depth + 1);
+          }
         }
+        // All other directories are ignored (not traversed)
       }
     };
 
@@ -67,8 +144,6 @@ export function useUpload() {
 
     await Promise.all(itemPromises);
 
-
-
     const validation = validateUploadStructure(newFiles);
     if (!validation.valid) {
       setError(validation.error || "Invalid file structure.");
@@ -76,7 +151,7 @@ export function useUpload() {
     }
 
     setError(null);
-    const processedFiles = processFilesWithNaming(newFiles, validation.case);
+    const processedFiles = processFilesWithNaming(validation.filteredFiles, validation.case);
     setFiles((prev) => [...prev, ...processedFiles]);
   }, []);
 
@@ -91,7 +166,7 @@ export function useUpload() {
       }
 
       setError(null);
-      const processedFiles = processFilesWithNaming(selectedFiles, validation.case);
+      const processedFiles = processFilesWithNaming(validation.filteredFiles, validation.case);
       setFiles((prev) => [...prev, ...processedFiles]);
     }
   }, []);

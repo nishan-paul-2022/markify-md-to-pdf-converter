@@ -10,7 +10,7 @@ all: help
 # --- Docker Commands ---
 
 # Build and start all services
-up:
+up: kill-port
 	docker compose up -d --build
 	@echo "Services are running. Access app at http://localhost:3000"
 

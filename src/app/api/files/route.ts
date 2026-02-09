@@ -50,11 +50,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
-    // Validate file type (markdown and related files)
+    // Validate file type (markdown and images only - NO PDFs)
     const allowedTypes = [
       "text/markdown",
       "text/plain",
-      "application/pdf",
       "image/png",
       "image/jpeg",
       "image/jpg",
@@ -66,8 +65,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const isMarkdown = file.name.endsWith(".md") || file.type === "text/markdown"
     
     if (!allowedTypes.includes(file.type) && !isMarkdown) {
+      console.log(`❌ Upload rejected - invalid file type: ${file.type} for file: ${file.name}`);
       return NextResponse.json(
-        { error: "Invalid file type: " + file.type },
+        { error: "Invalid file type: " + file.type + ". Only Markdown (.md) and image files are allowed." },
         { status: 400 }
       )
     }
