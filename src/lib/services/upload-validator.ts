@@ -8,30 +8,60 @@ export interface ValidationResult {
 const ALLOWED_IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'];
 
 /**
- * Validates the structure of uploaded files and classifies them into 4 cases.
- * 
- * Case 1: Single .md file (Independent)
- * Case 2: Multiple .md files (Independent)
- * Case 3: Folder with 1 .md file + images/ folder
- * Case 4: Folder with Multiple .md files + images/ folder
- * 
- * @param files - Array of File objects from a file input or drag-and-drop
- * @returns ValidationResult with case number, validity status, and filtered file list
+ * Normalizes a file path to remove leading ./ and ../ and ensure consistent slashes
  */
-export function validateUploadStructure(files: File[]): ValidationResult {
+const normalizePath = (path: string): string => {
+  return path.replace(/\\/g, '/')
+             .replace(/^\.\//, '')
+             .replace(/\/\.\//g, '/')
+             .replace(/^\//, '');
+};
+
+/**
+ * Extract image references from markdown content
+ */
+export const extractImageReferences = (markdownContent: string): Set<string> => {
+  const imageRefs = new Set<string>();
+  
+  // Standard Markdown images: ![alt](path)
+  const mdImageRegex = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
+  // HTML img tags: <img src="path">
+  const htmlImageRegex = /<img[^>]+src=["']([^"']+)["']/gi;
+  
+  let match;
+  while ((match = mdImageRegex.exec(markdownContent)) !== null) {
+    const url = match[2];
+    if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('data:')) {
+      imageRefs.add(normalizePath(url));
+    }
+  }
+  
+  while ((match = htmlImageRegex.exec(markdownContent)) !== null) {
+    const url = match[1];
+    if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('data:')) {
+      imageRefs.add(normalizePath(url));
+    }
+  }
+  
+  return imageRefs;
+};
+
+/**
+ * Validates the structure of uploaded files and classifies them into 4 cases.
+ */
+export function validateUploadStructure(files: File[], referencedImages: Set<string> = new Set()): ValidationResult {
   if (files.length === 0) {
     return { case: 0, valid: false, error: "No files selected.", filteredFiles: [] };
   }
 
-  // Determine if it's a folder upload by checking webkitRelativePath
+  // Determine if it's a folder upload
   const isFolderUpload = files.some(f => f.webkitRelativePath && f.webkitRelativePath.includes('/'));
   const filteredFiles: File[] = [];
 
-  // 1. Independent File Uploads (Case 1 & 2)
+  // --- Independent File Uploads (Case 1 & 2) ---
   if (!isFolderUpload) {
     for (const file of files) {
       const fileName = file.name.toLowerCase();
-      // Skip hidden files and only allow .md
       if (!file.name.startsWith('.') && fileName.endsWith('.md')) {
         filteredFiles.push(file);
       }
@@ -53,49 +83,88 @@ export function validateUploadStructure(files: File[]): ValidationResult {
     };
   }
 
-  // 2. Folder Uploads (Case 3 & 4) - Internal Filtering
+  // --- Folder Uploads (Case 3 & 4) ---
+  
+  // First, determine the effective root depth.
+  // If we drop a folder 'Project', files are 'Project/file.md'. Root depth = 1 (Folder name)
+  // If we drop contents of 'Project', files are 'file.md' and 'images/img.png'. Root depth = 0.
+  
   let mdFilesInRootCount = 0;
+  const violations: string[] = [];
+
+  // Identify root depth by looking for the first part of paths
+  const firstParts = new Set<string>();
+  files.forEach(f => {
+    const path = normalizePath(f.webkitRelativePath || "");
+    if (path.includes('/')) {
+      firstParts.add(path.split('/')[0]);
+    }
+  });
+
+  // If there's exactly one first part and NO files are at depth 0, it's a single folder drop
+  const isSingleFolderDrop = firstParts.size === 1 && !files.some(f => !(f.webkitRelativePath || "").includes('/'));
 
   for (const file of files) {
-    const pathParts = file.webkitRelativePath.split('/');
-    
-    // Safety check: if we are in folder mode but find a file without a path, skip it 
-    // to maintain a clean structured project
-    if (pathParts.length < 2) {
-      continue;
-    }
-
+    const fullPath = normalizePath(file.webkitRelativePath || file.name);
+    const pathParts = fullPath.split('/');
     const fileName = file.name;
-    const subPath = pathParts.slice(1); // Path within the root folder(s)
+    
+    if (fileName.startsWith('.')) {continue;}
 
-    // Skip hidden files anywhere
-    if (fileName.startsWith('.')) {
-      continue;
+    // Adjust subPath based on whether we are in a single root folder or virtual root
+    const subParts = isSingleFolderDrop ? pathParts.slice(1) : pathParts;
+    const internalPath = subParts.join('/');
+    
+    // Violation check: Forbidden folders/depths
+    if (subParts.length > 2 || (subParts.length === 2 && subParts[0] !== 'images')) {
+      violations.push(`Unauthorized folder structure: ${fullPath}`);
+      continue; // Move to next file, don't even consider this for filtering
     }
 
-    // Rule: Root level can ONLY have .md files
-    // Images must be in "images/" subfolder
-    if (subPath.length === 1) {
-      // It's a file directly inside a root folder
+    if (subParts.length === 1) {
+      // Root level file
       if (fileName.toLowerCase().endsWith('.md')) {
         filteredFiles.push(file);
         mdFilesInRootCount++;
+      } else {
+        violations.push(`Invalid root file '${fileName}'. Only .md files are allowed at root.`);
       }
-    } else if (subPath.length === 2 && subPath[0].toLowerCase() === 'images') {
-      // It's inside "images/" folder - check if it's an image
+    } 
+    else if (subParts.length === 2 && subParts[0] === 'images') {
       const isImage = ALLOWED_IMAGE_EXTENSIONS.some(ext => fileName.toLowerCase().endsWith(ext));
       if (isImage) {
-        filteredFiles.push(file);
+        // STRICT REFERENCE CHECKING
+        const isReferenced = referencedImages.has(internalPath) || 
+                           referencedImages.has(fileName);
+
+        if (isReferenced) {
+          filteredFiles.push(file);
+        } else {
+          // It's in the images folder but not referenced - we don't call it a violation,
+          // we just quietly don't include it. 
+          console.log(`ℹ️ Filtering out unreferenced image: ${fullPath}`);
+        }
+      } else {
+        violations.push(`Non-image file '${fileName}' in images/ folder.`);
       }
     }
-    // Ignore any other file types or locations
   }
 
   if (mdFilesInRootCount === 0) {
     return { 
       case: 3, 
       valid: false, 
-      error: "No Markdown (.md) files found in the root of the uploaded folder(s).",
+      error: "No Markdown (.md) files found in the project root.",
+      filteredFiles: []
+    };
+  }
+
+  // CRITICAL: If there are ANY violations (like an unused-folder), block the ENTIRE upload
+  if (violations.length > 0) {
+    return {
+      case: mdFilesInRootCount === 1 ? 3 : 4,
+      valid: false,
+      error: `Upload blocked! Invalid structure detected:\n${violations.slice(0, 3).join('\n')}${violations.length > 3 ? `\n...and ${violations.length - 3} more` : ''}`,
       filteredFiles: []
     };
   }
@@ -106,4 +175,3 @@ export function validateUploadStructure(files: File[]): ValidationResult {
     filteredFiles
   };
 }
-
