@@ -136,6 +136,10 @@ export function ConverterView({
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
 
+  React.useEffect(() => {
+    console.log('Sidebar state changed to:', isSidebarOpen);
+  }, [isSidebarOpen]);
+
   const fileTree = React.useMemo(() => {
     const filteredFiles = files.filter(f => 
       f.originalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -196,8 +200,8 @@ export function ConverterView({
           {/* Sidebar */}
           <aside 
             className={cn(
-              "hidden lg:flex flex-col bg-slate-900/30 border-r border-white/5 transition-all duration-300 ease-in-out overflow-hidden z-30",
-              isSidebarOpen ? "w-72" : "w-0"
+              "hidden lg:flex flex-col bg-slate-900/30 border-r border-white/5 transition-all duration-300 ease-in-out overflow-hidden z-30 shrink-0",
+              isSidebarOpen ? "w-72 opacity-100" : "w-0 border-r-0 opacity-0 pointer-events-none"
             )}
           >
             <div className="h-12 flex items-center justify-between px-4 border-b border-white/5 bg-slate-900/50 sticky top-0">
@@ -218,19 +222,19 @@ export function ConverterView({
                    <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Refresh Explorer</TooltipContent>
                  </Tooltip>
 
-                 <Tooltip>
-                   <TooltipTrigger asChild>
-                     <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setIsSidebarOpen(false)}
-                        className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
-                     >
-                       <PanelLeftClose className="h-4 w-4" />
-                     </Button>
-                   </TooltipTrigger>
-                   <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Collapse Sidebar</TooltipContent>
-                 </Tooltip>
+                 <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log('Collapse button clicked, current state:', isSidebarOpen);
+                      setIsSidebarOpen(false);
+                    }}
+                    className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+                    title="Collapse Sidebar"
+                 >
+                   <PanelLeftClose className="h-4 w-4" />
+                 </Button>
                </div>
             </div>
 
@@ -268,13 +272,6 @@ export function ConverterView({
             </div>
           </aside>
 
-          {/* Sidebar Toggle (when closed) */}
-          {!isSidebarOpen && (
-            <div className="hidden lg:flex absolute left-0 top-0 bottom-0 w-8 z-40 items-center justify-center hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => setIsSidebarOpen(true)}>
-               <PanelLeftOpen className="h-4 w-4 text-slate-700 group-hover:text-slate-400 transition-colors" />
-            </div>
-          )}
-
           <div className="flex-grow flex flex-col lg:flex-row gap-0 overflow-hidden relative">
           <div className={`flex-1 flex flex-col border-r border-slate-800/50 overflow-hidden transition-all duration-300 ${
             activeTab === 'editor' ? 'flex tab-enter' : 'hidden lg:flex'
@@ -283,6 +280,19 @@ export function ConverterView({
               className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
             >
               <div className="flex items-center gap-3">
+                {/* Sidebar Toggle Button (when collapsed) */}
+                {!isSidebarOpen && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="hidden lg:flex h-7 w-7 rounded-sm text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+                    title="Open Sidebar"
+                  >
+                    <PanelLeftOpen className="h-4 w-4" />
+                  </Button>
+                )}
+                
                 <div 
                   className={`group hidden sm:flex items-center gap-1.5 px-3 h-7 rounded-full transition-all duration-200 border ${
                     isEditing 
