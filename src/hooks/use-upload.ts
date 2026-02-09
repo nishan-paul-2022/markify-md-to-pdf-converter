@@ -104,12 +104,32 @@ export function useUpload() {
       console.error("Upload error:", error);
       const msg = error instanceof Error ? error.message : "Failed to upload files";
       const api = getAlert();
-      if (api) api.show({ title: "Upload failed", message: msg });
-      else alert(msg);
+      if (api) {
+        api.show({ title: "Upload failed", message: msg });
+      } else {
+        alert(msg);
+      }
     } finally {
       setUploading(false);
     }
   };
+
+  const triggerFolderUpload = useCallback(async (): Promise<void> => {
+    const api = getAlert();
+    if (api) {
+      const confirmed = await api.confirm({
+        title: "Upload Project Folder",
+        message: "You are about to upload a project folder. For the best experience, ensure your Markdown files are at the root level and any images are placed in a subfolder named 'images/'.",
+        confirmText: "Select Folder",
+        cancelText: "Cancel",
+        variant: "info"
+      });
+      if (!confirmed) {
+        return;
+      }
+    }
+    folderInputRef.current?.click();
+  }, []);
 
   return {
     files,
@@ -122,6 +142,7 @@ export function useUpload() {
     setFiles,
     handleFileSelect,
     removeFile,
-    uploadFiles
+    uploadFiles,
+    triggerFolderUpload
   };
 }

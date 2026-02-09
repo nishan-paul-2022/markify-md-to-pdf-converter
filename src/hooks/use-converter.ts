@@ -260,8 +260,11 @@ export function useConverter() {
       if (!validation.valid) {
         const msg = validation.error ?? 'Invalid folder structure. Upload blocked.';
         const api = getAlert();
-        if (api) api.show({ title: 'Invalid folder', message: msg });
-        else alert(msg);
+      if (api) {
+        api.show({ title: 'Invalid folder', message: msg });
+      } else {
+        alert(msg);
+      }
         event.target.value = '';
         return;
       }
@@ -385,10 +388,10 @@ export function useConverter() {
         setLastModifiedTime(now);
         setIsUploaded(true);
         setTimeout(() => setIsUploaded(false), 2000);
-      } catch (error) {
-        console.error("Error uploading folder batch:", error);
-        // We don't alert here because the local preview might still work for text
-      } finally {
+    } catch (error) {
+      console.error("Error uploading folder batch:", error);
+      // We don't alert here because the local preview might still work for text
+    } finally {
         setIsLoading(false);
       }
     }
@@ -398,7 +401,20 @@ export function useConverter() {
     fileInputRef.current?.click();
   }, []);
 
-  const triggerFolderUpload = useCallback((): void => {
+  const triggerFolderUpload = useCallback(async (): Promise<void> => {
+    const api = getAlert();
+    if (api) {
+      const confirmed = await api.confirm({
+        title: "Upload Project Folder",
+        message: "You are about to upload a project folder. For the best experience, ensure your Markdown files are at the root level and any images are placed in a subfolder named 'images/'.",
+        confirmText: "Select Folder",
+        cancelText: "Cancel",
+        variant: "info"
+      });
+      if (!confirmed) {
+        return;
+      }
+    }
     folderInputRef.current?.click();
   }, []);
 

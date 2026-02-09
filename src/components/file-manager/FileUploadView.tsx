@@ -18,6 +18,7 @@ interface FileUploadViewProps {
   handleFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeFile: (index: number) => void;
   uploadFiles: () => Promise<void>;
+  triggerFolderUpload: () => void;
 }
 
 export function FileUploadView({
@@ -32,6 +33,7 @@ export function FileUploadView({
   handleFileSelect,
   removeFile,
   uploadFiles,
+  triggerFolderUpload,
 }: FileUploadViewProps) {
   /* formatFileSize removed */
 
@@ -63,7 +65,7 @@ export function FileUploadView({
         <Button
           variant="outline"
           className="flex-1 h-32 flex-col gap-3 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all shadow-sm"
-          onClick={() => folderInputRef.current?.click()}
+          onClick={triggerFolderUpload}
         >
           <div className="bg-amber-100 p-2 rounded-full">
             <FolderOpen className="h-6 w-6 text-amber-600" />
