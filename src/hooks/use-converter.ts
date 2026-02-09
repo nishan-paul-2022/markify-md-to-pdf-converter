@@ -166,8 +166,18 @@ export function useConverter() {
     const files = event.target.files;
     if (files && files.length > 0) {
       console.log('📤 File upload triggered, count:', files.length);
-      
-      const fileList = Array.from(files);
+
+      // Process files for renaming (Case 1/2 logic)
+      const fileList = Array.from(files).map(file => {
+        if (file.name.toLowerCase().endsWith('.md')) {
+           const base = generateStandardName(file.name);
+           const newName = base + '.md';
+           console.log(`UseConverter: Renaming '${file.name}' -> '${newName}'`);
+           return new File([file], newName, { type: file.type });
+        }
+        return file;
+      });
+
       const mdFile = fileList.find(f => f.name.endsWith('.md'));
       
       // 1. Immediate local preview for the first .md file if found
@@ -238,7 +248,33 @@ export function useConverter() {
     console.log('📂 Folder upload triggered, files:', files?.length);
     
     if (files && files.length > 0) {
-      const mdFile = Array.from(files).find(f => f.name.endsWith('.md'));
+      // Logic for Case 3/4: Rename root folder
+      const rawFiles = Array.from(files);
+      const pathParts = rawFiles[0].webkitRelativePath.split('/');
+      const originalRoot = pathParts[0];
+      const standardizedRoot = generateStandardName(originalRoot);
+      const finalRoot = standardizedRoot; // No timestamp
+
+      console.log(`UseConverter: Renaming Root '${originalRoot}' -> '${finalRoot}'`);
+
+      const processedFiles = rawFiles.map(file => {
+        const relativePath = file.webkitRelativePath;
+        // Replace the root folder in path with standardized version
+        // Note: replace only the first occurrence (the root)
+        const newRelativePath = relativePath.startsWith(originalRoot) 
+             ? relativePath.replace(originalRoot, finalRoot)
+             : relativePath;
+
+        const newFile = new File([file], file.name, { type: file.type });
+        Object.defineProperty(newFile, 'webkitRelativePath', {
+           value: newRelativePath,
+           writable: false,
+           configurable: true
+        });
+        return newFile;
+      });
+
+      const mdFile = processedFiles.find(f => f.name.endsWith('.md'));
       
       console.log(mdFile ? `📄 Found markdown file: ${mdFile.name}` : 'ℹ️ No markdown file found, uploading other assets.');
       console.log('📦 Total files to upload:', files.length);
@@ -264,7 +300,7 @@ export function useConverter() {
       
       try {
         // Upload files in parallel
-        const uploadPromises = Array.from(files).map(async (file, index) => {
+        const uploadPromises = processedFiles.map(async (file, index) => {
           const formData = new FormData();
           formData.append('file', file);
           formData.append('batchId', batchId);

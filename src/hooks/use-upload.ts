@@ -1,7 +1,51 @@
 import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { validateUploadStructure } from "@/lib/services/upload-validator";
-import { generateStandardName, addTimestampToName } from "@/lib/utils/naming";
+import { generateStandardName } from "@/lib/utils/naming";
+
+const processFilesWithNaming = (filesToProcess: File[], uploadCase: number): File[] => {
+  console.log(`UseUpload: Processing ${filesToProcess.length} files for Case ${uploadCase}`);
+  
+  if (uploadCase === 1 || uploadCase === 2) {
+    // For Case 1/2: Rename each .md file: standardized-name-timestamp.md
+    return filesToProcess.map(file => {
+      if (file.name.toLowerCase().endsWith('.md')) {
+        const base = generateStandardName(file.name);
+        const newName = base + '.md';
+        
+        console.log(`UseUpload: Renaming '${file.name}' -> '${newName}'`);
+        
+        // Create a new file with the standardized name
+        // IMPORTANT: Use new File() constructor to set the new name
+        return new File([file], newName, { type: file.type });
+      }
+      return file;
+    });
+  } else if (uploadCase === 3 || uploadCase === 4) {
+    // For Case 3/4: All files share a standardized and timestamped root folder name
+    const pathParts = filesToProcess[0].webkitRelativePath.split('/');
+    const originalRoot = pathParts[0];
+    const standardizedRoot = generateStandardName(originalRoot);
+    const finalRoot = standardizedRoot; // No timestamp
+
+    console.log(`UseUpload: Renaming Root '${originalRoot}' -> '${finalRoot}'`);
+
+    return filesToProcess.map(file => {
+      const relativePath = file.webkitRelativePath;
+      const newRelativePath = relativePath.replace(originalRoot, finalRoot);
+      
+      // We create a new file object to avoid any issues, though we mostly care about the path
+      const newFile = new File([file], file.name, { type: file.type });
+      Object.defineProperty(newFile, 'webkitRelativePath', {
+        value: newRelativePath,
+        writable: false,
+        configurable: true
+      });
+      return newFile;
+    });
+  }
+  return filesToProcess;
+};
 
 export function useUpload() {
   const router = useRouter();
@@ -61,7 +105,7 @@ export function useUpload() {
 
     await Promise.all(itemPromises);
 
-    await Promise.all(itemPromises);
+
 
     const validation = validateUploadStructure(newFiles);
     if (!validation.valid) {
@@ -90,41 +134,7 @@ export function useUpload() {
     }
   }, []);
 
-  const processFilesWithNaming = (filesToProcess: File[], uploadCase: number): File[] => {
-    if (uploadCase === 1 || uploadCase === 2) {
-      // For Case 1/2: Rename each .md file: standardized-name-timestamp.md
-      return filesToProcess.map(file => {
-        if (file.name.toLowerCase().endsWith('.md')) {
-          const extension = '.md';
-          const base = generateStandardName(file.name);
-          const newName = addTimestampToName(base) + extension;
-          return new File([file], newName, { type: file.type });
-        }
-        return file;
-      });
-    } else if (uploadCase === 3 || uploadCase === 4) {
-      // For Case 3/4: All files share a standardized and timestamped root folder name
-      const pathParts = filesToProcess[0].webkitRelativePath.split('/');
-      const originalRoot = pathParts[0];
-      const standardizedRoot = generateStandardName(originalRoot);
-      const timestampedRoot = addTimestampToName(standardizedRoot);
-
-      return filesToProcess.map(file => {
-        const relativePath = file.webkitRelativePath;
-        const newRelativePath = relativePath.replace(originalRoot, timestampedRoot);
-        
-        // We create a new file object to avoid any issues, though we mostly care about the path
-        const newFile = new File([file], file.name, { type: file.type });
-        Object.defineProperty(newFile, 'webkitRelativePath', {
-          value: newRelativePath,
-          writable: false,
-          configurable: true
-        });
-        return newFile;
-      });
-    }
-    return filesToProcess;
-  };
+          
 
   const removeFile = useCallback((index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
