@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
 import { addTimestampToName, generateStandardName } from '@/lib/utils/naming';
+import { validateUploadStructure, extractImageReferences } from '@/lib/services/upload-validator';
 
 const MAX_FILENAME_LENGTH = 30;
 
@@ -241,14 +242,33 @@ export function useConverter() {
     console.log('📂 Folder upload triggered, files:', files?.length);
     
     if (files && files.length > 0) {
-      // Logic for Case 3/4: No renaming, keep original structure
-      const processedFiles = Array.from(files);
-      console.log(`UseConverter: Uploading folder without renaming.`);
+      const inputFiles = Array.from(files);
+
+      // Validate folder structure: root must have .md; only subfolder allowed is images/
+      const markdownFiles = inputFiles.filter(f => f.name.toLowerCase().endsWith('.md'));
+      const referencedImages = new Set<string>();
+      await Promise.all(markdownFiles.map(async (mdFile) => {
+        try {
+          const text = await mdFile.text();
+          extractImageReferences(text).forEach(ref => referencedImages.add(ref));
+        } catch (err) {
+          console.error(`Failed to read markdown ${mdFile.name}:`, err);
+        }
+      }));
+      const validation = validateUploadStructure(inputFiles, referencedImages);
+      if (!validation.valid) {
+        alert(validation.error ?? 'Invalid folder structure. Upload blocked.');
+        event.target.value = '';
+        return;
+      }
+
+      const processedFiles = validation.filteredFiles;
+      console.log(`UseConverter: Uploading folder (validated).`);
 
       const mdFile = processedFiles.find(f => f.name.endsWith('.md'));
       
       console.log(mdFile ? `📄 Found markdown file: ${mdFile.name}` : 'ℹ️ No markdown file found, uploading other assets.');
-      console.log('📦 Total files to upload:', files.length);
+      console.log('📦 Total files to upload:', processedFiles.length);
 
       // 1. Immediate local preview (if MD exists)
       if (mdFile) {
@@ -278,7 +298,7 @@ export function useConverter() {
           // Use webkitRelativePath for folder structure, fallback to name
           formData.append('relativePath', file.webkitRelativePath || file.name);
           
-          console.log(`📤 Uploading file ${index + 1}/${files.length}:`, file.name);
+          console.log(`📤 Uploading file ${index + 1}/${processedFiles.length}:`, file.name);
           
           try {
             const response = await fetch('/api/files', {

@@ -57,7 +57,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       "image/jpeg",
       "image/jpg",
       "image/gif",
-      "image/webp"
+      "image/webp",
+      "image/svg+xml"
     ]
     
     // Some browsers might not send correct mime types for .md files
@@ -69,6 +70,46 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         { error: "Invalid file type: " + file.type + ". Only Markdown (.md) and image files are allowed." },
         { status: 400 }
       )
+    }
+
+    // --- STRICT PATH VALIDATION (Server Side) ---
+    if (batchId && relativePath) {
+      const normalizedPath = relativePath.replace(/\\/g, '/').replace(/^\//, '');
+      const pathParts = normalizedPath.split('/');
+
+      // Rule 1: Root level files MUST be .md
+      if (pathParts.length === 1) {
+        if (!normalizedPath.toLowerCase().endsWith('.md')) {
+          return NextResponse.json(
+            { error: `Violation: Unauthorized root file '${normalizedPath}'. Only .md files allowed.` },
+            { status: 400 }
+          );
+        }
+      }
+      // Rule 2: Subfolder files MUST be in 'images/'
+      else if (pathParts.length === 2) {
+        if (pathParts[0] !== 'images') {
+          return NextResponse.json(
+            { error: `Violation: Unauthorized folder '${pathParts[0]}'. Only 'images/' subfolder is allowed.` },
+            { status: 400 }
+          );
+        }
+        // Subfolder files MUST be images
+        const isImage = allowedTypes.includes(file.type);
+        if (!isImage) {
+           return NextResponse.json(
+            { error: `Violation: Non-image file '${file.name}' in images/ folder.` },
+            { status: 400 }
+          );
+        }
+      }
+      // Rule 3: No nested folders or depth > 2
+      else {
+        return NextResponse.json(
+          { error: `Violation: Unauthorized nested structure '${normalizedPath}'.` },
+          { status: 400 }
+        );
+      }
     }
 
     // Generate unique filename

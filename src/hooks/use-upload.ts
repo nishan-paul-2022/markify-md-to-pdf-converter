@@ -9,7 +9,6 @@ const processFilesWithNaming = (filesToProcess: File[], uploadCase: number): Fil
 
 export function useUpload() {
   const router = useRouter();
-  const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
@@ -20,11 +19,11 @@ export function useUpload() {
   const processUploadedFiles = useCallback(async (inputFiles: File[]) => {
       console.log(`📦 Processing ${inputFiles.length} files...`);
 
-      // First, identify all markdown files to extract references
+      // First, identify all markdown files to extract references in parallel
       const markdownFiles = inputFiles.filter(f => f.name.toLowerCase().endsWith('.md'));
       const referencedImages = new Set<string>();
 
-      for (const mdFile of markdownFiles) {
+      await Promise.all(markdownFiles.map(async (mdFile) => {
         try {
           const content = await mdFile.text();
           const refs = extractImageReferences(content);
@@ -32,7 +31,7 @@ export function useUpload() {
         } catch (err) {
           console.error(`Failed to read markdown ${mdFile.name}:`, err);
         }
-      }
+      }));
 
       console.log(`🔍 Found ${referencedImages.size} unique image references in markdown.`);
 
@@ -49,68 +48,19 @@ export function useUpload() {
       setFiles((prev) => [...prev, ...processedFiles]);
   }, []);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
-
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    const items = Array.from(e.dataTransfer.items);
-    const allFiles: File[] = [];
-
-    const traverseFileTree = async (item: FileSystemEntry, path = "") => {
-      if (item.isFile) {
-        return new Promise<void>((resolve) => {
-          ;(item as FileSystemFileEntry).file((file) => {
-            if (!file.name.startsWith('.')) {
-              Object.defineProperty(file, 'webkitRelativePath', {
-                value: path + file.name,
-                writable: false
-              });
-              allFiles.push(file);
-            }
-            resolve();
-          });
-        });
-      } else if (item.isDirectory) {
-        const dirReader = (item as FileSystemDirectoryEntry).createReader();
-        const entries = await new Promise<FileSystemEntry[]>((resolve) => {
-          dirReader.readEntries((entries) => resolve(Array.from(entries)));
-        });
-        for (const entry of entries) {
-          await traverseFileTree(entry, path + item.name + "/");
-        }
-      }
-    };
-
-    const itemPromises = items.map(item => {
-      const entry = item.webkitGetAsEntry();
-      if (entry) {return traverseFileTree(entry);}
-      return Promise.resolve();
-    });
-
-    await Promise.all(itemPromises);
-    await processUploadedFiles(allFiles);
-  }, [processUploadedFiles]);
-
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
       await processUploadedFiles(selectedFiles);
+      // Reset input value so same files can be selected again if needed
+      e.target.value = "";
     }
   }, [processUploadedFiles]);
 
   const removeFile = useCallback((index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
-  }, []);
+    if (files.length <= 1) {setError(null);}
+  }, [files.length]);
 
   const uploadFiles = async (): Promise<void> => {
     if (files.length === 0) {return;}
@@ -158,7 +108,6 @@ export function useUpload() {
   };
 
   return {
-    isDragging,
     files,
     uploading,
     uploadProgress,
@@ -167,9 +116,6 @@ export function useUpload() {
     fileInputRef,
     folderInputRef,
     setFiles,
-    handleDragOver,
-    handleDragLeave,
-    handleDrop,
     handleFileSelect,
     removeFile,
     uploadFiles

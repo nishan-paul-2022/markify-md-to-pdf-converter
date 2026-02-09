@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils"
 import { formatFileSize } from "@/lib/formatters"
 
 interface FileUploadViewProps {
-  isDragging: boolean;
   files: File[];
   uploading: boolean;
   uploadProgress: number;
@@ -16,16 +15,12 @@ interface FileUploadViewProps {
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   folderInputRef: React.RefObject<HTMLInputElement | null>;
   setFiles: (files: File[]) => void;
-  handleDragOver: (e: React.DragEvent) => void;
-  handleDragLeave: (e: React.DragEvent) => void;
-  handleDrop: (e: React.DragEvent) => void;
   handleFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeFile: (index: number) => void;
   uploadFiles: () => Promise<void>;
 }
 
 export function FileUploadView({
-  isDragging,
   files,
   uploading,
   uploadProgress,
@@ -34,9 +29,6 @@ export function FileUploadView({
   fileInputRef,
   folderInputRef,
   setFiles,
-  handleDragOver,
-  handleDragLeave,
-  handleDrop,
   handleFileSelect,
   removeFile,
   uploadFiles,
@@ -51,26 +43,35 @@ export function FileUploadView({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Selection Buttons */}
       <div className="flex gap-4">
         <Button
           variant="outline"
-          className="flex-1 h-28 flex-col gap-2 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all"
+          className="flex-1 h-32 flex-col gap-3 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all shadow-sm"
           onClick={() => fileInputRef.current?.click()}
         >
-          <FileText className="h-6 w-6 text-blue-500" />
-          <span className="font-semibold">Upload Markdown</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">.md files only</span>
+          <div className="bg-blue-100 p-2 rounded-full">
+            <FileText className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="text-center">
+            <p className="font-bold">Files</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">.md files</p>
+          </div>
         </Button>
+
         <Button
           variant="outline"
-          className="flex-1 h-28 flex-col gap-2 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all"
+          className="flex-1 h-32 flex-col gap-3 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all shadow-sm"
           onClick={() => folderInputRef.current?.click()}
         >
-          <FolderOpen className="h-6 w-6 text-amber-500" />
-          <span className="font-semibold">Upload Folder</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Contains .md & images/</span>
+          <div className="bg-amber-100 p-2 rounded-full">
+            <FolderOpen className="h-6 w-6 text-amber-600" />
+          </div>
+          <div className="text-center">
+            <p className="font-bold">Folder</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Project Dir</p>
+          </div>
         </Button>
       </div>
 
@@ -92,15 +93,15 @@ export function FileUploadView({
 
       {/* Error Message */}
       {error && (
-        <div className="bg-destructive/10 border border-destructive/20 text-destructive rounded-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-          <div className="flex-1 text-sm font-medium">
-            <p className="font-bold underline mb-1">Upload Error</p>
-            {error}
+        <div className="bg-destructive/5 border-l-4 border-destructive text-destructive rounded-r-lg p-4 flex items-start gap-4 animate-in fade-in slide-in-from-left-2 shadow-sm">
+          <div className="flex-1 text-sm">
+            <p className="font-bold uppercase text-[10px] tracking-widest mb-1 opacity-70">Violation Detected</p>
+            <p className="whitespace-pre-line leading-relaxed font-medium">{error}</p>
           </div>
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-6 w-6 text-destructive hover:bg-destructive/20" 
+            className="h-6 w-6 opacity-50 hover:opacity-100" 
             onClick={() => setError(null)}
           >
             <X className="h-4 w-4" />
@@ -108,50 +109,33 @@ export function FileUploadView({
         </div>
       )}
 
-      {/* Drop Zone */}
-      <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        className={cn(
-          "border-2 border-dashed rounded-lg p-10 text-center transition-all cursor-pointer",
-          isDragging
-            ? "border-primary bg-primary/5 scale-[0.99] shadow-inner"
-            : "border-gray-200 dark:border-gray-800 hover:border-primary/50 hover:bg-gray-50/50 dark:hover:bg-gray-900/50",
-          files.length > 0 && "hidden"
-        )}
-        onClick={() => fileInputRef.current?.click()}
-      >
-        <div className="relative inline-block mb-4">
-          <Upload className="h-12 w-12 text-gray-300 dark:text-gray-600" />
-          <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1">
-            <div className="w-2 h-2 bg-white rounded-full animate-ping" />
+      {/* Empty State / Instruction */}
+      {files.length === 0 && !error && (
+        <div className="py-12 px-6 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/30 dark:bg-gray-900/10 flex flex-col items-center text-center">
+          <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl shadow-sm flex items-center justify-center mb-4 rotate-3">
+             <Upload className="h-8 w-8 text-gray-200" />
           </div>
+          <h3 className="text-sm font-semibold text-gray-400">Ready for Project Import</h3>
+          <p className="text-xs text-gray-400 mt-1 max-w-[200px]">Use the buttons above to select your files or project folder</p>
         </div>
-        <p className="text-lg font-semibold mb-2">
-          Drop files or folder here
-        </p>
-        <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-          We&apos;ll automatically detect if it&apos;s a single Markdown file or a structured project folder.
-        </p>
-      </div>
+      )}
 
       {/* File List */}
       {files.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-sm">Selected items ({files.length})</h3>
+        <div className="space-y-4 pt-2">
+          <div className="flex items-center justify-between border-b pb-2">
+            <h3 className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Selection ({files.length})</h3>
             <Button 
-              variant="ghost" 
+              variant="link" 
               size="sm" 
               onClick={() => {
                 setFiles([]);
                 setError(null);
               }} 
               disabled={uploading} 
-              className="h-8 text-xs"
+              className="h-auto p-0 text-xs text-destructive hover:no-underline"
             >
-              Clear All
+              Clear selection
             </Button>
           </div>
           
@@ -159,14 +143,14 @@ export function FileUploadView({
             {files.map((file, index) => (
               <div
                 key={`${file.name}-${index}`}
-                className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg group"
+                className="flex items-center gap-3 p-3 bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-xl group transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
               >
                 {getFileIcon(file)}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">
+                  <p className="text-sm font-semibold truncate">
                     {(file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground font-medium">
                     {formatFileSize(file.size)}
                   </p>
                 </div>
@@ -175,8 +159,7 @@ export function FileUploadView({
                   size="icon"
                   onClick={() => removeFile(index)}
                   disabled={uploading}
-                  aria-label="Remove file"
-                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -185,12 +168,12 @@ export function FileUploadView({
           </div>
 
           {uploading && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs">
-                <span>Uploading project...</span>
+            <div className="p-4 bg-primary/10 rounded-xl space-y-3">
+              <div className="flex justify-between text-xs font-bold text-primary italic">
+                <span>CONVERTING CONTENT...</span>
                 <span>{uploadProgress}%</span>
               </div>
-              <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-primary/20 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-primary transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
@@ -199,14 +182,15 @@ export function FileUploadView({
             </div>
           )}
 
-          <Button
-            onClick={uploadFiles}
-            disabled={uploading}
-            className="w-full shadow-lg"
-            size="lg"
-          >
-            {uploading ? "Processing Batch..." : `Upload ${files.length} Item${files.length > 1 ? "s" : ""}`}
-          </Button>
+          {!uploading && (
+            <Button
+              onClick={uploadFiles}
+              className="w-full h-12 shadow-lg shadow-primary/20 text-md font-bold"
+              size="lg"
+            >
+              Start Conversion
+            </Button>
+          )}
         </div>
       )}
     </div>
