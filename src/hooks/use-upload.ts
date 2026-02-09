@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { validateUploadStructure } from "@/lib/services/upload-validator";
+import { generateStandardName, addTimestampToName } from "@/lib/utils/naming";
 
 export function useUpload() {
   const router = useRouter();
@@ -7,6 +9,7 @@ export function useUpload() {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -58,33 +61,70 @@ export function useUpload() {
 
     await Promise.all(itemPromises);
 
-    if (newFiles.length > 1) {
-      const hasMarkdown = newFiles.some(f => f.name.endsWith('.md'));
-      if (!hasMarkdown) {
-        alert("Dropped folder/files must contain at least one .md file.");
-        return;
-      }
+    await Promise.all(itemPromises);
+
+    const validation = validateUploadStructure(newFiles);
+    if (!validation.valid) {
+      setError(validation.error || "Invalid file structure.");
+      return;
     }
 
-    setFiles((prev) => [...prev, ...newFiles]);
+    setError(null);
+    const processedFiles = processFilesWithNaming(newFiles, validation.case);
+    setFiles((prev) => [...prev, ...processedFiles]);
   }, []);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
-      const isFolder = selectedFiles.length > 0 && selectedFiles[0].webkitRelativePath !== "";
+      const validation = validateUploadStructure(selectedFiles);
       
-      if (isFolder) {
-        const hasMarkdown = selectedFiles.some(f => f.name.endsWith('.md'));
-        if (!hasMarkdown) {
-          alert("The selected folder must contain at least one .md file.");
-          return;
-        }
+      if (!validation.valid) {
+        setError(validation.error || "Invalid file structure.");
+        return;
       }
 
-      setFiles((prev) => [...prev, ...selectedFiles]);
+      setError(null);
+      const processedFiles = processFilesWithNaming(selectedFiles, validation.case);
+      setFiles((prev) => [...prev, ...processedFiles]);
     }
   }, []);
+
+  const processFilesWithNaming = (filesToProcess: File[], uploadCase: number): File[] => {
+    if (uploadCase === 1 || uploadCase === 2) {
+      // For Case 1/2: Rename each .md file: standardized-name-timestamp.md
+      return filesToProcess.map(file => {
+        if (file.name.toLowerCase().endsWith('.md')) {
+          const extension = '.md';
+          const base = generateStandardName(file.name);
+          const newName = addTimestampToName(base) + extension;
+          return new File([file], newName, { type: file.type });
+        }
+        return file;
+      });
+    } else if (uploadCase === 3 || uploadCase === 4) {
+      // For Case 3/4: All files share a standardized and timestamped root folder name
+      const pathParts = filesToProcess[0].webkitRelativePath.split('/');
+      const originalRoot = pathParts[0];
+      const standardizedRoot = generateStandardName(originalRoot);
+      const timestampedRoot = addTimestampToName(standardizedRoot);
+
+      return filesToProcess.map(file => {
+        const relativePath = file.webkitRelativePath;
+        const newRelativePath = relativePath.replace(originalRoot, timestampedRoot);
+        
+        // We create a new file object to avoid any issues, though we mostly care about the path
+        const newFile = new File([file], file.name, { type: file.type });
+        Object.defineProperty(newFile, 'webkitRelativePath', {
+          value: newRelativePath,
+          writable: false,
+          configurable: true
+        });
+        return newFile;
+      });
+    }
+    return filesToProcess;
+  };
 
   const removeFile = useCallback((index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
@@ -140,6 +180,8 @@ export function useUpload() {
     files,
     uploading,
     uploadProgress,
+    error,
+    setError,
     fileInputRef,
     folderInputRef,
     setFiles,

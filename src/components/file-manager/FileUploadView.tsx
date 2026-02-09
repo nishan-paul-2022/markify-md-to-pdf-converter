@@ -11,6 +11,8 @@ interface FileUploadViewProps {
   files: File[];
   uploading: boolean;
   uploadProgress: number;
+  error: string | null;
+  setError: (error: string | null) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   folderInputRef: React.RefObject<HTMLInputElement | null>;
   setFiles: (files: File[]) => void;
@@ -27,6 +29,8 @@ export function FileUploadView({
   files,
   uploading,
   uploadProgress,
+  error,
+  setError,
   fileInputRef,
   folderInputRef,
   setFiles,
@@ -86,6 +90,24 @@ export function FileUploadView({
         onChange={handleFileSelect}
       />
 
+      {/* Error Message */}
+      {error && (
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive rounded-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+          <div className="flex-1 text-sm font-medium">
+            <p className="font-bold underline mb-1">Upload Error</p>
+            {error}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-6 w-6 text-destructive hover:bg-destructive/20" 
+            onClick={() => setError(null)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       {/* Drop Zone */}
       <div
         onDragOver={handleDragOver}
@@ -119,7 +141,16 @@ export function FileUploadView({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-medium text-sm">Selected items ({files.length})</h3>
-            <Button variant="ghost" size="sm" onClick={() => setFiles([])} disabled={uploading} className="h-8 text-xs">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                setFiles([]);
+                setError(null);
+              }} 
+              disabled={uploading} 
+              className="h-8 text-xs"
+            >
               Clear All
             </Button>
           </div>
