@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { validateUploadStructure, extractImageReferences } from "@/lib/services/upload-validator";
+import { getAlert } from "@/components/AlertProvider";
 
 const processFilesWithNaming = (filesToProcess: File[], uploadCase: number): File[] => {
   console.log(`UseUpload: Processing ${filesToProcess.length} files for Case ${uploadCase}`);
@@ -101,7 +102,10 @@ export function useUpload() {
       router.refresh();
     } catch (error: unknown) {
       console.error("Upload error:", error);
-      alert(error instanceof Error ? error.message : "Failed to upload files");
+      const msg = error instanceof Error ? error.message : "Failed to upload files";
+      const api = getAlert();
+      if (api) api.show({ title: "Upload failed", message: msg });
+      else alert(msg);
     } finally {
       setUploading(false);
     }

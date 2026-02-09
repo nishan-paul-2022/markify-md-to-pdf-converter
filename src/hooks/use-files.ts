@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { getAlert } from "@/components/AlertProvider";
 
 export interface File {
   id: string;
@@ -77,7 +78,10 @@ export function useFiles() {
       router.refresh();
     } catch (error: unknown) {
       console.error("Delete error:", error);
-      alert(error instanceof Error ? error.message : "Failed to delete file");
+      const msg = error instanceof Error ? error.message : "Failed to delete file";
+      const api = getAlert();
+      if (api) api.show({ title: "Delete failed", message: msg });
+      else alert(msg);
     } finally {
       setDeleting(false);
       setDeleteId(null);
@@ -101,7 +105,10 @@ export function useFiles() {
       router.refresh();
     } catch (error: unknown) {
       console.error("Bulk delete error:", error);
-      alert(error instanceof Error ? error.message : "Failed to delete files");
+      const msg = error instanceof Error ? error.message : "Failed to delete files";
+      const api = getAlert();
+      if (api) api.show({ title: "Delete failed", message: msg });
+      else alert(msg);
     } finally {
       setDeleting(false);
       setDeleteId(null);

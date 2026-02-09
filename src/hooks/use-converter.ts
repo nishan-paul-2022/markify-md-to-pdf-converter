@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
 import { addTimestampToName, generateStandardName } from '@/lib/utils/naming';
 import { validateUploadStructure, extractImageReferences } from '@/lib/services/upload-validator';
+import { getAlert } from '@/components/AlertProvider';
 
 const MAX_FILENAME_LENGTH = 30;
 
@@ -257,7 +258,10 @@ export function useConverter() {
       }));
       const validation = validateUploadStructure(inputFiles, referencedImages);
       if (!validation.valid) {
-        alert(validation.error ?? 'Invalid folder structure. Upload blocked.');
+        const msg = validation.error ?? 'Invalid folder structure. Upload blocked.';
+        const api = getAlert();
+        if (api) api.show({ title: 'Invalid folder', message: msg });
+        else alert(msg);
         event.target.value = '';
         return;
       }
