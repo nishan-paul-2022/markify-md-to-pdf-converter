@@ -54,5 +54,9 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
+
+# Install prisma CLI to avoid npx downloads in production
+RUN npm install -g prisma
+
 # Note: We use a simple node startup, but you can run migrations before this if needed
 CMD ["node", "server.js"]
