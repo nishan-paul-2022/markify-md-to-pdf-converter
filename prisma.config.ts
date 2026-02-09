@@ -1,6 +1,3 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
-
 const config = {
   schema: "prisma/schema.prisma",
   migrations: {
