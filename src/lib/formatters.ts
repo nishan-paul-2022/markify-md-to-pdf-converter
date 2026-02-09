@@ -6,7 +6,7 @@
  * @returns Formatted date string
  */
 export function formatDateTime(date: Date | null): string {
-  if (!date) return '—';
+  if (!date) {return '—';}
   return date.toLocaleTimeString('en-GB', {
     day: '2-digit',
     month: 'short',
@@ -25,7 +25,7 @@ export function formatDateTime(date: Date | null): string {
  * @returns Formatted size string
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 Bytes"
+  if (bytes === 0) {return "0 Bytes"}
   const k = 1024
   const sizes = ["Bytes", "KB", "MB", "GB"]
   const i = Math.floor(Math.log(bytes) / Math.log(k))

@@ -61,7 +61,7 @@ export function useUpload() {
 
     const itemPromises = items.map(item => {
       const entry = item.webkitGetAsEntry();
-      if (entry) return traverseFileTree(entry);
+      if (entry) {return traverseFileTree(entry);}
       return Promise.resolve();
     });
 
@@ -103,7 +103,7 @@ export function useUpload() {
   }, []);
 
   const uploadFiles = async (): Promise<void> => {
-    if (files.length === 0) return;
+    if (files.length === 0) {return;}
 
     setUploading(true);
     setUploadProgress(0);

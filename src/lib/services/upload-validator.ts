@@ -64,7 +64,7 @@ export function validateUploadStructure(files: File[]): ValidationResult {
     }
     
     const currentRoot = pathParts[0];
-    if (!rootDirName) rootDirName = currentRoot;
+    if (!rootDirName) {rootDirName = currentRoot;}
     
     if (currentRoot !== rootDirName) {
       return { case: 3, valid: false, error: "Multiple root folders detected. Please upload only one folder at a time." };

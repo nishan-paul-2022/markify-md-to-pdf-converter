@@ -53,8 +53,8 @@ export function FileTree({
   };
 
   const containsSelectedFile = (node: FileTreeNode, selectedId?: string): boolean => {
-    if (!selectedId) return false;
-    if (node.type === "file") return node.id === selectedId;
+    if (!selectedId) {return false;}
+    if (node.type === "file") {return node.id === selectedId;}
     if (node.children) {
       return node.children.some(child => containsSelectedFile(child, selectedId));
     }

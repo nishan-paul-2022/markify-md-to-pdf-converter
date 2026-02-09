@@ -18,7 +18,7 @@ async function getFilesRecursively(dir: string, baseDir: string, batchId: string
   const files: DefaultFile[] = []
 
   for (const entry of entries) {
-    if (entry.name === ".DS_Store") continue;
+    if (entry.name === ".DS_Store") {continue;}
     
     const fullPath = join(dir, entry.name)
     const relativeToPublic = fullPath.split("public")[1]
@@ -34,7 +34,7 @@ async function getFilesRecursively(dir: string, baseDir: string, batchId: string
       // Strict Structure Validation Logic
       // 1. Root Level: Only .md files allowed
       if (!relativeToProject.includes("/")) {
-        if (ext !== "md") continue;
+        if (ext !== "md") {continue;}
       } 
       // 2. Subfolder Level: Must be "images/" and contain only images
       else {
@@ -46,20 +46,20 @@ async function getFilesRecursively(dir: string, baseDir: string, batchId: string
         // Let's ensure we are checking the path correctly.
         // The implementation assumes relativeToProject is correct.
         
-        if (parts.length > 2) continue; // Reject deep nesting
+        if (parts.length > 2) {continue;} // Reject deep nesting
         
         // If it has subdirectory, it MUST be "images"
-        if (parts.length === 2 && parts[0] !== "images") continue;
+        if (parts.length === 2 && parts[0] !== "images") {continue;}
         
         // If it is in images folder, must be image
-        if (parts.length === 2 && !validImageExts.includes(ext)) continue;
+        if (parts.length === 2 && !validImageExts.includes(ext)) {continue;}
       }
       
       const stats = await stat(fullPath)
       
       let mimeType = "application/octet-stream"
-      if (ext === "md") mimeType = "text/markdown"
-      else if (validImageExts.includes(ext)) mimeType = `image/${ext === "svg" ? "svg+xml" : ext}`
+      if (ext === "md") {mimeType = "text/markdown"}
+      else if (validImageExts.includes(ext)) {mimeType = `image/${ext === "svg" ? "svg+xml" : ext}`}
 
       files.push({
         id: `default-${batchId}-${relativeToProject.replace(/\//g, "-")}`,

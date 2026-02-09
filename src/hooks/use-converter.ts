@@ -40,7 +40,7 @@ export function useConverter() {
 
   useEffect(() => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) {return;}
 
     const handleScroll = () => {
       setIsEditorAtTop(textarea.scrollTop < 20);
@@ -82,7 +82,7 @@ export function useConverter() {
   }, []);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading) {return;}
 
     const timer = setTimeout(() => {
       const parsedMetadata = parseMetadataFromMarkdown(rawContent);

@@ -159,7 +159,7 @@ export function ConverterView({
     setIsDragging(false);
 
     const items = Array.from(e.dataTransfer.items || []);
-    if (items.length === 0) return;
+    if (items.length === 0) {return;}
 
     const newFiles: { file: File; path: string }[] = [];
 
@@ -184,7 +184,7 @@ export function ConverterView({
 
     const itemPromises = items.map(item => {
       const entry = item.webkitGetAsEntry();
-      if (entry) return traverseFileTree(entry);
+      if (entry) {return traverseFileTree(entry);}
       return Promise.resolve();
     });
 
@@ -252,8 +252,8 @@ export function ConverterView({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent): void => {
-    if (e.key === 'Enter') handleSave();
-    if (e.key === 'Escape') handleCancel();
+    if (e.key === 'Enter') {handleSave();}
+    if (e.key === 'Escape') {handleCancel();}
   };
 
   return (
