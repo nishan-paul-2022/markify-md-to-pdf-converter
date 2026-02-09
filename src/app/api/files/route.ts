@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 import { randomUUID } from "crypto"
+import { getDefaultFiles } from "@/lib/server/defaults"
 
 // Note: Prisma Client was regenerated to include batchId and relativePath.
 // If you see errors below, please restart your IDE's TypeScript server.
@@ -190,7 +191,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const limit = parseInt(searchParams.get("limit") || "10")
     const skip = (page - 1) * limit
 
-    const [files, total] = await Promise.all([
+    const [files, total, defaults] = await Promise.all([
       prisma.file.findMany({
         where: { userId: session.user.id },
         orderBy: { createdAt: "desc" },
@@ -212,10 +213,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       prisma.file.count({
         where: { userId: session.user.id },
       }),
+      getDefaultFiles().catch(() => []),
     ])
 
     return NextResponse.json({
-      files,
+      files: [...defaults, ...files],
       pagination: {
         page,
         limit,

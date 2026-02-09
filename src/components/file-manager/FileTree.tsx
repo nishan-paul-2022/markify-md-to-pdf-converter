@@ -147,9 +147,11 @@ export function FileTree({
                   <DropdownMenuItem onClick={() => onFileSelect(node)} className="gap-2 text-xs">
                     <ExternalLink className="h-3.5 w-3.5" /> Open
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onDelete(node.id)} className="gap-2 text-xs text-red-400 focus:text-red-400">
-                    <Trash2 className="h-3.5 w-3.5" /> Delete
-                  </DropdownMenuItem>
+                  {!node.id.startsWith("default-") && (
+                    <DropdownMenuItem onClick={() => onDelete(node.id)} className="gap-2 text-xs text-red-400 focus:text-red-400">
+                      <Trash2 className="h-3.5 w-3.5" /> Delete
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
