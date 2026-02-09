@@ -36,7 +36,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             const lastSlashIndex = node.file.url.lastIndexOf('/');
             if (lastSlashIndex !== -1) {
               const directoryPath = node.file.url.substring(0, lastSlashIndex);
-              converterState.setBasePath('/api' + directoryPath);
+              converterState.setBasePath(directoryPath);
             }
           }
         }

@@ -168,23 +168,74 @@ export function useConverter() {
     }
   }, [generatePdfBlob, filename]);
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setFilename(file.name);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result;
-        if (typeof text === 'string') {
-          handleContentChange(text);
-          const now = new Date();
-          setUploadTime(now);
-          setLastModifiedTime(now);
-          setIsUploaded(true);
-          setTimeout(() => setIsUploaded(false), 2000);
+  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      console.log('📤 File upload triggered, count:', files.length);
+      
+      const fileList = Array.from(files);
+      const mdFile = fileList.find(f => f.name.endsWith('.md'));
+      
+      // 1. Immediate local preview for the first .md file if found
+      if (mdFile) {
+        setFilename(mdFile.name);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target?.result;
+          if (typeof text === 'string') {
+            handleContentChange(text);
+          }
+        };
+        reader.readAsText(mdFile);
+      }
+
+      // 2. Upload files to server
+      setIsLoading(true);
+      const batchId = self.crypto.randomUUID();
+      
+      try {
+        const uploadPromises = fileList.map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('batchId', batchId);
+          formData.append('relativePath', file.name);
+          
+          const response = await fetch('/api/files', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!response.ok) {
+            console.error(`❌ Upload failed for ${file.name}`);
+            return null;
+          }
+          
+          return await response.json();
+        });
+
+        const results = await Promise.all(uploadPromises);
+        console.log('✅ Upload complete. Successful results:', results.filter(r => r !== null).length);
+
+        // If we found an MD file, set the base path if possible
+        const mdResult = results.find(r => r && r.file && r.file.originalName.endsWith('.md'));
+        if (mdResult && mdResult.file && mdResult.file.url) {
+          const fileUrl = mdResult.file.url;
+          const lastSlashIndex = fileUrl.lastIndexOf('/');
+          if (lastSlashIndex !== -1) {
+            setBasePath('/api' + fileUrl.substring(0, lastSlashIndex));
+          }
         }
-      };
-      reader.readAsText(file);
+
+        const now = new Date();
+        setUploadTime(now);
+        setLastModifiedTime(now);
+        setIsUploaded(true);
+        setTimeout(() => setIsUploaded(false), 2000);
+      } catch (error) {
+        console.error("Error uploading files:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   }, [handleContentChange]);
 
@@ -195,24 +246,21 @@ export function useConverter() {
     if (files && files.length > 0) {
       const mdFile = Array.from(files).find(f => f.name.endsWith('.md'));
       
-      if (!mdFile) {
-        alert("The selected folder must contain at least one .md file.");
-        return;
-      }
-
-      console.log('📄 Found markdown file:', mdFile.name);
+      console.log(mdFile ? `📄 Found markdown file: ${mdFile.name}` : 'ℹ️ No markdown file found, uploading other assets.');
       console.log('📦 Total files to upload:', files.length);
 
-      // 1. Immediate local preview
-      setFilename(mdFile.name);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result;
-        if (typeof text === 'string') {
-          handleContentChange(text);
-        }
-      };
-      reader.readAsText(mdFile);
+      // 1. Immediate local preview (if MD exists)
+      if (mdFile) {
+        setFilename(mdFile.name);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target?.result;
+          if (typeof text === 'string') {
+            handleContentChange(text);
+          }
+        };
+        reader.readAsText(mdFile);
+      }
 
       // 2. Upload files to server
       setIsLoading(true);
@@ -259,13 +307,15 @@ export function useConverter() {
         // Find the uploaded markdown file result to determine the correct base path for images
         // We look for a result where the original name matches our selected mdFile
         const mdResult = results.find(r => 
-          r && r.file && (
+          r && r.file && mdFile && (
             r.file.originalName === mdFile.name || 
             (r.file.relativePath && r.file.relativePath.endsWith(mdFile.name))
           )
         );
         
-        console.log('🔍 Searching for MD result for:', mdFile.name);
+        if (mdFile) {
+          console.log('🔍 Searching for MD result for:', mdFile.name);
+        }
         console.log('📊 Successful results:', results.filter(r => r !== null).length);
         
         if (mdResult && mdResult.file && mdResult.file.url) {
@@ -425,6 +475,7 @@ export function useConverter() {
     scrollToStart,
     scrollToEnd,
     setFilename,
+    setIsLoading,
     setBasePath,
     MAX_FILENAME_LENGTH,
     getBaseName

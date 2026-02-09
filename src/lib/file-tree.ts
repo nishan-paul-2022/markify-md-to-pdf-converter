@@ -1,43 +1,66 @@
-import { File } from "@/hooks/use-files";
+import { File as AppFile } from "@/hooks/use-files";
 
 export interface FileTreeNode {
   id: string;
   name: string;
   type: "file" | "folder";
   children?: FileTreeNode[];
-  file?: File;
+  file?: AppFile;
   path: string;
+  batchId?: string;
 }
 
-export function buildFileTree(files: File[]): FileTreeNode[] {
+export function buildFileTree(files: AppFile[]): FileTreeNode[] {
+  // Group files by batchId first to ensure complete separation
+  const batchGroups = new Map<string, AppFile[]>();
+  
+  files.forEach((file) => {
+    const batchId = file.batchId || 'no-batch';
+    if (!batchGroups.has(batchId)) {
+      batchGroups.set(batchId, []);
+    }
+    batchGroups.get(batchId)!.push(file);
+  });
+
   const root: FileTreeNode[] = [];
 
-  files.forEach((file) => {
-    const path = file.relativePath || file.originalName;
-    const parts = path.split("/");
-    let currentLevel = root;
+  // Process each batch separately to ensure they never merge
+  batchGroups.forEach((batchFiles, batchId) => {
+    batchFiles.forEach((file) => {
+      const fullPath = file.relativePath || file.originalName;
+      const parts = fullPath.split("/");
+      let currentLevel = root;
+      let accumulatedPath = "";
 
-    parts.forEach((part, index) => {
-      const isLast = index === parts.length - 1;
-      const currentPath = parts.slice(0, index + 1).join("/");
-      
-      let node = currentLevel.find((n) => n.name === part);
+      parts.forEach((part, index) => {
+        const isLast = index === parts.length - 1;
+        accumulatedPath = accumulatedPath ? `${accumulatedPath}/${part}` : part;
+        
+        // CRITICAL: Use batchId in the folder key to ensure folders from different uploads never merge
+        // Even if they have the same name (e.g., two uploads both named "content-1")
+        const nodeKey = isLast 
+          ? file.id 
+          : `folder-${batchId}-${accumulatedPath}`;
+        
+        let node = currentLevel.find((n) => n.id === nodeKey);
 
-      if (!node) {
-        node = {
-          id: isLast ? file.id : `folder-${currentPath}`,
-          name: part,
-          type: isLast ? "file" : "folder",
-          path: currentPath,
-          children: isLast ? undefined : [],
-          file: isLast ? file : undefined,
-        };
-        currentLevel.push(node);
-      }
+        if (!node) {
+          node = {
+            id: nodeKey,
+            name: part,
+            type: isLast ? "file" : "folder",
+            path: accumulatedPath,
+            children: isLast ? undefined : [],
+            file: isLast ? file : undefined,
+            batchId: batchId
+          };
+          currentLevel.push(node);
+        }
 
-      if (node.children) {
-        currentLevel = node.children;
-      }
+        if (node.children) {
+          currentLevel = node.children;
+        }
+      });
     });
   });
 

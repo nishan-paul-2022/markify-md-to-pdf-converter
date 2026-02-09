@@ -39,11 +39,47 @@ export function FileTree({
     setExpandedFolders(newExpanded)
   }
 
-  const getFileIcon = (mimeType?: string) => {
-    if (mimeType?.startsWith("image/")) {
-      return <ImageIcon className="h-4 w-4 text-blue-400" />
+  // Auto-expand folders containing the selected file
+  React.useEffect(() => {
+    if (selectedFileId && nodes.length > 0) {
+      const foldersToExpand = new Set<string>()
+      const findAndExpand = (items: FileTreeNode[]): boolean => {
+        let found = false
+        for (const item of items) {
+          if (item.id === selectedFileId) {
+            found = true
+          } else if (item.children) {
+            if (findAndExpand(item.children)) {
+              foldersToExpand.add(item.path)
+              found = true
+            }
+          }
+        }
+        return found
+      }
+      
+      if (findAndExpand(nodes)) {
+        setExpandedFolders(prev => {
+          const combined = new Set(prev)
+          foldersToExpand.forEach(path => combined.add(path))
+          return combined.size === prev.size ? prev : combined
+        })
+      }
     }
-    return <FileText className="h-4 w-4 text-emerald-400" />
+  }, [selectedFileId, nodes]);
+
+  const getFileIcon = (fileName: string, mimeType?: string) => {
+    const ext = fileName.split(".").pop()?.toLowerCase()
+    if (mimeType?.startsWith("image/") || ["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext || "")) {
+      return <ImageIcon className="h-3.5 w-3.5 text-blue-400 group-hover:text-blue-300 transition-colors" />
+    }
+    if (ext === "pdf") {
+      return <FileText className="h-3.5 w-3.5 text-red-400 group-hover:text-red-300 transition-colors" />
+    }
+    if (ext === "md") {
+      return <FileText className="h-3.5 w-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+    }
+    return <FileText className="h-3.5 w-3.5 text-slate-500 group-hover:text-slate-300 transition-colors" />
   }
 
   return (
@@ -97,7 +133,7 @@ export function FileTree({
               onClick={() => onFileSelect(node)}
               className="flex-1 flex items-center gap-2 py-1.5 text-sm text-left truncate"
             >
-              {getFileIcon(node.file?.mimeType)}
+              {getFileIcon(node.name, node.file?.mimeType)}
               <span className="truncate">{node.name}</span>
             </button>
             <div className="opacity-0 group-hover:opacity-100 flex items-center px-2">

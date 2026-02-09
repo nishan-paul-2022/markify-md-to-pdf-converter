@@ -14,9 +14,14 @@ up:
 	docker compose up -d --build
 	@echo "Services are running. Access app at http://localhost:3000"
 
-# Stop and remove all containers, networks, and images
-down:
+# Stop and remove all containers, networks, and images, and kill local dev port
+down: kill-port
 	docker compose down
+
+# Kill any process running on port 3000 (local dev)
+kill-port:
+	@echo "Stopping any process on port 3000..."
+	@fuser -k 3000/tcp || true
 
 # Restart services
 restart:

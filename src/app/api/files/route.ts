@@ -134,8 +134,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       })
       console.log('✅ File metadata saved to database');
     } catch (dbError) {
-      console.error('⚠️ Database save failed (file still saved to disk):', dbError);
-      // Create a mock record for response
+      console.error('❌ DATABASE SAVE FAILED:', dbError);
+      // Create a mock record for response so the UI doesn't break immediately,
+      // but the user will need to fix their session/database for persistence.
       fileRecord = {
         id: uniqueFilename,
         filename: uniqueFilename,

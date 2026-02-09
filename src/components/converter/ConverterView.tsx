@@ -22,7 +22,7 @@ import { Metadata } from '@/constants/default-content';
 import { formatDateTime } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 
-import { File } from '@/hooks/use-files';
+import { File as AppFile } from '@/hooks/use-files';
 import { FileTree } from '@/components/file-manager/FileTree';
 import { FileTreeNode, buildFileTree } from '@/lib/file-tree';
 import { PanelLeftClose, PanelLeftOpen, RefreshCw, Search } from 'lucide-react';
@@ -33,7 +33,7 @@ interface ConverterViewProps {
     email?: string | null;
     image?: string | null;
   };
-  files: File[];
+  files: AppFile[];
   filesLoading: boolean;
   handleFileDelete: (id: string) => void;
   onFileSelect: (node: FileTreeNode) => void;
@@ -69,8 +69,8 @@ interface ConverterViewProps {
   handleSave: () => void;
   handleCancel: () => void;
   handleContentChange: (content: string) => void;
-  handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  handleFolderUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void> | void;
+  handleFolderUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void> | void;
   triggerFileUpload: () => void;
   triggerFolderUpload: () => void;
   handleReset: () => void;
@@ -80,6 +80,8 @@ interface ConverterViewProps {
   generatePdfBlob: () => Promise<Blob>;
   scrollToStart: () => void;
   scrollToEnd: () => void;
+  setFilename: (name: string) => void;
+  setIsLoading: (loading: boolean) => void;
   MAX_FILENAME_LENGTH: number;
   getBaseName: (name: string) => string;
 }
@@ -130,11 +132,107 @@ export function ConverterView({
   generatePdfBlob,
   scrollToStart,
   scrollToEnd,
+  setFilename,
+  setIsLoading,
   MAX_FILENAME_LENGTH,
   getBaseName,
 }: ConverterViewProps) {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [isDragging, setIsDragging] = React.useState(false);
+
+  const handleDragOver = React.useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = React.useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = React.useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const items = Array.from(e.dataTransfer.items || []);
+    if (items.length === 0) return;
+
+    const newFiles: { file: File; path: string }[] = [];
+
+    const traverseFileTree = async (item: FileSystemEntry, path = "") => {
+      if (item.isFile) {
+        return new Promise<void>((resolve) => {
+          (item as FileSystemFileEntry).file((file: File) => {
+            newFiles.push({ file, path: path + file.name });
+            resolve();
+          });
+        });
+      } else if (item.isDirectory) {
+        const dirReader = (item as FileSystemDirectoryEntry).createReader();
+        const entries: FileSystemEntry[] = await new Promise((resolve) => {
+          dirReader.readEntries((entries) => resolve(Array.from(entries)));
+        });
+        for (const entry of entries) {
+          await traverseFileTree(entry, path + item.name + "/");
+        }
+      }
+    };
+
+    const itemPromises = items.map(item => {
+      const entry = item.webkitGetAsEntry();
+      if (entry) return traverseFileTree(entry);
+      return Promise.resolve();
+    });
+
+    await Promise.all(itemPromises);
+
+    if (newFiles.length > 0) {
+      setIsLoading(true);
+      const batchId = self.crypto.randomUUID();
+      
+      try {
+        const uploadPromises = newFiles.map(async ({ file, path }) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('batchId', batchId);
+          formData.append('relativePath', path);
+          
+          const response = await fetch('/api/files', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          return response.ok ? await response.json() : null;
+        });
+
+        await Promise.all(uploadPromises);
+        
+        // Find first MD file and load it
+        const mdFile = newFiles.find(nf => nf.file.name.endsWith('.md'));
+        if (mdFile) {
+          // Read local content for immediate response
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            if (typeof ev.target?.result === 'string') {
+              handleContentChange(ev.target.result);
+              setFilename(mdFile.file.name);
+            }
+          };
+          reader.readAsText(mdFile.file);
+        }
+
+        await refreshFiles();
+      } catch (err) {
+        console.error("Drop upload error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [refreshFiles, handleContentChange, setFilename, setIsLoading]);
 
   React.useEffect(() => {
     console.log('Sidebar state changed to:', isSidebarOpen);
@@ -160,7 +258,25 @@ export function ConverterView({
 
   return (
     <TooltipProvider>
-      <main className="h-dvh w-full bg-slate-950 text-slate-100 flex flex-col overflow-hidden relative">
+      <main 
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className="h-dvh w-full bg-slate-950 text-slate-100 flex flex-col overflow-hidden relative"
+      >
+        {isDragging && (
+          <div className="absolute inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm border-2 border-dashed border-primary/50 flex flex-col items-center justify-center animate-in fade-in duration-200">
+            <div className="p-6 bg-slate-800 rounded-2xl shadow-2xl border border-white/10 flex flex-col items-center gap-4 transform scale-110 transition-transform">
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
+                <Upload className="w-8 h-8 text-primary animate-bounce" />
+              </div>
+              <div className="text-center">
+                <h3 className="text-xl font-bold text-white">Drop to Upload</h3>
+                <p className="text-sm text-slate-400 mt-1">Files will be added to your library</p>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="fixed bottom-4 right-4 lg:bottom-6 lg:right-6 z-[60] flex items-center gap-3">
              <UserNav user={user} />
         </div>
@@ -266,7 +382,7 @@ export function ConverterView({
                   nodes={fileTree} 
                   onFileSelect={onFileSelect} 
                   onDelete={handleFileDelete}
-                  selectedFileId={files.find(f => f.originalName === filename)?.id}
+                  selectedFileId={files.find(f => f.originalName === filename || (f.relativePath && f.relativePath.endsWith(filename)))?.id}
                 />
               )}
             </div>
@@ -408,7 +524,8 @@ export function ConverterView({
                 <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                   <input
                     type="file"
-                    accept=".md"
+                    accept=".md,image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                    multiple
                     ref={fileInputRef}
                     onChange={handleFileUpload}
                     className="hidden"
