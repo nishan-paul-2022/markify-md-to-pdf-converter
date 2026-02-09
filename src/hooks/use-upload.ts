@@ -1,63 +1,11 @@
 import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { validateUploadStructure } from "@/lib/services/upload-validator";
-import { generateStandardName } from "@/lib/utils/naming";
 
 const processFilesWithNaming = (filesToProcess: File[], uploadCase: number): File[] => {
   console.log(`UseUpload: Processing ${filesToProcess.length} files for Case ${uploadCase}`);
   
-  if (uploadCase === 1 || uploadCase === 2) {
-    // For Case 1/2: Rename each .md file: standardized-name-timestamp.md
-    return filesToProcess.map(file => {
-      if (file.name.toLowerCase().endsWith('.md')) {
-        const base = generateStandardName(file.name);
-        const newName = base + '.md';
-        
-        console.log(`UseUpload: Renaming '${file.name}' -> '${newName}'`);
-        
-        // Create a new file with the standardized name
-        // IMPORTANT: Use new File() constructor to set the new name
-        return new File([file], newName, { type: file.type });
-      }
-      return file;
-    });
-  } else if (uploadCase === 3 || uploadCase === 4) {
-    // For Case 3/4: All files share a standardized and timestamped root folder name
-    const pathParts = filesToProcess[0].webkitRelativePath.split('/');
-    const originalRoot = pathParts[0];
-    const standardizedRoot = generateStandardName(originalRoot);
-    const finalRoot = standardizedRoot; // No timestamp
-
-    console.log(`UseUpload: Renaming Root '${originalRoot}' -> '${finalRoot}'`);
-
-    return filesToProcess.map(file => {
-      // Logic for modifying the path
-      const parts = file.webkitRelativePath.split('/');
-      
-      // 1. Replace the root folder with the standardized name
-      if (parts.length > 0) {
-        parts[0] = finalRoot;
-      }
-
-      // 2. If it's a Markdown file at the root level, standardize its name too
-      if (parts.length === 2 && file.name.toLowerCase().endsWith('.md')) {
-        const originalName = parts[1];
-        parts[1] = generateStandardName(originalName) + '.md';
-        console.log(`UseUpload: Renaming nested file '${originalName}' -> '${parts[1]}'`);
-      }
-
-      const newRelativePath = parts.join('/');
-      
-      // We create a new file object to avoid any issues, though we mostly care about the path
-      const newFile = new File([file], parts[parts.length - 1], { type: file.type });
-      Object.defineProperty(newFile, 'webkitRelativePath', {
-        value: newRelativePath,
-        writable: false,
-        configurable: true
-      });
-      return newFile;
-    });
-  }
+  // No renaming needed - return files as is
   return filesToProcess;
 };
 

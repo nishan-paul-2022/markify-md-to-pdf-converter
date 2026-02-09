@@ -168,15 +168,8 @@ export function useConverter() {
       console.log('📤 File upload triggered, count:', files.length);
 
       // Process files for renaming (Case 1/2 logic)
-      const fileList = Array.from(files).map(file => {
-        if (file.name.toLowerCase().endsWith('.md')) {
-           const base = generateStandardName(file.name);
-           const newName = base + '.md';
-           console.log(`UseConverter: Renaming '${file.name}' -> '${newName}'`);
-           return new File([file], newName, { type: file.type });
-        }
-        return file;
-      });
+      // Modification: User requested NO renaming. Keep original names.
+      const fileList = Array.from(files);
 
       const mdFile = fileList.find(f => f.name.endsWith('.md'));
       
@@ -248,41 +241,9 @@ export function useConverter() {
     console.log('📂 Folder upload triggered, files:', files?.length);
     
     if (files && files.length > 0) {
-      // Logic for Case 3/4: Rename root folder
-      const rawFiles = Array.from(files);
-      const pathParts = rawFiles[0].webkitRelativePath.split('/');
-      const originalRoot = pathParts[0];
-      const standardizedRoot = generateStandardName(originalRoot);
-      const finalRoot = standardizedRoot; // No timestamp
-
-      console.log(`UseConverter: Renaming Root '${originalRoot}' -> '${finalRoot}'`);
-
-      const processedFiles = rawFiles.map(file => {
-        const parts = file.webkitRelativePath.split('/');
-
-        // 1. Replace the root folder with the standardized name
-        if (parts.length > 0) {
-          parts[0] = finalRoot;
-        }
-
-        // 2. If it's a Markdown file at the root level, standardize its name too
-        if (parts.length === 2 && file.name.toLowerCase().endsWith('.md')) {
-          const originalName = parts[1];
-          parts[1] = generateStandardName(originalName) + '.md';
-          console.log(`UseConverter: Renaming nested file '${originalName}' -> '${parts[1]}'`);
-        }
-
-        const newRelativePath = parts.join('/');
-        
-        // We create a new file object to avoid any issues, though we mostly care about the path
-        const newFile = new File([file], parts[parts.length - 1], { type: file.type });
-        Object.defineProperty(newFile, 'webkitRelativePath', {
-           value: newRelativePath,
-           writable: false,
-           configurable: true
-        });
-        return newFile;
-      });
+      // Logic for Case 3/4: No renaming, keep original structure
+      const processedFiles = Array.from(files);
+      console.log(`UseConverter: Uploading folder without renaming.`);
 
       const mdFile = processedFiles.find(f => f.name.endsWith('.md'));
       

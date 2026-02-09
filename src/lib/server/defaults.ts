@@ -28,17 +28,38 @@ async function getFilesRecursively(dir: string, baseDir: string, batchId: string
       const subFiles = await getFilesRecursively(fullPath, baseDir, batchId, projectName)
       files.push(...subFiles)
     } else {
-      const ext = entry.name.split(".").pop()?.toLowerCase()
-      if (ext === "pdf") continue; // Ignore PDF files
+      const ext = entry.name.split(".").pop()?.toLowerCase() || ""
+      const validImageExts = ["png", "jpg", "jpeg", "gif", "webp", "svg"];
+      
+      // Strict Structure Validation Logic
+      // 1. Root Level: Only .md files allowed
+      if (!relativeToProject.includes("/")) {
+        if (ext !== "md") continue;
+      } 
+      // 2. Subfolder Level: Must be "images/" and contain only images
+      else {
+        const parts = relativeToProject.split("/");
+        
+        // Only allow 1 level deep (images/file.png)
+        // However, relativeToProject for "content-4/images/img.png" might be just "images/img.png" if baseDir is correct
+        // But getFilesRecursively calls recursively, so relativeToProject is calculated relative to baseDir.
+        // Let's ensure we are checking the path correctly.
+        // The implementation assumes relativeToProject is correct.
+        
+        if (parts.length > 2) continue; // Reject deep nesting
+        
+        // If it has subdirectory, it MUST be "images"
+        if (parts.length === 2 && parts[0] !== "images") continue;
+        
+        // If it is in images folder, must be image
+        if (parts.length === 2 && !validImageExts.includes(ext)) continue;
+      }
       
       const stats = await stat(fullPath)
       
       let mimeType = "application/octet-stream"
       if (ext === "md") mimeType = "text/markdown"
-      else if (ext === "png") mimeType = "image/png"
-      else if (ext === "jpg" || ext === "jpeg") mimeType = "image/jpeg"
-      else if (ext === "webp") mimeType = "image/webp"
-      else if (ext === "gif") mimeType = "image/gif"
+      else if (validImageExts.includes(ext)) mimeType = `image/${ext === "svg" ? "svg+xml" : ext}`
 
       files.push({
         id: `default-${batchId}-${relativeToProject.replace(/\//g, "-")}`,
