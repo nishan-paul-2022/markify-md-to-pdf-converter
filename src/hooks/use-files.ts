@@ -80,8 +80,11 @@ export function useFiles() {
       console.error("Delete error:", error);
       const msg = error instanceof Error ? error.message : "Failed to delete file";
       const api = getAlert();
-      if (api) api.show({ title: "Delete failed", message: msg });
-      else alert(msg);
+      if (api) {
+        api.show({ title: "Delete failed", message: msg, variant: "destructive" });
+      } else {
+        alert(msg);
+      }
     } finally {
       setDeleting(false);
       setDeleteId(null);
@@ -107,8 +110,11 @@ export function useFiles() {
       console.error("Bulk delete error:", error);
       const msg = error instanceof Error ? error.message : "Failed to delete files";
       const api = getAlert();
-      if (api) api.show({ title: "Delete failed", message: msg });
-      else alert(msg);
+      if (api) {
+        api.show({ title: "Delete failed", message: msg, variant: "destructive" });
+      } else {
+        alert(msg);
+      }
     } finally {
       setDeleting(false);
       setDeleteId(null);

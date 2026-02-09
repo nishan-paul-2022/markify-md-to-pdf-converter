@@ -3,7 +3,6 @@
 import React from "react"
 import { Button } from "@/components/ui/button"
 import { Upload, X, FileText, Image as ImageIcon, FolderOpen } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { formatFileSize } from "@/lib/formatters"
 
 interface FileUploadViewProps {

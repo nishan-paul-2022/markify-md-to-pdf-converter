@@ -11,16 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { useAlert } from "@/components/AlertProvider"
 
 interface FileTreeProps {
   nodes: FileTreeNode[];
@@ -37,12 +28,25 @@ export function FileTree({
   onDelete,
   selectedFileId,
 }: FileTreeProps) {
+  const { confirm } = useAlert()
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
-  const [confirmTarget, setConfirmTarget] = useState<{
-    name: string
-    ids: string[]
-    isFolder: boolean
-  } | null>(null)
+
+  const handleDeleteClick = async (node: FileTreeNode, isFolder: boolean) => {
+    const fileIds = isFolder ? collectFileIds(node) : [node.id]
+    const confirmed = await confirm({
+      title: isFolder ? "Delete folder?" : "Delete file?",
+      message: isFolder 
+        ? `Are you sure you want to delete the folder "${node.name}" and all its contents? This cannot be undone.`
+        : `Are you sure you want to delete "${node.name}"? This cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "destructive"
+    })
+
+    if (confirmed) {
+      onDelete(fileIds.length === 1 ? fileIds[0] : fileIds)
+    }
+  }
 
   const toggleFolder = (path: string) => {
     const newExpanded = new Set(expandedFolders)
@@ -163,13 +167,7 @@ export function FileTree({
                     <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
                       {!isDefaultFolder && folderFileIds.length > 0 && (
                         <DropdownMenuItem 
-                          onClick={() =>
-                            setConfirmTarget({
-                              name: node.name,
-                              ids: folderFileIds,
-                              isFolder: true,
-                            })
-                          }
+                          onClick={() => handleDeleteClick(node, true)}
                           className="gap-2 text-xs text-red-400 focus:text-red-400"
                         >
                           <Trash2 className="h-3.5 w-3.5" /> Delete Folder
@@ -224,13 +222,7 @@ export function FileTree({
                   </DropdownMenuItem>
                   {!node.id.startsWith("default-") && (
                     <DropdownMenuItem 
-                      onClick={() =>
-                        setConfirmTarget({
-                          name: node.name,
-                          ids: [node.id],
-                          isFolder: false,
-                        })
-                      }
+                      onClick={() => handleDeleteClick(node, false)}
                       className="gap-2 text-xs text-red-400 focus:text-red-400"
                     >
                       <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -243,43 +235,6 @@ export function FileTree({
         )
       })}
 
-      <AlertDialog
-        open={confirmTarget !== null}
-        onOpenChange={(open) => !open && setConfirmTarget(null)}
-      >
-        <AlertDialogContent variant="destructive">
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {confirmTarget?.isFolder
-                ? "Delete folder?"
-                : "Delete file?"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {confirmTarget?.isFolder
-                ? `Are you sure you want to delete the folder "${confirmTarget?.name}" and all its contents? This cannot be undone.`
-                : `Are you sure you want to delete "${confirmTarget?.name}"? This cannot be undone.`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                if (confirmTarget) {
-                  onDelete(
-                    confirmTarget.ids.length === 1
-                      ? confirmTarget.ids[0]
-                      : confirmTarget.ids
-                  )
-                  setConfirmTarget(null)
-                }
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+      </div>
   )
 }
