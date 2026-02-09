@@ -135,7 +135,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
       }}>
         <AlertDialogContent
           variant={variant === "destructive" ? "destructive" : "default"}
-          className="sm:max-w-[400px]"
+          className="sm:max-w-[450px]"
         >
           <AlertDialogHeader>
             {title ? (
@@ -154,11 +154,51 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
             ) : null}
             <AlertDialogDescription
               className={cn(
-                "text-slate-300",
+                "text-slate-300 leading-relaxed",
                 !title && "text-foreground font-medium"
               )}
+              asChild
             >
-              {message}
+              <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar mt-2">
+                {message.split("\n").map((line, i) => {
+                  const isViolation = line.includes("Violation:") || line.includes("Critical:") || line.includes("Forbidden:");
+                  const isHeader = i === 0 && message.includes("\n");
+                  
+                  if (isHeader) {
+                    return (
+                      <p key={i} className="font-semibold text-slate-100 mb-2 text-sm italic">
+                        {line}
+                      </p>
+                    );
+                  }
+
+                  if (isViolation) {
+                    const parts = line.split(":");
+                    const label = parts[0];
+                    const content = parts.slice(1).join(":");
+                    
+                    return (
+                      <div key={i} className="flex gap-2 items-start mb-2 group">
+                        <span className={cn(
+                          "text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded shrink-0 mt-0.5",
+                          label.includes("Critical") ? "bg-red-500/20 text-red-400" : "bg-amber-500/20 text-amber-400"
+                        )}>
+                          {label}
+                        </span>
+                        <span className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
+                          {content}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <p key={i} className={cn("text-xs mb-1", i === 0 ? "text-slate-300" : "text-slate-400")}>
+                      {line}
+                    </p>
+                  );
+                })}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className={cn(
