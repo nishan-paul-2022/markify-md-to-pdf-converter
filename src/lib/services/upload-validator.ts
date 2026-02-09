@@ -73,24 +73,22 @@ export function validateUploadStructure(files: File[]): ValidationResult {
       continue;
     }
 
-    // Rule: Root level can ONLY have .md files or an "images/" directory
+    // Rule: Root level can ONLY have .md files
+    // Images must be in "images/" subfolder
     if (subPath.length === 1) {
       // It's a file directly inside a root folder
       if (fileName.toLowerCase().endsWith('.md')) {
         filteredFiles.push(file);
         mdFilesInRootCount++;
       }
-    } else if (subPath.length === 2) {
-      // It's one level deep (should be inside images/)
-      const subDir = subPath[0];
-      if (subDir === "images") {
-        const isImage = ALLOWED_IMAGE_EXTENSIONS.some(ext => fileName.toLowerCase().endsWith(ext));
-        if (isImage) {
-          filteredFiles.push(file);
-        }
+    } else if (subPath.length === 2 && subPath[0].toLowerCase() === 'images') {
+      // It's inside "images/" folder - check if it's an image
+      const isImage = ALLOWED_IMAGE_EXTENSIONS.some(ext => fileName.toLowerCase().endsWith(ext));
+      if (isImage) {
+        filteredFiles.push(file);
       }
     }
-    // Ignore any other nested structures or file types
+    // Ignore any other file types or locations
   }
 
   if (mdFilesInRootCount === 0) {

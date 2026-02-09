@@ -34,105 +34,59 @@ export function useUpload() {
     setIsDragging(false);
     
     const items = Array.from(e.dataTransfer.items);
-    const newFiles: File[] = [];
+    const allFiles: File[] = [];
 
     const ALLOWED_IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'];
 
-    const traverseFileTree = async (item: FileSystemEntry, path = "", depth = 0) => {
+    // Helper function to extract image references from markdown content
+    const extractImageReferences = (markdownContent: string): Set<string> => {
+      const imageRefs = new Set<string>();
+      
+      // Match markdown image syntax: ![alt](path) and ![alt](path "title")
+      const mdImageRegex = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
+      
+      // Match HTML img tags: <img src="path" />
+      const htmlImageRegex = /<img[^>]+src=["']([^"']+)["']/gi;
+      
+      let match;
+      
+      // Extract markdown-style images
+      while ((match = mdImageRegex.exec(markdownContent)) !== null) {
+        imageRefs.add(match[2]);
+      }
+      
+      // Extract HTML-style images
+      while ((match = htmlImageRegex.exec(markdownContent)) !== null) {
+        imageRefs.add(match[1]);
+      }
+      
+      return imageRefs;
+    };
+
+    // Step 1: Collect ALL files from the dropped folder(s)
+    const traverseFileTree = async (item: FileSystemEntry, path = "") => {
       if (item.isFile) {
         return new Promise<void>((resolve) => {
           ;(item as FileSystemFileEntry).file((file) => {
-            const fileName = file.name.toLowerCase();
-            const fullPath = path + file.name;
-            const pathParts = fullPath.split('/');
-
             // Skip hidden files
-            if (file.name.startsWith('.')) {
-              resolve();
-              return;
+            if (!file.name.startsWith('.')) {
+              Object.defineProperty(file, 'webkitRelativePath', {
+                value: path + file.name,
+                writable: false
+              });
+              allFiles.push(file);
             }
-
-            // Determine if this is a folder upload (has path) or file upload
-            const isFolderUpload = pathParts.length > 1;
-
-            console.log(`📁 Processing file: ${fullPath}, isFolderUpload: ${isFolderUpload}, pathParts:`, pathParts);
-
-            if (!isFolderUpload) {
-              // Direct file upload - only accept .md files
-              if (fileName.endsWith('.md')) {
-                console.log(`✅ Accepted (direct .md file): ${file.name}`);
-                Object.defineProperty(file, 'webkitRelativePath', {
-                  value: fullPath,
-                  writable: false
-                });
-                newFiles.push(file);
-              } else {
-                console.log(`❌ Rejected (direct non-.md file): ${file.name}`);
-              }
-            } else {
-              // Folder upload - apply strict filtering
-              const subPath = pathParts.slice(1); // Remove root folder name
-              
-              if (subPath.length === 1) {
-                // File at root level - only accept .md files
-                if (fileName.endsWith('.md')) {
-                  console.log(`✅ Accepted (root .md file): ${fullPath}`);
-                  Object.defineProperty(file, 'webkitRelativePath', {
-                    value: fullPath,
-                    writable: false
-                  });
-                  newFiles.push(file);
-                } else {
-                  console.log(`❌ Rejected (root non-.md file): ${fullPath}`);
-                }
-              } else if (subPath.length === 2 && subPath[0] === 'images') {
-                // File inside images/ folder - only accept image files
-                const isImage = ALLOWED_IMAGE_EXTENSIONS.some(ext => fileName.endsWith(ext));
-                if (isImage) {
-                  console.log(`✅ Accepted (image in images/): ${fullPath}`);
-                  Object.defineProperty(file, 'webkitRelativePath', {
-                    value: fullPath,
-                    writable: false
-                  });
-                  newFiles.push(file);
-                } else {
-                  console.log(`❌ Rejected (non-image in images/): ${fullPath}`);
-                }
-              } else {
-                console.log(`❌ Rejected (invalid path structure): ${fullPath}, subPath:`, subPath);
-              }
-              // All other files/paths are ignored
-            }
-
             resolve();
           });
         });
       } else if (item.isDirectory) {
-        const dirName = item.name.toLowerCase();
-        const fullPath = path + item.name;
-        const pathParts = fullPath.split('/');
-        
-        // For folder uploads, only traverse root level and images/ subdirectory
-        if (pathParts.length === 1) {
-          // Root folder - traverse it
-          const dirReader = (item as FileSystemDirectoryEntry).createReader();
-          const entries = await new Promise<FileSystemEntry[]>((resolve) => {
-            dirReader.readEntries((entries) => resolve(Array.from(entries)));
-          });
-          for (const entry of entries) {
-            await traverseFileTree(entry, path + item.name + "/", depth + 1);
-          }
-        } else if (pathParts.length === 2 && dirName === 'images') {
-          // images/ folder at root level - traverse it
-          const dirReader = (item as FileSystemDirectoryEntry).createReader();
-          const entries = await new Promise<FileSystemEntry[]>((resolve) => {
-            dirReader.readEntries((entries) => resolve(Array.from(entries)));
-          });
-          for (const entry of entries) {
-            await traverseFileTree(entry, path + item.name + "/", depth + 1);
-          }
+        const dirReader = (item as FileSystemDirectoryEntry).createReader();
+        const entries = await new Promise<FileSystemEntry[]>((resolve) => {
+          dirReader.readEntries((entries) => resolve(Array.from(entries)));
+        });
+        for (const entry of entries) {
+          await traverseFileTree(entry, path + item.name + "/");
         }
-        // All other directories are ignored (not traversed)
       }
     };
 
@@ -144,7 +98,117 @@ export function useUpload() {
 
     await Promise.all(itemPromises);
 
-    const validation = validateUploadStructure(newFiles);
+    console.log(`📦 Total files collected: ${allFiles.length}`);
+
+    // Step 2: Separate markdown files and potential image files
+    const markdownFiles: File[] = [];
+    const potentialImageFiles: File[] = [];
+
+    for (const file of allFiles) {
+      const fileName = file.name.toLowerCase();
+      const webkitFile = file as File & { webkitRelativePath?: string };
+      const fullPath = webkitFile.webkitRelativePath || file.name;
+      const pathParts = fullPath.split('/');
+      const isFolderUpload = pathParts.length > 1;
+      
+      if (!isFolderUpload) {
+        // Direct file upload - only accept .md files
+        if (fileName.endsWith('.md')) {
+          markdownFiles.push(file);
+          console.log(`📝 Found markdown (direct): ${file.name}`);
+        }
+      } else {
+        const subPath = pathParts.slice(1); // Remove root folder name
+        
+        // Rule 1: Root level files MUST be .md
+        if (subPath.length === 1) {
+          if (fileName.endsWith('.md')) {
+            markdownFiles.push(file);
+            console.log(`📝 Found markdown (root): ${fullPath}`);
+          } else {
+            console.log(`❌ Ignored non-md file at root: ${fullPath}`);
+          }
+        } 
+        // Rule 2: Subfolder MUST be 'images' and contain image files
+        else if (subPath.length === 2 && subPath[0].toLowerCase() === 'images') {
+          const isImage = ALLOWED_IMAGE_EXTENSIONS.some(ext => fileName.endsWith(ext));
+          if (isImage) {
+            potentialImageFiles.push(file);
+            console.log(`🖼️  Found potential image in images/: ${fullPath}`);
+          } else {
+            console.log(`❌ Ignored non-image in images/: ${fullPath}`);
+          }
+        } else {
+          console.log(`❌ Ignored file in invalid location (not root or images/): ${fullPath}`);
+        }
+      }
+    }
+
+    console.log(`📝 Markdown files: ${markdownFiles.length}`);
+    console.log(`🖼️  Potential images: ${potentialImageFiles.length}`);
+
+    // Step 3: Parse markdown files to find referenced images
+    const referencedImagePaths = new Set<string>();
+    
+    for (const mdFile of markdownFiles) {
+      try {
+        const content = await mdFile.text();
+        const imageRefs = extractImageReferences(content);
+        
+        console.log(`📖 Parsing ${mdFile.name}, found ${imageRefs.size} image references`);
+        
+        for (const ref of imageRefs) {
+          // Normalize the path (remove leading ./ and ../)
+          const normalizedRef = ref.replace(/^\.\//, '').replace(/\.\.\//g, '');
+          referencedImagePaths.add(normalizedRef);
+          console.log(`   🔗 Referenced: ${normalizedRef}`);
+        }
+      } catch (error) {
+        console.error(`❌ Error reading markdown file ${mdFile.name}:`, error);
+      }
+    }
+
+    // Step 4: Filter images - only include those referenced in markdown
+    const filteredImages: File[] = [];
+    
+    for (const imageFile of potentialImageFiles) {
+      const webkitFile = imageFile as File & { webkitRelativePath?: string };
+      const fullPath = webkitFile.webkitRelativePath || imageFile.name;
+      const pathParts = fullPath.split('/');
+      const subPath = pathParts.slice(1).join('/'); // Path relative to root folder
+      
+      // Check if this image is referenced in any markdown file
+      let isReferenced = false;
+      for (const refPath of referencedImagePaths) {
+        // Match exact path or filename
+        if (subPath === refPath || subPath.endsWith('/' + refPath) || imageFile.name === refPath) {
+          isReferenced = true;
+          break;
+        }
+      }
+      
+      if (isReferenced) {
+        filteredImages.push(imageFile);
+        console.log(`✅ Image INCLUDED (referenced): ${fullPath}`);
+      } else {
+        console.log(`❌ Image EXCLUDED (not referenced): ${fullPath}`);
+      }
+    }
+
+    // Step 5: Combine markdown files and filtered images
+    const finalFiles = [...markdownFiles, ...filteredImages];
+    
+    console.log(`\n📊 Final Summary:`);
+    console.log(`   Markdown files: ${markdownFiles.length}`);
+    console.log(`   Referenced images: ${filteredImages.length}`);
+    console.log(`   Total files to upload: ${finalFiles.length}`);
+
+    if (finalFiles.length === 0) {
+      setError("No valid files found. Please upload at least one .md file.");
+      return;
+    }
+
+    const validation = validateUploadStructure(finalFiles);
     if (!validation.valid) {
       setError(validation.error || "Invalid file structure.");
       return;

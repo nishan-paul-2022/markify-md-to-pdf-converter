@@ -50,10 +50,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
-    // Validate file type (markdown and images only - NO PDFs)
+    // Validate file type (markdown and images only - NO PDFs, NO TXT)
     const allowedTypes = [
       "text/markdown",
-      "text/plain",
       "image/png",
       "image/jpeg",
       "image/jpg",

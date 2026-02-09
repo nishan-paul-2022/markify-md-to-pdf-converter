@@ -42,9 +42,6 @@ async function getFilesRecursively(dir: string, baseDir: string, batchId: string
         
         // Only allow 1 level deep (images/file.png)
         // However, relativeToProject for "content-4/images/img.png" might be just "images/img.png" if baseDir is correct
-        // But getFilesRecursively calls recursively, so relativeToProject is calculated relative to baseDir.
-        // Let's ensure we are checking the path correctly.
-        // The implementation assumes relativeToProject is correct.
         
         if (parts.length > 2) {continue;} // Reject deep nesting
         
