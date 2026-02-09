@@ -1,23 +1,17 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
+import { addTimestampToName, generateStandardName } from '@/lib/utils/naming';
 
 const MAX_FILENAME_LENGTH = 30;
 
 const getBaseName = (name: string): string => {
-  return name.replace(/\.md$/i, '');
+  return generateStandardName(name);
 };
 
 const getTimestampedFilename = (name: string, ext: string): string => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  
-  const dateTimeString = `${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
-  return `${getBaseName(name)}-${dateTimeString}.${ext}`;
+  const baseName = generateStandardName(name);
+  const timestampedName = addTimestampToName(baseName);
+  return `${timestampedName}.${ext}`;
 };
 
 export function useConverter() {
