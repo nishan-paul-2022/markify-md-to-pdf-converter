@@ -52,6 +52,15 @@ export function FileTree({
     return ids;
   };
 
+  const containsSelectedFile = (node: FileTreeNode, selectedId?: string): boolean => {
+    if (!selectedId) return false;
+    if (node.type === "file") return node.id === selectedId;
+    if (node.children) {
+      return node.children.some(child => containsSelectedFile(child, selectedId));
+    }
+    return false;
+  };
+
   // Auto-expand folders containing the selected file
   React.useEffect(() => {
     if (selectedFileId && nodes.length > 0) {
@@ -100,6 +109,7 @@ export function FileTree({
       {nodes.map((node) => {
         const isExpanded = expandedFolders.has(node.path)
         const isSelected = selectedFileId === node.id
+        const isFolderActive = containsSelectedFile(node, selectedFileId)
 
         if (node.type === "folder") {
           const folderFileIds = collectFileIds(node);
@@ -111,6 +121,7 @@ export function FileTree({
               <div
                 className={cn(
                   "flex items-center justify-between hover:bg-white/5 transition-colors text-slate-400 hover:text-slate-100",
+                  isFolderActive && "text-slate-100 bg-white/5 border-l-2 border-amber-500/50",
                   level > 0 && `ml-${level * 2}`
                 )}
                 style={{ paddingLeft: `${(level + 1) * 1}rem` }}
