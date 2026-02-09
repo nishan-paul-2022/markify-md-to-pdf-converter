@@ -8,6 +8,8 @@ export interface File {
   mimeType: string;
   size: number;
   url: string;
+  relativePath?: string;
+  batchId?: string;
   createdAt: string;
 }
 
@@ -32,7 +34,16 @@ export function useFiles() {
     setLoading(true);
     try {
       const response = await fetch("/api/files");
-      if (!response.ok) throw new Error("Failed to fetch files");
+      if (!response.ok) {
+        let errorDetail = "";
+        try {
+          const errorData = await response.json();
+          errorDetail = errorData.error || errorData.details || "";
+        } catch {
+          // Fallback if not JSON
+        }
+        throw new Error(`Failed to fetch files${errorDetail ? `: ${errorDetail}` : ""}`);
+      }
       
       const data: FileListResponse = await response.json();
       setFiles(data.files);

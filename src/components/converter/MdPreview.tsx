@@ -9,11 +9,11 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 import { usePreview, A4_WIDTH_PX, A4_HEIGHT_PX } from '@/hooks/use-preview';
-import { createMarkdownComponents } from './MarkdownComponents';
-import { CoverPage, PageWrapper } from './PageTemplates';
-import { MdPreviewToolbar } from './MdPreviewToolbar';
+import { createMarkdownComponents } from '@/components/converter/MarkdownComponents';
+import { CoverPage, PageWrapper } from '@/components/converter/PageTemplates';
+import { MdPreviewToolbar } from '@/components/converter/MdPreviewToolbar';
 
-const PdfViewer = dynamic(() => import('./PdfViewer'), {
+const PdfViewer = dynamic(() => import('@/components/converter/PdfViewer'), {
   ssr: false,
   loading: () => <div className="h-[800px] w-[600px] animate-pulse bg-slate-800/20 rounded-lg" />,
 });

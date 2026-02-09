@@ -424,6 +424,8 @@ export function useConverter() {
     generatePdfBlob,
     scrollToStart,
     scrollToEnd,
+    setFilename,
+    setBasePath,
     MAX_FILENAME_LENGTH,
     getBaseName
   };

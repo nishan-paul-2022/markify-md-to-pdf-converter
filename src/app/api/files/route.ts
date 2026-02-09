@@ -223,9 +223,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     })
   } catch (error: unknown) {
-    console.error("File fetch error:", error)
+    console.error("❌ File fetch error detailed:", error)
+    if (error instanceof Error) {
+      console.error("Message:", error.message)
+      console.error("Stack:", error.stack)
+    }
     return NextResponse.json(
-      { error: "Failed to fetch files" },
+      { error: "Failed to fetch files", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

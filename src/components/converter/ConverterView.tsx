@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import MdPreview from './MdPreview';
-import Editor from './Editor';
+import MdPreview from '@/components/converter/MdPreview';
+import Editor from '@/components/converter/Editor';
 import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy, Download, Eye, MoreVertical, FolderOpen } from 'lucide-react';
 import {
   Tooltip,
@@ -20,6 +20,12 @@ import {
 import UserNav from '@/components/auth/UserNav';
 import { Metadata } from '@/constants/default-content';
 import { formatDateTime } from '@/lib/formatters';
+import { cn } from '@/lib/utils';
+
+import { File } from '@/hooks/use-files';
+import { FileTree } from '@/components/file-manager/FileTree';
+import { FileTreeNode, buildFileTree } from '@/lib/file-tree';
+import { PanelLeftClose, PanelLeftOpen, RefreshCw, Search } from 'lucide-react';
 
 interface ConverterViewProps {
   user: {
@@ -27,6 +33,11 @@ interface ConverterViewProps {
     email?: string | null;
     image?: string | null;
   };
+  files: File[];
+  filesLoading: boolean;
+  handleFileDelete: (id: string) => void;
+  onFileSelect: (node: FileTreeNode) => void;
+  refreshFiles: () => Promise<void>;
   rawContent: string;
   content: string;
   metadata: Metadata;
@@ -75,6 +86,11 @@ interface ConverterViewProps {
 
 export function ConverterView({
   user,
+  files,
+  filesLoading,
+  handleFileDelete,
+  onFileSelect,
+  refreshFiles,
   rawContent,
   content,
   metadata,
@@ -117,6 +133,17 @@ export function ConverterView({
   MAX_FILENAME_LENGTH,
   getBaseName,
 }: ConverterViewProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const fileTree = React.useMemo(() => {
+    const filteredFiles = files.filter(f => 
+      f.originalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (f.relativePath && f.relativePath.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+    return buildFileTree(filteredFiles);
+  }, [files, searchQuery]);
+
   const getInputWidth = (name: string): string => {
     const charCount = name.length || 8;
     return `${Math.max(charCount * 0.65, 5)}rem`;
@@ -165,7 +192,90 @@ export function ConverterView({
           </div>
         </div>
 
-        <div className="flex-grow flex flex-col lg:flex-row gap-0 overflow-hidden relative">
+        <div className="flex-grow flex flex-row overflow-hidden relative">
+          {/* Sidebar */}
+          <aside 
+            className={cn(
+              "hidden lg:flex flex-col bg-slate-900/30 border-r border-white/5 transition-all duration-300 ease-in-out overflow-hidden z-30",
+              isSidebarOpen ? "w-72" : "w-0"
+            )}
+          >
+            <div className="h-12 flex items-center justify-between px-4 border-b border-white/5 bg-slate-900/50 sticky top-0">
+               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Explorer</span>
+               <div className="flex items-center gap-1">
+                 <Tooltip>
+                   <TooltipTrigger asChild>
+                     <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => refreshFiles()}
+                        className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+                        disabled={filesLoading}
+                     >
+                       <RefreshCw className={cn("h-3.5 w-3.5", filesLoading && "animate-spin")} />
+                     </Button>
+                   </TooltipTrigger>
+                   <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Refresh Explorer</TooltipContent>
+                 </Tooltip>
+
+                 <Tooltip>
+                   <TooltipTrigger asChild>
+                     <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsSidebarOpen(false)}
+                        className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+                     >
+                       <PanelLeftClose className="h-4 w-4" />
+                     </Button>
+                   </TooltipTrigger>
+                   <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Collapse Sidebar</TooltipContent>
+                 </Tooltip>
+               </div>
+            </div>
+
+            <div className="p-3">
+              <div className="relative group">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-slate-300 transition-colors" />
+                <input
+                  type="text"
+                  placeholder="Search files..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-950/50 border border-white/5 rounded-md py-1.5 pl-8 pr-3 text-xs focus:outline-none focus:border-white/10 focus:bg-slate-950 transition-all placeholder:text-slate-600"
+                />
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
+              {filesLoading && files.length === 0 ? (
+                <div className="px-6 py-4 flex flex-col items-center gap-3 opacity-40">
+                  <div className="h-4 w-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[10px] uppercase tracking-widest font-bold">Scanning...</span>
+                </div>
+              ) : files.length === 0 ? (
+                <div className="px-6 py-12 text-center">
+                   <p className="text-xs text-slate-600 font-medium italic">No files found</p>
+                </div>
+              ) : (
+                <FileTree 
+                  nodes={fileTree} 
+                  onFileSelect={onFileSelect} 
+                  onDelete={handleFileDelete}
+                  selectedFileId={files.find(f => f.originalName === filename)?.id}
+                />
+              )}
+            </div>
+          </aside>
+
+          {/* Sidebar Toggle (when closed) */}
+          {!isSidebarOpen && (
+            <div className="hidden lg:flex absolute left-0 top-0 bottom-0 w-8 z-40 items-center justify-center hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => setIsSidebarOpen(true)}>
+               <PanelLeftOpen className="h-4 w-4 text-slate-700 group-hover:text-slate-400 transition-colors" />
+            </div>
+          )}
+
+          <div className="flex-grow flex flex-col lg:flex-row gap-0 overflow-hidden relative">
           <div className={`flex-1 flex flex-col border-r border-slate-800/50 overflow-hidden transition-all duration-300 ${
             activeTab === 'editor' ? 'flex tab-enter' : 'hidden lg:flex'
           }`}>
@@ -456,6 +566,7 @@ export function ConverterView({
               basePath={basePath}
             />
           </div>
+        </div>
         </div>
       </main>
     </TooltipProvider>

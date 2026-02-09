@@ -1,5 +1,5 @@
 import React from 'react';
-import MermaidDiagram from './MermaidDiagram';
+import MermaidDiagram from '@/components/converter/MermaidDiagram';
 import { cn } from '@/lib/utils';
 
 interface MarkdownComponentsProps {
