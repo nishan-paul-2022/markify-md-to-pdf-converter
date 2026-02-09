@@ -258,14 +258,24 @@ export function useConverter() {
       console.log(`UseConverter: Renaming Root '${originalRoot}' -> '${finalRoot}'`);
 
       const processedFiles = rawFiles.map(file => {
-        const relativePath = file.webkitRelativePath;
-        // Replace the root folder in path with standardized version
-        // Note: replace only the first occurrence (the root)
-        const newRelativePath = relativePath.startsWith(originalRoot) 
-             ? relativePath.replace(originalRoot, finalRoot)
-             : relativePath;
+        const parts = file.webkitRelativePath.split('/');
 
-        const newFile = new File([file], file.name, { type: file.type });
+        // 1. Replace the root folder with the standardized name
+        if (parts.length > 0) {
+          parts[0] = finalRoot;
+        }
+
+        // 2. If it's a Markdown file at the root level, standardize its name too
+        if (parts.length === 2 && file.name.toLowerCase().endsWith('.md')) {
+          const originalName = parts[1];
+          parts[1] = generateStandardName(originalName) + '.md';
+          console.log(`UseConverter: Renaming nested file '${originalName}' -> '${parts[1]}'`);
+        }
+
+        const newRelativePath = parts.join('/');
+        
+        // We create a new file object to avoid any issues, though we mostly care about the path
+        const newFile = new File([file], parts[parts.length - 1], { type: file.type });
         Object.defineProperty(newFile, 'webkitRelativePath', {
            value: newRelativePath,
            writable: false,

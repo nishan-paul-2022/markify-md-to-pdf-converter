@@ -31,11 +31,25 @@ const processFilesWithNaming = (filesToProcess: File[], uploadCase: number): Fil
     console.log(`UseUpload: Renaming Root '${originalRoot}' -> '${finalRoot}'`);
 
     return filesToProcess.map(file => {
-      const relativePath = file.webkitRelativePath;
-      const newRelativePath = relativePath.replace(originalRoot, finalRoot);
+      // Logic for modifying the path
+      const parts = file.webkitRelativePath.split('/');
+      
+      // 1. Replace the root folder with the standardized name
+      if (parts.length > 0) {
+        parts[0] = finalRoot;
+      }
+
+      // 2. If it's a Markdown file at the root level, standardize its name too
+      if (parts.length === 2 && file.name.toLowerCase().endsWith('.md')) {
+        const originalName = parts[1];
+        parts[1] = generateStandardName(originalName) + '.md';
+        console.log(`UseUpload: Renaming nested file '${originalName}' -> '${parts[1]}'`);
+      }
+
+      const newRelativePath = parts.join('/');
       
       // We create a new file object to avoid any issues, though we mostly care about the path
-      const newFile = new File([file], file.name, { type: file.type });
+      const newFile = new File([file], parts[parts.length - 1], { type: file.type });
       Object.defineProperty(newFile, 'webkitRelativePath', {
         value: newRelativePath,
         writable: false,
