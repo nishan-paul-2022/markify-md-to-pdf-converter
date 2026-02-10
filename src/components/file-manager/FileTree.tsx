@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { ChevronRight, ChevronDown, ChevronUp, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink, PencilLine, Lock, LayoutGrid, List } from "lucide-react"
+import { ChevronRight, ChevronDown, ChevronUp, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink, PencilLine, Lock, LayoutGrid, List, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FileTreeNode } from "@/lib/file-tree"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,9 @@ interface FileTreeProps {
   onDelete: (id: string | string[]) => void;
   onRename: (id: string, newName: string, type: "file" | "folder", batchId?: string, oldPath?: string) => Promise<void>;
   selectedFileId?: string;
+  isSelectionMode?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelection?: (id: string | string[]) => void;
 }
 
 export function FileTree({
@@ -29,6 +32,9 @@ export function FileTree({
   onDelete,
   onRename,
   selectedFileId,
+  isSelectionMode = false,
+  selectedIds = new Set(),
+  onToggleSelection,
 }: FileTreeProps) {
   const { confirm } = useAlert()
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
@@ -263,43 +269,69 @@ export function FileTree({
                     {isDefaultFolder && <Lock className="h-2.5 w-2.5 ml-1 opacity-40" />}
                   </button>
                 )}
-                <div className="opacity-0 group-hover/folder:opacity-100 flex items-center px-1">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
-                        <MoreVertical className="h-3.5 w-3.5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
-                      <DropdownMenuItem 
-                        onClick={() => toggleFolderGridMode(node.path)}
-                        className="gap-2 text-xs"
-                      >
-                        {isGridMode ? <List className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
-                        {isGridMode ? "View as List" : "View as Grid"}
-                      </DropdownMenuItem>
-                      {!isDefaultFolder && (
-                        <DropdownMenuItem 
-                          onClick={() => handleRenameStart(node)}
-                          className="gap-2 text-xs"
-                        >
-                          <PencilLine className="h-3.5 w-3.5" /> Rename Folder
-                        </DropdownMenuItem>
-                      )}
-                      {!isDefaultFolder && folderFileIds.length > 0 && (
-                        <DropdownMenuItem 
-                          onClick={() => handleDeleteClick(node, true)}
-                          className="gap-2 text-xs text-red-400 focus:text-red-400"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" /> Delete Folder
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem onClick={() => toggleFolder(node.path)} className="gap-2 text-xs">
-                        {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                        {isExpanded ? "Collapse" : "Expand"}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                <div className="flex items-center gap-1">
+                  {isSelectionMode && !isDefaultFolder && level === 0 && (
+                    <div className="flex items-center px-2">
+                       <div 
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           if (onToggleSelection) {
+                             onToggleSelection(folderFileIds);
+                           }
+                         }}
+                         className={cn(
+                           "h-4 w-4 rounded-md border transition-all duration-300 flex items-center justify-center cursor-pointer",
+                           folderFileIds.every(id => selectedIds.has(id))
+                             ? "bg-primary border-primary/50 shadow-[0_0_10px_-2px_rgba(var(--primary),0.3)] scale-110"
+                             : "bg-slate-950 border-white/10 hover:border-primary/50"
+                         )}
+                       >
+                         {folderFileIds.every(id => selectedIds.has(id)) && (
+                           <Check className="h-3 w-3 text-slate-950 stroke-[4]" />
+                         )}
+                       </div>
+                    </div>
+                  )}
+                  {!isCurrentlyRenaming && (
+                    <div className="opacity-0 group-hover/folder:opacity-100 flex items-center px-1 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
+                            <MoreVertical className="h-3.5 w-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
+                          <DropdownMenuItem 
+                            onClick={() => toggleFolderGridMode(node.path)}
+                            className="gap-2 text-xs"
+                          >
+                            {isGridMode ? <List className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
+                            {isGridMode ? "View as List" : "View as Grid"}
+                          </DropdownMenuItem>
+                          {!isDefaultFolder && (
+                            <DropdownMenuItem 
+                              onClick={() => handleRenameStart(node)}
+                              className="gap-2 text-xs"
+                            >
+                              <PencilLine className="h-3.5 w-3.5" /> Rename Folder
+                            </DropdownMenuItem>
+                          )}
+                          {!isDefaultFolder && folderFileIds.length > 0 && level === 0 && (
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteClick(node, true)}
+                              className="gap-2 text-xs text-red-400 focus:text-red-400"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" /> Delete Project
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => toggleFolder(node.path)} className="gap-2 text-xs">
+                            {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                            {isExpanded ? "Collapse" : "Expand"}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  )}
                 </div>
               </div>
               {isExpanded && node.children && (
@@ -351,6 +383,9 @@ export function FileTree({
                       onDelete={onDelete}
                       onRename={onRename}
                       selectedFileId={selectedFileId}
+                      isSelectionMode={isSelectionMode}
+                      selectedIds={selectedIds}
+                      onToggleSelection={onToggleSelection}
                     />
                   )}
                 </div>
@@ -397,35 +432,61 @@ export function FileTree({
                 {node.id.startsWith("default-") && <Lock className="h-2.5 w-2.5 ml-1 opacity-40 text-emerald-500/50" />}
               </button>
             )}
-            <div className="opacity-0 group-hover:opacity-100 flex items-center px-1">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
-                    <MoreVertical className="h-3.5 w-3.5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
-                  <DropdownMenuItem onClick={() => onFileSelect(node)} className="gap-2 text-xs">
-                    <ExternalLink className="h-3.5 w-3.5" /> Open
-                  </DropdownMenuItem>
-                  {!node.id.startsWith("default-") && (
-                    <DropdownMenuItem 
-                      onClick={() => handleRenameStart(node)}
-                      className="gap-2 text-xs"
-                    >
-                      <PencilLine className="h-3.5 w-3.5" /> Rename
-                    </DropdownMenuItem>
-                  )}
-                  {!node.id.startsWith("default-") && (
-                    <DropdownMenuItem 
-                      onClick={() => handleDeleteClick(node, false)}
-                      className="gap-2 text-xs text-red-400 focus:text-red-400"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" /> Delete
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div className="flex items-center gap-1">
+              {isSelectionMode && !node.id.startsWith("default-") && level === 0 && (
+                <div className="flex items-center px-2">
+                   <div 
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       if (onToggleSelection) {
+                         onToggleSelection(node.id);
+                       }
+                     }}
+                     className={cn(
+                       "h-4 w-4 rounded-md border transition-all duration-300 flex items-center justify-center cursor-pointer",
+                       selectedIds.has(node.id)
+                         ? "bg-primary border-primary/50 shadow-[0_0_10px_-2px_rgba(var(--primary),0.3)] scale-110"
+                         : "bg-slate-950 border-white/10 hover:border-primary/50"
+                     )}
+                   >
+                     {selectedIds.has(node.id) && (
+                       <Check className="h-3 w-3 text-slate-950 stroke-[4]" />
+                     )}
+                   </div>
+                </div>
+              )}
+              {!isCurrentlyRenaming && (
+                <div className="opacity-0 group-hover:opacity-100 flex items-center px-1 transition-opacity">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
+                        <MoreVertical className="h-3.5 w-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
+                      <DropdownMenuItem onClick={() => onFileSelect(node)} className="gap-2 text-xs">
+                        <ExternalLink className="h-3.5 w-3.5" /> Open
+                      </DropdownMenuItem>
+                      {!node.id.startsWith("default-") && (
+                        <DropdownMenuItem 
+                          onClick={() => handleRenameStart(node)}
+                          className="gap-2 text-xs"
+                        >
+                          <PencilLine className="h-3.5 w-3.5" /> Rename
+                        </DropdownMenuItem>
+                      )}
+                      {!node.id.startsWith("default-") && level === 0 && (
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteClick(node, false)}
+                          className="gap-2 text-xs text-red-400 focus:text-red-400"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" /> Delete
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              )}
             </div>
           </div>
         )

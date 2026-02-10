@@ -4,7 +4,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import MdPreview from '@/components/converter/MdPreview';
 import Editor from '@/components/converter/Editor';
-import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy, Download, Eye, MoreVertical, FolderOpen } from 'lucide-react';
+import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy, Download, Eye, MoreVertical, FolderOpen, Trash2, ListChecks } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -23,6 +23,7 @@ import { formatDateTime } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 
 import { File as AppFile } from '@/hooks/use-files';
+import { useAlert } from "@/components/AlertProvider";
 import { FileTree } from '@/components/file-manager/FileTree';
 import { FileTreeNode, buildFileTree } from '@/lib/file-tree';
 import { PanelLeftClose, PanelLeftOpen, RefreshCw, Search } from 'lucide-react';
@@ -149,9 +150,62 @@ export function ConverterView({
   setActiveImage,
   imageGallery,
 }: ConverterViewProps) {
+  const { confirm } = useAlert();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isDragging, setIsDragging] = React.useState(false);
+  const [isSelectionMode, setIsSelectionMode] = React.useState(false);
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+
+  const toggleSelection = React.useCallback((id: string | string[]) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      const ids = Array.isArray(id) ? id : [id];
+      
+      const allSelected = ids.every(i => next.has(i));
+      if (allSelected) {
+        ids.forEach(i => next.delete(i));
+      } else {
+        ids.forEach(i => next.add(i));
+      }
+      return next;
+    });
+  }, []);
+
+  const handleBulkDeleteClick = async () => {
+    if (selectedIds.size === 0) {return;}
+    
+    const confirmed = await confirm({
+      title: "Delete multiple items?",
+      message: `Are you sure you want to delete ${selectedIds.size} selected items? This cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "destructive"
+    });
+
+    if (confirmed) {
+      handleFileDelete(Array.from(selectedIds));
+      setSelectedIds(new Set());
+      setIsSelectionMode(false);
+    }
+  };
+
+  const getAllDeletableFileIds = React.useCallback(() => {
+    return files
+      .filter(f => !f.id.startsWith("default-"))
+      .map(f => f.id);
+  }, [files]);
+
+  const handleSelectAll = React.useCallback(() => {
+    const allIds = getAllDeletableFileIds();
+    const allSelected = allIds.every(id => selectedIds.has(id));
+    
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(allIds));
+    }
+  }, [getAllDeletableFileIds, selectedIds]);
 
   const handleDragOver = React.useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -332,9 +386,25 @@ export function ConverterView({
               isSidebarOpen ? "w-72 opacity-100" : "w-0 border-r-0 opacity-0 pointer-events-none"
             )}
           >
-            <div className="h-12 flex items-center justify-between px-4 border-b border-white/5 bg-slate-900/50 sticky top-0">
+            <div className="h-12 flex items-center justify-between px-4 border-b border-white/5 bg-slate-900/50 sticky top-0 z-20">
                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Explorer</span>
                <div className="flex items-center gap-1">
+                 {!isSelectionMode && (
+                   <Tooltip>
+                     <TooltipTrigger asChild>
+                       <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setIsSelectionMode(true)}
+                          className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+                       >
+                         <ListChecks className="h-3.5 w-3.5" />
+                       </Button>
+                     </TooltipTrigger>
+                     <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Bulk Select</TooltipContent>
+                   </Tooltip>
+                 )}
+
                  <Tooltip>
                    <TooltipTrigger asChild>
                      <Button
@@ -350,32 +420,96 @@ export function ConverterView({
                    <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Refresh Explorer</TooltipContent>
                  </Tooltip>
 
-                 <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      console.log('Collapse button clicked, current state:', isSidebarOpen);
-                      setIsSidebarOpen(false);
-                    }}
-                    className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
-                    title="Collapse Sidebar"
-                 >
-                   <PanelLeftClose className="h-4 w-4" />
-                 </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsSidebarOpen(false);
+                        }}
+                        className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+                      >
+                        <PanelLeftClose className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Collapse Sidebar</TooltipContent>
+                  </Tooltip>
                </div>
             </div>
 
-            <div className="p-3">
-              <div className="relative group">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-slate-300 transition-colors" />
-                <input
-                  type="text"
-                  placeholder="Search files..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-950/50 border border-white/5 rounded-md py-1.5 pl-8 pr-3 text-xs focus:outline-none focus:border-white/10 focus:bg-slate-950 transition-all placeholder:text-slate-600"
-                />
+            <div className="relative">
+              {/* Selection Bar Overlay */}
+              {isSelectionMode && (
+                <div className="absolute inset-0 z-30 bg-slate-900/95 backdrop-blur-2xl flex flex-col border-b border-white/5 animate-in slide-in-from-top duration-500 h-fit shadow-2xl">
+                  <div className="flex items-center justify-between px-4 h-12 border-b border-white/5 bg-white/[0.02]">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                       <div className="relative flex h-2 w-2 shrink-0">
+                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                         <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                       </div>
+                       <div className="flex flex-col min-w-0">
+                         <span className="text-[11px] font-bold text-slate-100 tabular-nums truncate">
+                           {selectedIds.size} Selected
+                         </span>
+                         <span className="text-[8px] font-medium uppercase tracking-widest text-slate-500 truncate">
+                           Workspace Management
+                         </span>
+                       </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 ml-2 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleSelectAll}
+                        className="h-7 px-2.5 text-[9px] font-bold uppercase tracking-widest text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors rounded-md border border-white/5"
+                      >
+                        {selectedIds.size === getAllDeletableFileIds().length && selectedIds.size > 0 ? "Reset" : "All"}
+                      </Button>
+                      <button
+                        onClick={() => {
+                          setIsSelectionMode(false);
+                          setSelectedIds(new Set());
+                        }}
+                        className="h-7 w-7 flex items-center justify-center rounded-full text-slate-500 hover:text-white hover:bg-white/5 transition-all"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="p-2 bg-slate-900/40">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={selectedIds.size === 0}
+                      onClick={handleBulkDeleteClick}
+                      className={cn(
+                        "w-full h-9 text-[10px] font-bold uppercase tracking-[0.2em] gap-2 transition-all duration-300 rounded-md",
+                        selectedIds.size > 0 
+                          ? "text-red-400/80 hover:text-red-400 hover:bg-red-400/10 border border-red-400/20"
+                          : "text-slate-600 border border-white/5 opacity-50 cursor-not-allowed"
+                      )}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete Selected
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <div className="p-3">
+                <div className="relative group">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-slate-300 transition-colors" />
+                  <input
+                    type="text"
+                    placeholder="Search files..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-slate-950/50 border border-white/5 rounded-md py-1.5 pl-8 pr-3 text-xs focus:outline-none focus:border-white/10 focus:bg-slate-950 transition-all placeholder:text-slate-600"
+                  />
+                </div>
               </div>
             </div>
 
@@ -396,6 +530,9 @@ export function ConverterView({
                   onDelete={handleFileDelete}
                   onRename={handleFileRename}
                   selectedFileId={selectedFileId || undefined}
+                  isSelectionMode={isSelectionMode}
+                  selectedIds={selectedIds}
+                  onToggleSelection={toggleSelection}
                 />
               )}
             </div>
