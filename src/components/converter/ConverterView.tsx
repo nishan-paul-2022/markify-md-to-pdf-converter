@@ -470,7 +470,6 @@ export function ConverterView({
               <div className="z-30 bg-slate-950/40 flex flex-col border border-white/10 rounded-xl mx-3 animate-in fade-in slide-in-from-top-2 duration-300 shadow-2xl mb-4 overflow-hidden">
                 <div className="flex items-center justify-between px-3 h-12 bg-white/[0.02] border-b border-white/5">
                   <div className="flex items-center gap-2">
-                     <div className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_10px_-2px] shadow-primary/40" />
                      <span className="text-[13px] font-black text-slate-100 tabular-nums tracking-wide">
                        {getSelectedCount()} Selected
                      </span>
