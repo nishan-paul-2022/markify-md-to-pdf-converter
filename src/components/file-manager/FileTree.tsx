@@ -44,14 +44,25 @@ export function FileTree({
   const [renameValue, setRenameValue] = useState("")
   const [isRenaming, setIsRenaming] = useState(false)
   
-  // Track grid mode for individual folders. Default 'images' folders to grid.
+  // Track grid mode for individual folders. Persist in localStorage.
   const [folderGridModes, setFolderGridModes] = useState<Set<string>>(() => {
     const initial = new Set<string>();
-    nodes.forEach(node => {
-      if (node.type === 'folder' && node.name.toLowerCase() === 'images') {
-        initial.add(node.path);
+    
+    // Load from localStorage if available
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('markify-folder-grid-modes');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(p => initial.add(p));
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to parse folder grid modes:', error);
       }
-    });
+    }
+    
     return initial;
   });
 
@@ -78,6 +89,12 @@ export function FileTree({
       } else {
         next.add(path);
       }
+      
+      // Save to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('markify-folder-grid-modes', JSON.stringify(Array.from(next)));
+      }
+      
       return next;
     });
   }
