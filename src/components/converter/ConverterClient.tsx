@@ -47,6 +47,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         const lastSlash = currentPath.lastIndexOf('/');
         const parentDir = lastSlash !== -1 ? currentPath.substring(0, lastSlash) : '';
         
+        const targetBatchId = node.batchId || 'no-batch';
         const gallery = files.filter(f => {
           const isImg = f.mimeType.startsWith('image/') || 
                         f.originalName.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
@@ -56,8 +57,9 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
           const fLastSlash = fPath.lastIndexOf('/');
           const fParentDir = fLastSlash !== -1 ? fPath.substring(0, fLastSlash) : '';
           
-          // Same parent directory and same batch
-          return fParentDir === parentDir && f.batchId === node.batchId;
+          // Same parent directory and same normalized batch
+          const fBatchId = f.batchId || 'no-batch';
+          return fParentDir === parentDir && fBatchId === targetBatchId;
         });
         
         converterState.setActiveImage(node.file);
