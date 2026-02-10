@@ -489,6 +489,13 @@ export function useConverter() {
       setSelectedFileId(null);
       setUploadTime(null);
       setLastModifiedTime(new Date());
+
+      // Reset base path for default content
+      const lastSlashIndex = DEFAULT_MARKDOWN_PATH.lastIndexOf('/');
+      if (lastSlashIndex !== -1) {
+        setBasePath(DEFAULT_MARKDOWN_PATH.substring(0, lastSlashIndex));
+      }
+
       setIsReset(true);
       setTimeout(() => setIsReset(false), 2000);
     } catch (err: unknown) {

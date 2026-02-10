@@ -89,8 +89,11 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             const lastSlashIndex = fileUrl.lastIndexOf('/');
             if (lastSlashIndex !== -1) {
               const directoryPath = fileUrl.substring(0, lastSlashIndex);
-              const finalBasePath = directoryPath.startsWith('/api/') ? directoryPath : `/api${directoryPath}`;
-              converterState.setBasePath(finalBasePath);
+            // Only prepend /api for uploaded files (in /uploads), not for default content (in /content-x)
+            const finalBasePath = (directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')) 
+              ? directoryPath 
+              : `/api${directoryPath}`;
+            converterState.setBasePath(finalBasePath);
             }
           }
         }
