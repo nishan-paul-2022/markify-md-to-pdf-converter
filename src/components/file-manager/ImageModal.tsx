@@ -72,7 +72,17 @@ export function ImageModal({
   if (!activeImage) {return null;}
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-md animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-slate-950 animate-in fade-in duration-300">
+      {/* Dynamic Blurred Background (Facebook Style) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div 
+          className="absolute inset-[-20%] bg-cover bg-center scale-150"
+          style={{ 
+            backgroundImage: `url(${activeImage.url})`,
+            filter: 'blur(20px) brightness(0.25)',
+          }}
+        />
+      </div>
       {/* Header */}
       <div className="flex items-center justify-between px-6 h-16 bg-gradient-to-b from-black/60 to-transparent z-50">
         <div className="flex flex-col">
@@ -135,8 +145,8 @@ export function ImageModal({
         )}
 
         <div className={cn(
-          "relative max-w-full max-h-full flex items-center justify-center transition-all duration-500",
-          imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-98"
+          "relative max-w-full max-h-full flex items-center justify-center",
+          imgLoaded ? "opacity-100" : "opacity-0"
         )}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -145,7 +155,7 @@ export function ImageModal({
             alt={activeImage.originalName}
             onLoad={() => setImgLoaded(true)}
             className={cn(
-              "max-w-full max-h-[82vh] shadow-2xl transition-transform duration-300 ease-out object-contain",
+              "max-w-full max-h-[82vh] shadow-2xl object-contain",
               isFullscreen ? "scale-105" : "scale-100"
             )}
           />
