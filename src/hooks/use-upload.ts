@@ -89,8 +89,15 @@ export function useUpload() {
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Upload failed");
+          const errorText = await response.text();
+          let errorMsg = "Upload failed";
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMsg = errorJson.error || errorMsg;
+          } catch {
+            errorMsg = errorText || errorMsg;
+          }
+          throw new Error(errorMsg);
         }
 
         uploadedCount++;

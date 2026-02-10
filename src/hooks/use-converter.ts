@@ -209,15 +209,39 @@ export function useConverter() {
           });
           
           if (!response.ok) {
-            console.error(`❌ Upload failed for ${file.name}`);
-            return null;
+            const errorText = await response.text();
+            let errorMsg = "Upload failed";
+            try {
+              const errorJson = JSON.parse(errorText);
+              errorMsg = errorJson.error || errorMsg;
+            } catch {
+              errorMsg = errorText || errorMsg;
+            }
+            console.error(`❌ Upload failed for ${file.name}:`, response.status, errorMsg);
+            return { error: errorMsg, file: file.name };
           }
           
           return await response.json();
         });
 
         const results = await Promise.all(uploadPromises);
-        const successfulResults = results.filter(r => r !== null);
+        const successfulResults = results.filter(r => r && !('error' in r));
+        const failedResults = results.filter(r => r && ('error' in r));
+
+        if (failedResults.length > 0) {
+          const api = getAlert();
+          const firstError = (failedResults[0] as { error: string }).error;
+          const msg = failedResults.length === 1 
+            ? `Failed to upload file: ${firstError}`
+            : `Failed to upload ${failedResults.length} files. First error: ${firstError}`;
+            
+          if (api) {
+            api.show({ title: 'Upload Issue', message: msg, variant: 'destructive' });
+          } else {
+            alert(msg);
+          }
+        }
+
         console.log('✅ Upload complete. Successful results:', successfulResults.length);
 
         // Set selectedFileId if an MD file was uploaded
@@ -326,8 +350,15 @@ export function useConverter() {
             
             if (!response.ok) {
               const errorText = await response.text();
-              console.error(`❌ Upload failed for ${file.name}:`, response.status, errorText);
-              return null;
+              let errorMsg = "Upload failed";
+              try {
+                const errorJson = JSON.parse(errorText);
+                errorMsg = errorJson.error || errorMsg;
+              } catch {
+                errorMsg = errorText || errorMsg;
+              }
+              console.error(`❌ Upload failed for ${file.name}:`, response.status, errorMsg);
+              return { error: errorMsg, file: file.name };
             }
             
             const result = await response.json();
@@ -340,7 +371,22 @@ export function useConverter() {
         });
 
         const results = await Promise.all(uploadPromises);
-        const successfulResults = results.filter(r => r !== null);
+        const successfulResults = results.filter(r => r && !('error' in r));
+        const failedResults = results.filter(r => r && ('error' in r));
+        
+        if (failedResults.length > 0) {
+          const api = getAlert();
+          const firstError = (failedResults[0] as { error: string }).error;
+          const msg = failedResults.length === 1 
+            ? `Failed to upload ${failedResults.length} file: ${firstError}`
+            : `Failed to upload ${failedResults.length} files. First error: ${firstError}`;
+            
+          if (api) {
+            api.show({ title: 'Upload Issue', message: msg, variant: 'destructive' });
+          } else {
+            alert(msg);
+          }
+        }
         
         console.log('📊 Upload complete. Successful uploads:', successfulResults.length);
 

@@ -75,22 +75,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // --- STRICT PATH VALIDATION (Server Side) ---
     if (batchId && relativePath) {
       const normalizedPath = relativePath.replace(/\\/g, '/').replace(/^\//, '');
-      const pathParts = normalizedPath.split('/');
+      const actualParts = normalizedPath.split('/');
+      
+      // Handle potential wrapper folder (common in browser folder uploads)
+      // If the first part is NOT 'images' and it's not a root file, treat it as a wrapper
+      let effectiveParts = actualParts;
+      if (actualParts.length > 1 && actualParts[0] !== 'images') {
+        effectiveParts = actualParts.slice(1);
+      }
 
-      // Rule 1: Root level files MUST be .md
-      if (pathParts.length === 1) {
-        if (!normalizedPath.toLowerCase().endsWith('.md')) {
+      // Rule 1: Root level files (effective) MUST be .md
+      if (effectiveParts.length === 1) {
+        if (!effectiveParts[0].toLowerCase().endsWith('.md')) {
           return NextResponse.json(
             { error: `Violation: Unauthorized root file '${normalizedPath}'. Only .md files allowed.` },
             { status: 400 }
           );
         }
       }
-      // Rule 2: Subfolder files MUST be in 'images/'
-      else if (pathParts.length === 2) {
-        if (pathParts[0] !== 'images') {
+      // Rule 2: Subfolder files (effective) MUST be in 'images/'
+      else if (effectiveParts.length === 2) {
+        if (effectiveParts[0] !== 'images') {
           return NextResponse.json(
-            { error: `Violation: Unauthorized folder '${pathParts[0]}'. Only 'images/' subfolder is allowed.` },
+            { error: `Violation: Unauthorized folder structure '${normalizedPath}'. Only 'images/' subfolder is allowed.` },
             { status: 400 }
           );
         }
@@ -103,7 +110,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           );
         }
       }
-      // Rule 3: No nested folders or depth > 2
+      // Rule 3: No nested folders or depth > 2 (effective)
       else {
         return NextResponse.json(
           { error: `Violation: Unauthorized nested structure '${normalizedPath}'.` },
