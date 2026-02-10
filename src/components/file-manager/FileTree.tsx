@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { ChevronRight, ChevronDown, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink, PencilLine, Lock, LayoutGrid, List } from "lucide-react"
+import { ChevronRight, ChevronDown, ChevronUp, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink, PencilLine, Lock, LayoutGrid, List } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FileTreeNode } from "@/lib/file-tree"
 import { Button } from "@/components/ui/button"
@@ -295,6 +295,7 @@ export function FileTree({
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem onClick={() => toggleFolder(node.path)} className="gap-2 text-xs">
+                        {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                         {isExpanded ? "Collapse" : "Expand"}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
