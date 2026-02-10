@@ -34,6 +34,7 @@ export function useConverter() {
   const [basePath, setBasePath] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
+  const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [isPdfDownloaded, setIsPdfDownloaded] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -213,15 +214,22 @@ export function useConverter() {
         });
 
         const results = await Promise.all(uploadPromises);
-        console.log('✅ Upload complete. Successful results:', results.filter(r => r !== null).length);
+        const successfulResults = results.filter(r => r !== null);
+        console.log('✅ Upload complete. Successful results:', successfulResults.length);
+
+        // Set selectedFileId if an MD file was uploaded
+        const mdResult = successfulResults.find(r => r.file && r.file.originalName.endsWith('.md'));
+        if (mdResult && mdResult.file) {
+          setSelectedFileId(mdResult.file.id);
+        }
 
         // If we found an MD file, set the base path if possible
-        const mdResult = results.find(r => r && r.file && r.file.originalName.endsWith('.md'));
         if (mdResult && mdResult.file && mdResult.file.url) {
           const fileUrl = mdResult.file.url;
           const lastSlashIndex = fileUrl.lastIndexOf('/');
           if (lastSlashIndex !== -1) {
-            setBasePath('/api' + fileUrl.substring(0, lastSlashIndex));
+            const dirPath = fileUrl.substring(0, lastSlashIndex);
+            setBasePath(dirPath.startsWith('/api') ? dirPath : '/api' + dirPath);
           }
         }
 
@@ -329,25 +337,29 @@ export function useConverter() {
         });
 
         const results = await Promise.all(uploadPromises);
+        const successfulResults = results.filter(r => r !== null);
         
-        console.log('📊 Upload complete. Successful uploads:', results.filter(r => r !== null).length);
-        
-        // Find the uploaded markdown file result to determine the correct base path for images
-        // We look for a result where the original name matches our selected mdFile
-        const mdResult = results.find(r => 
+        console.log('📊 Upload complete. Successful uploads:', successfulResults.length);
+
+        // Find and select the main MD file
+        const folderMdResult = successfulResults.find(r => 
           r && r.file && mdFile && (
             r.file.originalName === mdFile.name || 
             (r.file.relativePath && r.file.relativePath.endsWith(mdFile.name))
           )
         );
         
+        if (folderMdResult && folderMdResult.file) {
+          setSelectedFileId(folderMdResult.file.id);
+        }
+        
+
         if (mdFile) {
           console.log('🔍 Searching for MD result for:', mdFile.name);
         }
-        console.log('📊 Successful results:', results.filter(r => r !== null).length);
         
-        if (mdResult && mdResult.file && mdResult.file.url) {
-            const fileUrl = mdResult.file.url;
+        if (folderMdResult && folderMdResult.file && folderMdResult.file.url) {
+            const fileUrl = folderMdResult.file.url;
             console.log('📄 Found Markdown file URL:', fileUrl);
             
             // Extract the directory path (remove the filename)
@@ -425,6 +437,7 @@ export function useConverter() {
       
       handleContentChange(text);
       setFilename('document.md');
+      setSelectedFileId(null);
       setUploadTime(null);
       setLastModifiedTime(new Date());
       setIsReset(true);
@@ -494,6 +507,7 @@ export function useConverter() {
     isCopied,
     isDownloaded,
     isPdfDownloaded,
+    selectedFileId,
     fileInputRef,
     folderInputRef,
     textareaRef,
@@ -516,6 +530,7 @@ export function useConverter() {
     scrollToStart,
     scrollToEnd,
     setFilename,
+    setSelectedFileId,
     setIsLoading,
     setBasePath,
     MAX_FILENAME_LENGTH,

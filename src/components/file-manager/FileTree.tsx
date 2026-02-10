@@ -139,8 +139,8 @@ export function FileTree({
             <div key={node.path} className="flex flex-col group/folder">
               <div
                 className={cn(
-                  "flex items-center justify-between hover:bg-white/5 transition-colors text-slate-400 hover:text-slate-100",
-                  isFolderActive && "text-slate-100 bg-white/5 border-l-2 border-amber-500/50",
+                  "flex items-center justify-between hover:bg-white/5 transition-all text-slate-400 hover:text-slate-100",
+                  isFolderActive && "text-slate-100 bg-white/[0.03] border-l-2 border-amber-500/70",
                   level > 0 && `ml-${level * 2}`
                 )}
                 style={{ paddingLeft: `${(level + 1) * 1}rem` }}
@@ -197,8 +197,10 @@ export function FileTree({
           <div
             key={node.id}
             className={cn(
-              "group flex items-center justify-between hover:bg-white/5 transition-colors",
-              isSelected ? "bg-white/10 text-white" : "text-slate-400 hover:text-slate-100"
+              "group flex items-center justify-between hover:bg-white/5 transition-all",
+              isSelected 
+                ? "bg-white/10 text-white border-l-2 border-emerald-500 shadow-[inset_4px_0_12px_-4px_rgba(16,185,129,0.1)]" 
+                : "text-slate-400 hover:text-slate-100"
             )}
             style={{ paddingLeft: `${(level + 1.5) * 1}rem` }}
           >

@@ -56,6 +56,7 @@ interface ConverterViewProps {
   isCopied: boolean;
   isDownloaded: boolean;
   isPdfDownloaded: boolean;
+  selectedFileId: string | null;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   folderInputRef: React.RefObject<HTMLInputElement | null>;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
@@ -111,6 +112,7 @@ export function ConverterView({
   isCopied,
   isDownloaded,
   isPdfDownloaded,
+  selectedFileId,
   fileInputRef,
   folderInputRef,
   textareaRef,
@@ -382,7 +384,7 @@ export function ConverterView({
                   nodes={fileTree} 
                   onFileSelect={onFileSelect} 
                   onDelete={handleFileDelete}
-                  selectedFileId={files.find(f => f.originalName === filename || (f.relativePath && f.relativePath.endsWith(filename)))?.id}
+                  selectedFileId={selectedFileId || undefined}
                 />
               )}
             </div>

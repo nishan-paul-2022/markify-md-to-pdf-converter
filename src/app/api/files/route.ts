@@ -170,7 +170,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           mimeType: file.type || (isMarkdown ? "text/markdown" : "application/octet-stream"),
           size: file.size,
           storageKey,
-          url: `/${storageKey}`,
+          url: `/api/${storageKey}`,
         },
       })
       console.log('✅ File metadata saved to database');

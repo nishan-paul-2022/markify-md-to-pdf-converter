@@ -3,6 +3,7 @@ import { useConverter } from '@/hooks/use-converter';
 import { useFiles } from '@/hooks/use-files';
 import { ConverterView } from '@/components/converter/ConverterView';
 import { FileTreeNode } from '@/lib/file-tree';
+import { DEFAULT_MARKDOWN_PATH } from '@/constants/default-content';
 
 interface ConverterClientProps {
   user: {
@@ -15,6 +16,16 @@ interface ConverterClientProps {
 export default function ConverterClient({ user }: ConverterClientProps): React.JSX.Element {
   const converterState = useConverter();
   const { files, loading: filesLoading, handleDelete, handleBulkDelete, refreshFiles } = useFiles();
+
+  // Initial selection of default file
+  React.useEffect(() => {
+    if (!filesLoading && files.length > 0 && !converterState.selectedFileId) {
+      const defaultFile = files.find(f => f.url === DEFAULT_MARKDOWN_PATH);
+      if (defaultFile) {
+        converterState.setSelectedFileId(defaultFile.id);
+      }
+    }
+  }, [files, filesLoading, converterState.selectedFileId, converterState]);
 
   const handleUnifiedDelete = useCallback((id: string | string[]) => {
     if (Array.isArray(id)) {
@@ -33,18 +44,25 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       }
 
       try {
-        const response = await fetch(node.file.url || '');
+        const fileUrl = node.file.url || '';
+        const fetchUrl = (fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/')) 
+          ? `/api${fileUrl}` 
+          : fileUrl;
+          
+        const response = await fetch(fetchUrl);
         if (response.ok) {
           const text = await response.text();
           converterState.handleContentChange(text);
           converterState.setFilename(node.file.originalName);
+          converterState.setSelectedFileId(node.file.id);
           
           // Set base path for images if it's a batch/folder upload
-          if (node.file.url) {
-            const lastSlashIndex = node.file.url.lastIndexOf('/');
+          if (fileUrl) {
+            const lastSlashIndex = fileUrl.lastIndexOf('/');
             if (lastSlashIndex !== -1) {
-              const directoryPath = node.file.url.substring(0, lastSlashIndex);
-              converterState.setBasePath(directoryPath);
+              const directoryPath = fileUrl.substring(0, lastSlashIndex);
+              const finalBasePath = directoryPath.startsWith('/api/') ? directoryPath : `/api${directoryPath}`;
+              converterState.setBasePath(finalBasePath);
             }
           }
         }
