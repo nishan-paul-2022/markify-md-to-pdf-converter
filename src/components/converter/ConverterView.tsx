@@ -546,11 +546,11 @@ export function ConverterView({
             activeTab === 'editor' ? 'flex tab-enter' : 'hidden lg:flex'
           }`}>
             <div
-              className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
+              className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-center transition-colors backdrop-blur-sm relative"
             >
-              <div className="flex items-center gap-3">
-                {/* Sidebar Toggle Button (when collapsed) */}
-                {!isSidebarOpen && (
+              {/* Sidebar Toggle Button (when collapsed) */}
+              {!isSidebarOpen && (
+                <div className="absolute left-4 flex items-center h-full">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -560,11 +560,12 @@ export function ConverterView({
                   >
                     <PanelLeftOpen className="h-4 w-4" />
                   </Button>
-                )}
+                </div>
+              )}
                 
-              <div className="flex-1 grid grid-cols-3 items-center px-4 gap-4">
+              <div className="flex items-center gap-10">
                 {/* Group 1: Uploads */}
-                <div className="justify-self-start flex items-center gap-1 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
                   <input
                     type="file"
                     accept=".md,image/png,image/jpeg,image/jpg,image/gif,image/webp"
@@ -639,7 +640,7 @@ export function ConverterView({
                 </div>
 
                 {/* Group 2: Navigation */}
-                <div className="justify-self-center flex items-center gap-1 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -674,7 +675,7 @@ export function ConverterView({
                 </div>
 
                 {/* Group 3: Actions */}
-                <div className="justify-self-end flex items-center gap-1 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -753,7 +754,6 @@ export function ConverterView({
                   </div>
                 </div>
               </div>
-            </div>
             </div>
 
             <div className="flex-grow relative overflow-hidden group/editor">
