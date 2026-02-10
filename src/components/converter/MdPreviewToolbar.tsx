@@ -67,8 +67,8 @@ export const MdPreviewToolbar = ({
   isDownloaded,
 }: MdPreviewToolbarProps) => {
   return (
-    <div className="flex items-center justify-center px-4 h-12 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm relative">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-center px-4 h-12 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm relative transition-colors">
+      <div className="flex items-center gap-10">
         {/* Pill 1: View Mode */}
         <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
           <Tooltip>
@@ -295,7 +295,7 @@ export const MdPreviewToolbar = ({
               <TooltipContent>Zoom Out</TooltipContent>
             </Tooltip>
 
-            <form onSubmit={handleZoomInputSubmit} className="min-w-[2.5rem] flex justify-center">
+            <form onSubmit={handleZoomInputSubmit} className="min-w-[3.5rem] flex justify-center">
               {!isScaleCalculated ? (
                 <div className="flex items-center justify-center w-8 h-5">
                   <Loader2 className="w-3 h-3 animate-spin text-slate-500" />
@@ -306,7 +306,7 @@ export const MdPreviewToolbar = ({
                   value={zoomInput}
                   onChange={handleZoomInputChange}
                   onBlur={handleZoomInputSubmit}
-                  className="h-5 w-11 text-center bg-white/5 border-none p-0 text-white text-[11px] font-bold focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
+                  className="h-5 w-14 text-center bg-white/5 border-none p-0 text-white text-[11px] font-bold focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
                 />
               )}
             </form>
@@ -373,7 +373,7 @@ export const MdPreviewToolbar = ({
         </div>
 
         {/* Pill 5: Download PDF */}
-        <div className="flex items-center bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
+        <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
           <Tooltip>
             <TooltipTrigger asChild>
               <div className={cn(

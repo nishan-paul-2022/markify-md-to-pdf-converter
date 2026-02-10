@@ -546,7 +546,7 @@ export function ConverterView({
             activeTab === 'editor' ? 'flex tab-enter' : 'hidden lg:flex'
           }`}>
             <div
-              className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-center transition-colors backdrop-blur-sm relative"
+              className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-center transition-colors shrink-0 select-none backdrop-blur-sm relative"
             >
               {/* Sidebar Toggle Button (when collapsed) */}
               {!isSidebarOpen && (
