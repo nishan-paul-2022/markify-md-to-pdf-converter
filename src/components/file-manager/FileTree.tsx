@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { ChevronRight, ChevronDown, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink, PencilLine, Check, X } from "lucide-react"
+import { ChevronRight, ChevronDown, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink, PencilLine } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FileTreeNode } from "@/lib/file-tree"
 import { Button } from "@/components/ui/button"
@@ -38,7 +38,16 @@ export function FileTree({
 
   const handleRenameStart = (node: FileTreeNode) => {
     setRenamingId(node.id)
-    setRenameValue(node.name)
+    if (node.type === "file") {
+      const parts = node.name.split(".");
+      if (parts.length > 1) {
+        setRenameValue(parts.slice(0, -1).join("."));
+      } else {
+        setRenameValue(node.name);
+      }
+    } else {
+      setRenameValue(node.name);
+    }
   }
 
   const handleRenameCancel = () => {
@@ -47,7 +56,21 @@ export function FileTree({
   }
 
   const handleRenameSubmit = async (node: FileTreeNode) => {
-    if (!renameValue.trim() || renameValue === node.name) {
+    let finalName = renameValue.trim();
+    if (!finalName) {
+      handleRenameCancel();
+      return;
+    }
+
+    if (node.type === "file") {
+      const parts = node.name.split(".");
+      if (parts.length > 1) {
+        const extension = parts[parts.length - 1];
+        finalName = `${finalName}.${extension}`;
+      }
+    }
+
+    if (finalName === node.name) {
       handleRenameCancel()
       return
     }
@@ -55,8 +78,8 @@ export function FileTree({
     setIsRenaming(true)
     try {
       await onRename(
-        node.type === "file" ? node.id : node.id, // actually for folder we might use path/nodeKey
-        renameValue.trim(),
+        node.id, 
+        finalName,
         node.type,
         node.batchId,
         node.path
@@ -189,7 +212,7 @@ export function FileTree({
                     <Folder className="h-4 w-4 text-amber-500/80 shrink-0" />
                     <input
                       autoFocus
-                      className="flex-1 bg-slate-950 border border-amber-500/50 rounded px-1.5 py-0.5 text-sm text-slate-100 outline-none focus:border-amber-500 transition-all"
+                      className="flex-1 bg-slate-900 border border-amber-500/50 rounded px-1.5 py-0.5 text-sm text-slate-100 outline-none focus:border-amber-500 transition-all font-medium"
                       value={renameValue}
                       onChange={(e) => setRenameValue(e.target.value)}
                       onKeyDown={(e) => {
@@ -197,30 +220,9 @@ export function FileTree({
                         if (e.key === "Escape") {handleRenameCancel();}
                       }}
                       onBlur={() => {
-                        // Small delay to allow clicking the Save/Cancel buttons
-                        setTimeout(() => {
-                          if (!isRenaming) {handleRenameCancel();}
-                        }, 200);
+                        if (!isRenaming) {handleRenameSubmit(node);}
                       }}
                     />
-                    <div className="flex items-center gap-1">
-                      <button 
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => handleRenameSubmit(node)}
-                        className="p-1 hover:bg-green-500/20 text-green-400 rounded transition-colors"
-                        title="Save"
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                      </button>
-                      <button 
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => handleRenameCancel()}
-                        className="p-1 hover:bg-red-500/20 text-red-400 rounded transition-colors"
-                        title="Cancel"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
                   </div>
                 ) : (
                   <button
@@ -297,7 +299,7 @@ export function FileTree({
                 {getFileIcon(node.name, node.file?.mimeType)}
                 <input
                   autoFocus
-                  className="flex-1 bg-slate-950 border border-emerald-500/50 rounded px-1.5 py-0.5 text-sm text-slate-100 outline-none focus:border-emerald-500 transition-all"
+                  className="flex-1 bg-slate-900 border border-emerald-500/50 rounded px-1.5 py-0.5 text-sm text-slate-100 outline-none focus:border-emerald-500 transition-all font-medium"
                   value={renameValue}
                   onChange={(e) => setRenameValue(e.target.value)}
                   onKeyDown={(e) => {
@@ -305,29 +307,9 @@ export function FileTree({
                     if (e.key === "Escape") {handleRenameCancel();}
                   }}
                   onBlur={() => {
-                    setTimeout(() => {
-                      if (!isRenaming) {handleRenameCancel();}
-                    }, 200);
+                    if (!isRenaming) {handleRenameSubmit(node);}
                   }}
                 />
-                <div className="flex items-center gap-1">
-                  <button 
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleRenameSubmit(node)}
-                    className="p-1 hover:bg-green-500/20 text-green-400 rounded transition-colors"
-                    title="Save"
-                  >
-                    <Check className="h-3.5 w-3.5" />
-                  </button>
-                  <button 
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleRenameCancel()}
-                    className="p-1 hover:bg-red-500/20 text-red-400 rounded transition-colors"
-                    title="Cancel"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
               </div>
             ) : (
               <button

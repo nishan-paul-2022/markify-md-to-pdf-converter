@@ -2,7 +2,7 @@
 
 import React from "react"
 import { Button } from "@/components/ui/button"
-import { Trash2, Download, FileText, Image as ImageIcon, Loader2, PencilLine, Check } from "lucide-react"
+import { Trash2, Download, FileText, Image as ImageIcon, Loader2, PencilLine } from "lucide-react"
 import {
   Table,
   TableBody,
@@ -48,7 +48,12 @@ export function FileListView({
 
   const handleRenameStart = (file: File) => {
     setRenamingId(file.id)
-    setRenameValue(file.originalName)
+    const parts = file.originalName.split(".");
+    if (parts.length > 1) {
+      setRenameValue(parts.slice(0, -1).join("."));
+    } else {
+      setRenameValue(file.originalName);
+    }
   }
 
   const handleRenameCancel = () => {
@@ -57,14 +62,26 @@ export function FileListView({
   }
 
   const handleRenameSubmit = async (file: File) => {
-    if (!renameValue.trim() || renameValue === file.originalName) {
+    let finalName = renameValue.trim();
+    if (!finalName) {
+      handleRenameCancel();
+      return;
+    }
+
+    const parts = file.originalName.split(".");
+    if (parts.length > 1) {
+      const extension = parts[parts.length - 1];
+      finalName = `${finalName}.${extension}`;
+    }
+
+    if (finalName === file.originalName) {
       handleRenameCancel()
       return
     }
 
     setIsRenaming(true)
     try {
-      await handleRename(file.id, renameValue.trim(), "file")
+      await handleRename(file.id, finalName, "file")
       handleRenameCancel()
     } catch (error) {
       console.error("Rename failed:", error)
@@ -146,7 +163,7 @@ export function FileListView({
                         <div className="flex items-center gap-2 max-w-xs">
                           <input
                             autoFocus
-                            className="flex-1 bg-background border border-primary rounded px-2 py-1 text-sm outline-none"
+                            className="flex-1 bg-background border border-primary rounded px-2 py-1 text-sm outline-none font-medium"
                             value={renameValue}
                             onChange={(e) => setRenameValue(e.target.value)}
                             onKeyDown={(e) => {
@@ -154,20 +171,9 @@ export function FileListView({
                               if (e.key === "Escape") {handleRenameCancel();}
                             }}
                             onBlur={() => {
-                              setTimeout(() => {
-                                if (!isRenaming) {handleRenameCancel();}
-                              }, 200);
+                              if (!isRenaming) {handleRenameSubmit(file);}
                             }}
                           />
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 text-green-500"
-                            onMouseDown={(e) => e.preventDefault()}
-                            onClick={() => handleRenameSubmit(file)}
-                          >
-                             <Check className="h-4 w-4" />
-                          </Button>
                         </div>
                       ) : (
                         <span className="truncate max-w-xs">{file.originalName}</span>
