@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { ChevronRight, ChevronDown, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink, PencilLine, Lock } from "lucide-react"
+import { ChevronRight, ChevronDown, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink, PencilLine, Lock, LayoutGrid, List } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FileTreeNode } from "@/lib/file-tree"
 import { Button } from "@/components/ui/button"
@@ -35,6 +35,29 @@ export function FileTree({
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState("")
   const [isRenaming, setIsRenaming] = useState(false)
+  
+  // Track grid mode for individual folders. Default 'images' folders to grid.
+  const [folderGridModes, setFolderGridModes] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    nodes.forEach(node => {
+      if (node.type === 'folder' && node.name.toLowerCase() === 'images') {
+        initial.add(node.path);
+      }
+    });
+    return initial;
+  });
+
+  const toggleFolderGridMode = (path: string) => {
+    setFolderGridModes(prev => {
+      const next = new Set(prev);
+      if (next.has(path)) {
+        next.delete(path);
+      } else {
+        next.add(path);
+      }
+      return next;
+    });
+  }
 
   const handleRenameStart = (node: FileTreeNode) => {
     setRenamingId(node.id)
@@ -191,6 +214,7 @@ export function FileTree({
         const isSelected = selectedFileId === node.id
         const isFolderActive = containsSelectedFile(node, selectedFileId)
         const isCurrentlyRenaming = renamingId === node.id
+        const isGridMode = folderGridModes.has(node.path)
 
         if (node.type === "folder") {
           const folderFileIds = collectFileIds(node);
@@ -239,7 +263,7 @@ export function FileTree({
                     {isDefaultFolder && <Lock className="h-2.5 w-2.5 ml-1 opacity-40" />}
                   </button>
                 )}
-                <div className="opacity-0 group-hover/folder:opacity-100 flex items-center px-2">
+                <div className="opacity-0 group-hover/folder:opacity-100 flex items-center px-1">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
@@ -247,6 +271,13 @@ export function FileTree({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
+                      <DropdownMenuItem 
+                        onClick={() => toggleFolderGridMode(node.path)}
+                        className="gap-2 text-xs"
+                      >
+                        {isGridMode ? <List className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
+                        {isGridMode ? "View as List" : "View as Grid"}
+                      </DropdownMenuItem>
                       {!isDefaultFolder && (
                         <DropdownMenuItem 
                           onClick={() => handleRenameStart(node)}
@@ -271,14 +302,57 @@ export function FileTree({
                 </div>
               </div>
               {isExpanded && node.children && (
-                <FileTree
-                  nodes={node.children}
-                  level={level + 1}
-                  onFileSelect={onFileSelect}
-                  onDelete={onDelete}
-                  onRename={onRename}
-                  selectedFileId={selectedFileId}
-                />
+                <div className={cn(
+                  "transition-all duration-300",
+                  isGridMode ? "p-2 pl-6 grid grid-cols-2 gap-2" : "flex flex-col"
+                )}>
+                  {isGridMode ? (
+                    node.children.map(child => {
+                      const isImg = child.type === 'file' && (child.file?.mimeType?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(child.name));
+                      const isChildSelected = selectedFileId === child.id;
+
+                      return (
+                        <button
+                          key={child.id}
+                          onClick={() => onFileSelect(child)}
+                          className={cn(
+                            "aspect-square rounded-lg border flex flex-col items-center justify-center p-1.5 transition-all group/grid overflow-hidden relative",
+                            isChildSelected 
+                              ? "bg-amber-500/10 border-amber-500/50 ring-1 ring-amber-500/20 shadow-lg shadow-amber-500/10" 
+                              : "bg-slate-900/40 border-white/5 hover:border-white/10 hover:bg-slate-800/80"
+                          )}
+                          title={child.name}
+                        >
+                          {isImg && child.file?.url ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img 
+                              src={child.file.url} 
+                              alt={child.name}
+                              className="w-full h-full object-cover rounded shadow-sm group-hover/grid:scale-110 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center gap-1 opacity-60 group-hover/grid:opacity-100 transition-opacity">
+                              {child.type === 'folder' ? <Folder className="h-6 w-6 text-amber-500/80" /> : getFileIcon(child.name, child.file?.mimeType)}
+                              <span className="text-[8px] truncate max-w-full font-medium text-slate-400 px-1">{child.name}</span>
+                            </div>
+                          )}
+                          {isChildSelected && (
+                            <div className="absolute inset-0 border-2 border-amber-500 rounded-lg pointer-events-none" />
+                          )}
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <FileTree
+                      nodes={node.children}
+                      level={level + 1}
+                      onFileSelect={onFileSelect}
+                      onDelete={onDelete}
+                      onRename={onRename}
+                      selectedFileId={selectedFileId}
+                    />
+                  )}
+                </div>
               )}
             </div>
           )
@@ -322,7 +396,7 @@ export function FileTree({
                 {node.id.startsWith("default-") && <Lock className="h-2.5 w-2.5 ml-1 opacity-40 text-emerald-500/50" />}
               </button>
             )}
-            <div className="opacity-0 group-hover:opacity-100 flex items-center px-2">
+            <div className="opacity-0 group-hover:opacity-100 flex items-center px-1">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">

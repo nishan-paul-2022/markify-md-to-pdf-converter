@@ -12,25 +12,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { File } from "@/hooks/use-files"
 
 interface FileListViewProps {
   files: File[];
   loading: boolean;
-  deleteId: string | null;
-  deleting: boolean;
   setDeleteId: (id: string | null) => void;
-  handleDelete: (id: string) => void;
   handleRename: (id: string, newName: string, type: "file" | "folder") => Promise<void>;
   onImageClick?: (file: File) => void;
 }
@@ -38,10 +25,7 @@ interface FileListViewProps {
 export function FileListView({
   files,
   loading,
-  deleteId,
-  deleting,
   setDeleteId,
-  handleDelete,
   handleRename,
   onImageClick,
 }: FileListViewProps) {
@@ -140,132 +124,108 @@ export function FileListView({
   }
 
   return (
-    <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12"></TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Size</TableHead>
-              <TableHead>Uploaded</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {files.map((file) => {
-              const isDefault = file.id.startsWith("default-");
-              const isCurrentlyRenaming = renamingId === file.id;
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-12"></TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Size</TableHead>
+            <TableHead>Uploaded</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {files.map((file) => {
+            const isDefault = file.id.startsWith("default-");
+            const isCurrentlyRenaming = renamingId === file.id;
 
-              return (
-                <TableRow key={file.id}>
-                  <TableCell>
-                    {file.mimeType.startsWith("image/") && onImageClick ? (
-                      <button 
-                        onClick={() => onImageClick(file)}
-                        className="hover:scale-110 transition-transform active:scale-95 cursor-pointer bg-transparent border-none p-0 flex items-center justify-center outline-none"
-                      >
-                        {getFileIcon(file.mimeType)}
-                      </button>
+            return (
+              <TableRow key={file.id}>
+                <TableCell>
+                  {file.mimeType.startsWith("image/") && onImageClick ? (
+                    <button 
+                      onClick={() => onImageClick(file)}
+                      className="hover:scale-110 transition-transform active:scale-95 cursor-pointer bg-transparent border-none p-0 flex items-center justify-center outline-none"
+                    >
+                      {getFileIcon(file.mimeType)}
+                    </button>
+                  ) : (
+                    getFileIcon(file.mimeType)
+                  )}
+                </TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex flex-col">
+                    {isCurrentlyRenaming ? (
+                      <div className="flex items-center gap-2 max-w-xs">
+                        <input
+                          autoFocus
+                          className="flex-1 bg-background border border-primary rounded px-2 py-1 text-sm outline-none font-medium"
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {handleRenameSubmit(file);}
+                            if (e.key === "Escape") {handleRenameCancel();}
+                          }}
+                          onBlur={() => {
+                            if (!isRenaming) {handleRenameSubmit(file);}
+                          }}
+                        />
+                      </div>
                     ) : (
-                      getFileIcon(file.mimeType)
+                      <div className="flex items-center gap-2">
+                        <span className={cn("truncate max-w-xs", isDefault && "opacity-80 italic")}>
+                          {file.originalName}
+                        </span>
+                        {isDefault && <Lock className="h-3 w-3 opacity-40" />}
+                      </div>
                     )}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <div className="flex flex-col">
-                      {isCurrentlyRenaming ? (
-                        <div className="flex items-center gap-2 max-w-xs">
-                          <input
-                            autoFocus
-                            className="flex-1 bg-background border border-primary rounded px-2 py-1 text-sm outline-none font-medium"
-                            value={renameValue}
-                            onChange={(e) => setRenameValue(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {handleRenameSubmit(file);}
-                              if (e.key === "Escape") {handleRenameCancel();}
-                            }}
-                            onBlur={() => {
-                              if (!isRenaming) {handleRenameSubmit(file);}
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <span className={cn("truncate max-w-xs", isDefault && "opacity-80 italic")}>
-                            {file.originalName}
-                          </span>
-                          {isDefault && <Lock className="h-3 w-3 opacity-40" />}
-                        </div>
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        {file.mimeType}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{formatFileSize(file.size)}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatDate(file.createdAt)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {file.mimeType}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>{formatFileSize(file.size)}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {formatDate(file.createdAt)}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      asChild
+                    >
+                      <a href={file.url} download={file.originalName}>
+                        <Download className="h-4 w-4" />
+                      </a>
+                    </Button>
+                    {!isDefault && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        asChild
+                        onClick={() => handleRenameStart(file)}
+                        disabled={isCurrentlyRenaming}
                       >
-                        <a href={file.url} download={file.originalName}>
-                          <Download className="h-4 w-4" />
-                        </a>
+                        <PencilLine className="h-4 w-4" />
                       </Button>
-                      {!isDefault && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRenameStart(file)}
-                          disabled={isCurrentlyRenaming}
-                        >
-                          <PencilLine className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {!isDefault && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setDeleteId(file.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
-
-      <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent variant="destructive">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete file?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the file
-              from our servers.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteId && handleDelete(deleteId)}
-              disabled={deleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleting ? "Deleting…" : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+                    )}
+                    {!isDefault && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteId(file.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
   )
 }

@@ -148,7 +148,6 @@ export function ConverterView({
   activeImage,
   setActiveImage,
   imageGallery,
-  setImageGallery,
 }: ConverterViewProps) {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
