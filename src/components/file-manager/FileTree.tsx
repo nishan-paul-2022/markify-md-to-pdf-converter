@@ -23,7 +23,7 @@ interface FileTreeProps {
   isSelectionMode?: boolean;
   selectedIds?: Set<string>;
   onToggleSelection?: (id: string | string[]) => void;
-  defaultExpandAll?: boolean;
+  searchQuery?: string;
 }
 
 export function FileTree({
@@ -36,7 +36,7 @@ export function FileTree({
   isSelectionMode = false,
   selectedIds = new Set(),
   onToggleSelection,
-  defaultExpandAll = false,
+  searchQuery = "",
 }: FileTreeProps) {
   const { confirm } = useAlert()
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
@@ -66,20 +66,54 @@ export function FileTree({
     return initial;
   });
 
-  // Auto-expand folders when defaultExpandAll is true (e.g. during search)
+  // Auto-expand folders based on search query
   React.useEffect(() => {
-    if (defaultExpandAll) {
-      setExpandedFolders(prev => {
-        const next = new Set(prev);
-        nodes.forEach(node => {
-          if (node.type === 'folder') {
-            next.add(node.path);
+    if (searchQuery) {
+      const foldersToExpand = new Set<string>();
+
+      const checkNode = (node: FileTreeNode): boolean => {
+        const nameMatch = node.name.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        if (node.type === 'file') {
+          return nameMatch;
+        }
+
+        // For folders, check if name matches or any children match
+        let childrenMatch = false;
+        if (node.children) {
+          for (const child of node.children) {
+            if (checkNode(child)) {
+              childrenMatch = true;
+            }
           }
-        });
-        return next;
-      });
+        }
+
+        // Expand if folder itself matches or contains matching items
+        // Note: filteredFiles in parent already handles the "contains" logic for the tree structure,
+        // but we verify here to avoid expanding folders that are just parents of matches but don't match themselves
+        // WAIT: If I search "src", "src" matches. It expands.
+        // If I search "button", "src" (no match) -> "components" (no match) -> "Button.tsx" (match).
+        // "src" MUST expand to show "components".
+        // "components" MUST expand to show "Button.tsx".
+        
+        // So logic: If nameMatch OR childrenMatch => Expand THIS folder.
+        if (nameMatch || childrenMatch) {
+          foldersToExpand.add(node.path);
+          return true; // Return true to propagate up to parent
+        }
+
+        return false;
+      };
+
+      nodes.forEach(checkNode);
+      setExpandedFolders(foldersToExpand);
+    } else {
+        // Optional: Collapse all when search clears? Or keep previous state?
+        // Usually clearing search collapses everything or restores to pre-search state.
+        // For now, let's reset to collapsed to avoid clutter.
+        setExpandedFolders(new Set());
     }
-  }, [defaultExpandAll, nodes]);
+  }, [searchQuery, nodes]);
 
   const toggleFolderGridMode = (path: string) => {
     setFolderGridModes(prev => {
@@ -419,7 +453,7 @@ export function FileTree({
                       selectedFileId={selectedFileId}
                       isSelectionMode={isSelectionMode}
                       selectedIds={selectedIds}
-                      defaultExpandAll={defaultExpandAll}
+                      searchQuery={searchQuery}
                       onToggleSelection={onToggleSelection}
                     />
                   )}
