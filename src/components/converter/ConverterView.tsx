@@ -28,6 +28,7 @@ import { FileTree } from '@/components/file-manager/FileTree';
 import { FileTreeNode, buildFileTree } from '@/lib/file-tree';
 import { PanelLeftClose, PanelLeftOpen, RefreshCw, Search } from 'lucide-react';
 import { ImageModal } from '@/components/file-manager/ImageModal';
+import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
 
 interface ConverterViewProps {
   user: {
@@ -148,6 +149,7 @@ export function ConverterView({
   const [isDragging, setIsDragging] = React.useState(false);
   const [isSelectionMode, setIsSelectionMode] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [uploadRulesModal, setUploadRulesModal] = React.useState<{ isOpen: boolean, type: 'file' | 'folder' | 'zip' }>({ isOpen: false, type: 'file' });
 
   const toggleSelection = React.useCallback((id: string | string[]) => {
     setSelectedIds(prev => {
@@ -324,6 +326,18 @@ export function ConverterView({
     });
     return count;
   }, [fileTree, files, selectedIds]);
+
+  const handleUploadModalConfirm = () => {
+    const type = uploadRulesModal.type;
+    setUploadRulesModal(prev => ({ ...prev, isOpen: false }));
+    if (type === 'file') {
+      triggerFileUpload();
+    } else if (type === 'folder') {
+      triggerFolderUpload();
+    } else if (type === 'zip') {
+      triggerZipUpload();
+    }
+  };
 
 
 
@@ -594,7 +608,7 @@ export function ConverterView({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
+                        onClick={(e) => { e.stopPropagation(); setUploadRulesModal({ isOpen: true, type: 'file' }); }}
                         className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isUploaded ? <Check className="w-3 h-3 mr-1.5 text-green-400" /> : <Upload className="w-3 h-3 mr-1.5" />}
@@ -611,7 +625,7 @@ export function ConverterView({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={(e) => { e.stopPropagation(); triggerFolderUpload(); }}
+                        onClick={(e) => { e.stopPropagation(); setUploadRulesModal({ isOpen: true, type: 'folder' }); }}
                         className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         <FolderOpen className="w-3.5 h-3.5 mr-1.5 text-amber-500/70" />
@@ -628,7 +642,7 @@ export function ConverterView({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={(e) => { e.stopPropagation(); triggerZipUpload(); }}
+                        onClick={(e) => { e.stopPropagation(); setUploadRulesModal({ isOpen: true, type: 'zip' }); }}
                         className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         <FileArchive className="w-3.5 h-3.5 mr-1.5 text-blue-400/70" />
@@ -813,13 +827,20 @@ export function ConverterView({
         </div>
         </div>
         {activeImage && (
-          <ImageModal
+          <ImageModal 
             activeImage={activeImage}
             images={imageGallery}
             onClose={() => setActiveImage(null)}
-            onSelectImage={(img) => setActiveImage(img)}
+            onSelectImage={setActiveImage}
           />
         )}
+
+        <UploadRulesModal 
+          isOpen={uploadRulesModal.isOpen}
+          type={uploadRulesModal.type}
+          onClose={() => setUploadRulesModal(prev => ({ ...prev, isOpen: false }))}
+          onConfirm={handleUploadModalConfirm}
+        />
       </main>
     </TooltipProvider>
   );

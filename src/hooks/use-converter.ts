@@ -463,20 +463,7 @@ export function useConverter() {
     fileInputRef.current?.click();
   }, []);
 
-  const triggerFolderUpload = useCallback(async (): Promise<void> => {
-    const api = getAlert();
-    if (api) {
-      const confirmed = await api.confirm({
-        title: "Upload Project Folder",
-        message: "You are about to upload a project folder. For the best experience, ensure your Markdown files are at the root level and any images are placed in a subfolder named 'images/'.",
-        confirmText: "Select Folder",
-        cancelText: "Cancel",
-        variant: "info"
-      });
-      if (!confirmed) {
-        return;
-      }
-    }
+  const triggerFolderUpload = useCallback((): void => {
     folderInputRef.current?.click();
   }, []);
 
