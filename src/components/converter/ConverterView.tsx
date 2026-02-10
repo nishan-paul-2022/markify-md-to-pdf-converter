@@ -192,7 +192,7 @@ export function ConverterView({
 
   const getAllDeletableFileIds = React.useCallback(() => {
     return files
-      .filter(f => !f.id.startsWith("default-"))
+      .filter(f => !f.id.startsWith("default-") && f.batchId !== 'sample-document' && f.batchId !== 'sample-project')
       .map(f => f.id);
   }, [files]);
 
@@ -311,6 +311,27 @@ export function ConverterView({
     );
     return buildFileTree(filteredFiles);
   }, [files, searchQuery]);
+
+  const getSelectedCount = React.useCallback(() => {
+    let count = 0;
+    fileTree.forEach(node => {
+      if (node.id.startsWith("default-") || node.batchId === 'sample-document' || node.batchId === 'sample-project') {
+        return;
+      }
+      
+      if (node.type === 'folder') {
+        const batchFiles = files.filter(f => f.batchId === node.batchId);
+        if (batchFiles.length > 0 && batchFiles.every(f => selectedIds.has(f.id))) {
+          count++;
+        }
+      } else if (node.type === 'file') {
+        if (selectedIds.has(node.id)) {
+          count++;
+        }
+      }
+    });
+    return count;
+  }, [fileTree, files, selectedIds]);
 
   const getInputWidth = (name: string): string => {
     const charCount = name.length || 8;
@@ -454,53 +475,55 @@ export function ConverterView({
 
             {/* Selection Toolbar - Replacing Default Items Area */}
             {isSelectionMode && (
-              <div className="z-30 bg-[#0f111a] flex flex-col border-b border-white/5 animate-in slide-in-from-top duration-300 shadow-xl mb-4">
-                <div className="flex items-center justify-between px-4 h-14 bg-white/[0.03]">
-                  <div className="flex flex-col">
-                     <span className="text-[14px] font-black text-primary tabular-nums tracking-tight">
-                       {selectedIds.size} Selected
-                     </span>
-                     <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                       Management Mode
+              <div className="z-30 bg-slate-950/40 flex flex-col border border-white/10 rounded-xl mx-3 animate-in fade-in slide-in-from-top-2 duration-300 shadow-2xl mb-4 overflow-hidden">
+                <div className="flex items-center justify-between px-3 h-12 bg-white/[0.02] border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                     <div className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_10px_-2px] shadow-primary/40" />
+                     <span className="text-[13px] font-black text-slate-100 tabular-nums tracking-wide">
+                       {getSelectedCount()} Selected
                      </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={handleSelectAll}
-                      className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors rounded-full border border-white/5"
+                      className={cn(
+                        "h-7 px-3 text-[9px] font-bold uppercase tracking-widest transition-all rounded-md border border-white/20 shadow-sm",
+                        selectedIds.size === getAllDeletableFileIds().length && selectedIds.size > 0 
+                          ? "text-primary hover:text-slate-100 hover:bg-white/10 border-primary/40" 
+                          : "text-slate-500 hover:text-slate-100 hover:bg-white/10"
+                      )}
                     >
                       {selectedIds.size === getAllDeletableFileIds().length && selectedIds.size > 0 ? "Reset" : "Select All"}
                     </Button>
+
                     <button
                       onClick={() => {
                         setIsSelectionMode(false);
                         setSelectedIds(new Set());
                       }}
-                      className="h-8 w-8 flex items-center justify-center rounded-full text-slate-500 hover:text-white hover:bg-white/5 transition-all"
+                      className="h-7 w-7 rounded-md text-slate-500 hover:text-slate-300 transition-colors flex items-center justify-center cursor-pointer"
                     >
                       <X className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
                 
-                <div className="p-3 bg-white/[0.01]">
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                <div className="p-2.5">
+                  <button
                     disabled={selectedIds.size === 0}
                     onClick={handleBulkDeleteClick}
                     className={cn(
-                      "w-full h-11 text-[11px] font-black uppercase tracking-[0.2em] gap-3 transition-all duration-300 rounded-lg",
+                      "w-full h-11 text-[11px] font-black uppercase tracking-[0.25em] gap-3 transition-all duration-300 rounded-lg border flex items-center justify-center cursor-pointer",
                       selectedIds.size > 0 
-                        ? "text-red-500 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20"
-                        : "text-slate-600 border border-white/5 opacity-50 cursor-not-allowed"
+                        ? "text-red-500/80 bg-transparent border-red-500/20 hover:text-white hover:border-red-500 hover:bg-red-500 shadow-sm"
+                        : "text-slate-600 bg-transparent border-white/5 opacity-50 cursor-not-allowed"
                     )}
                   >
                     <Trash2 className="h-4 w-4" />
-                    Delete Selected Items
-                  </Button>
+                    Delete Selected
+                  </button>
                 </div>
               </div>
             )}
