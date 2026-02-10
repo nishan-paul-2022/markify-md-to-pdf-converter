@@ -26,6 +26,7 @@ import { File as AppFile } from '@/hooks/use-files';
 import { FileTree } from '@/components/file-manager/FileTree';
 import { FileTreeNode, buildFileTree } from '@/lib/file-tree';
 import { PanelLeftClose, PanelLeftOpen, RefreshCw, Search } from 'lucide-react';
+import { ImageModal } from '@/components/file-manager/ImageModal';
 
 interface ConverterViewProps {
   user: {
@@ -86,6 +87,10 @@ interface ConverterViewProps {
   setIsLoading: (loading: boolean) => void;
   MAX_FILENAME_LENGTH: number;
   getBaseName: (name: string) => string;
+  activeImage: AppFile | null;
+  setActiveImage: (image: AppFile | null) => void;
+  imageGallery: AppFile[];
+  setImageGallery: (images: AppFile[]) => void;
 }
 
 export function ConverterView({
@@ -140,6 +145,10 @@ export function ConverterView({
   setIsLoading,
   MAX_FILENAME_LENGTH,
   getBaseName,
+  activeImage,
+  setActiveImage,
+  imageGallery,
+  setImageGallery,
 }: ConverterViewProps) {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -700,6 +709,14 @@ export function ConverterView({
           </div>
         </div>
         </div>
+        {activeImage && (
+          <ImageModal
+            activeImage={activeImage}
+            images={imageGallery}
+            onClose={() => setActiveImage(null)}
+            onSelectImage={(img) => setActiveImage(img)}
+          />
+        )}
       </main>
     </TooltipProvider>
   );

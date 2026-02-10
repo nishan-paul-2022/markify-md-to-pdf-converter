@@ -37,9 +37,35 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
   const handleFileSelect = useCallback(async (node: FileTreeNode) => {
     if (node.type === 'file' && node.file) {
+      // Check if it's an image
+      const isImage = node.file.mimeType.startsWith('image/') || 
+                      node.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
+      
+      if (isImage) {
+        // Find all images in the same folder/batch
+        const currentPath = node.path;
+        const lastSlash = currentPath.lastIndexOf('/');
+        const parentDir = lastSlash !== -1 ? currentPath.substring(0, lastSlash) : '';
+        
+        const gallery = files.filter(f => {
+          const isImg = f.mimeType.startsWith('image/') || 
+                        f.originalName.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
+          if (!isImg) {return false;}
+          
+          const fPath = f.relativePath || f.originalName;
+          const fLastSlash = fPath.lastIndexOf('/');
+          const fParentDir = fLastSlash !== -1 ? fPath.substring(0, fLastSlash) : '';
+          
+          // Same parent directory and same batch
+          return fParentDir === parentDir && f.batchId === node.batchId;
+        });
+        
+        converterState.setActiveImage(node.file);
+        converterState.setImageGallery(gallery);
+        return;
+      }
+
       if (!node.file.originalName.endsWith('.md')) {
-        // For non-md files (like images), we might want to just show them or do nothing for now in the editor
-        // But for this app, we usually only edit MD.
         return;
       }
 
@@ -70,7 +96,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         console.error('Failed to load file content:', error);
       }
     }
-  }, [converterState]);
+  }, [converterState, files]);
 
   const handleFileUploadWithRefresh = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     await converterState.handleFileUpload(e);

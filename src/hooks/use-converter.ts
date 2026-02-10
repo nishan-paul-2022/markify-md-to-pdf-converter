@@ -3,6 +3,7 @@ import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, rem
 import { addTimestampToName, generateStandardName } from '@/lib/utils/naming';
 import { validateUploadStructure, extractImageReferences } from '@/lib/services/upload-validator';
 import { getAlert } from '@/components/AlertProvider';
+import { File as AppFile } from './use-files';
 
 const MAX_FILENAME_LENGTH = 30;
 
@@ -36,6 +37,8 @@ export function useConverter() {
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [isPdfDownloaded, setIsPdfDownloaded] = useState(false);
+  const [activeImage, setActiveImage] = useState<AppFile | null>(null);
+  const [imageGallery, setImageGallery] = useState<AppFile[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderInputRef = useRef<HTMLInputElement | null>(null);
@@ -533,6 +536,10 @@ export function useConverter() {
     setSelectedFileId,
     setIsLoading,
     setBasePath,
+    activeImage,
+    setActiveImage,
+    imageGallery,
+    setImageGallery,
     MAX_FILENAME_LENGTH,
     getBaseName
   };

@@ -32,6 +32,7 @@ interface FileListViewProps {
   setDeleteId: (id: string | null) => void;
   handleDelete: (id: string) => void;
   handleRename: (id: string, newName: string, type: "file" | "folder") => Promise<void>;
+  onImageClick?: (file: File) => void;
 }
 
 export function FileListView({
@@ -42,6 +43,7 @@ export function FileListView({
   setDeleteId,
   handleDelete,
   handleRename,
+  onImageClick,
 }: FileListViewProps) {
   const [renamingId, setRenamingId] = React.useState<string | null>(null)
   const [renameValue, setRenameValue] = React.useState("")
@@ -157,7 +159,18 @@ export function FileListView({
 
               return (
                 <TableRow key={file.id}>
-                  <TableCell>{getFileIcon(file.mimeType)}</TableCell>
+                  <TableCell>
+                    {file.mimeType.startsWith("image/") && onImageClick ? (
+                      <button 
+                        onClick={() => onImageClick(file)}
+                        className="hover:scale-110 transition-transform active:scale-95 cursor-pointer bg-transparent border-none p-0 flex items-center justify-center outline-none"
+                      >
+                        {getFileIcon(file.mimeType)}
+                      </button>
+                    ) : (
+                      getFileIcon(file.mimeType)
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex flex-col">
                       {isCurrentlyRenaming ? (
