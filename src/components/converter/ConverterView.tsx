@@ -577,9 +577,9 @@ export function ConverterView({
                 </div>
               )}
                 
-              <div className="flex items-center gap-10">
+              <div className="flex items-center gap-4 sm:gap-8 lg:gap-10">
                 {/* Group 1: Uploads */}
-                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
+                <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
                   <input
                     type="file"
                     accept=".md,image/png,image/jpeg,image/jpg,image/gif,image/webp"
@@ -654,7 +654,7 @@ export function ConverterView({
                 </div>
 
                 {/* Group 2: Navigation */}
-                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
+                <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -689,7 +689,7 @@ export function ConverterView({
                 </div>
 
                 {/* Group 3: Actions */}
-                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
+                <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
