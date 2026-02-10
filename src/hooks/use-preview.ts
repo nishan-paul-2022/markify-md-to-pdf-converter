@@ -290,32 +290,81 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
 
   const handlePageInputSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
-    const pageNum = parseInt(pageInput);
-    if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
-      scrollToPage(pageNum);
-    } else {
+    if (!pageInput) {
       setPageInput(currentPage.toString());
+      return;
     }
+
+    const pageNum = parseInt(pageInput, 10);
+
+    if (isNaN(pageNum) || pageNum < 1 || pageNum > totalPages) {
+      setPageInput(currentPage.toString());
+      return;
+    }
+
+    setPageInput(pageNum.toString());
+    scrollToPage(pageNum);
   };
 
   const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setPageInput(e.target.value);
+    const input = e.target;
+    const cursorPos = input.selectionStart;
+    const value = e.target.value.replace(/\D/g, '');
+    
+    // Allow empty or prevent values that would exceed totalPages
+    if (value === '') {
+      setPageInput(value);
+      return;
+    }
+    
+    const numValue = parseInt(value, 10);
+    if (!isNaN(numValue) && numValue <= totalPages) {
+      setPageInput(value);
+    } else {
+      // Restore cursor position when blocking invalid input
+      requestAnimationFrame(() => {
+        if (input && cursorPos !== null) {
+          input.setSelectionRange(cursorPos - 1, cursorPos - 1);
+        }
+      });
+    }
   };
 
   const handleZoomInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setZoomInput(e.target.value);
+    const input = e.target;
+    const cursorPos = input.selectionStart;
+    const value = e.target.value.replace(/\D/g, '');
+    
+    // Allow empty or prevent values that would exceed 400
+    if (value === '') {
+      setZoomInput('%');
+      return;
+    }
+    
+    const numValue = parseInt(value, 10);
+    if (!isNaN(numValue) && numValue <= 400) {
+      setZoomInput(`${value}%`);
+    } else {
+      // Restore cursor position when blocking invalid input
+      requestAnimationFrame(() => {
+        if (input && cursorPos !== null) {
+          input.setSelectionRange(cursorPos - 1, cursorPos - 1);
+        }
+      });
+    }
   };
 
   const handleZoomInputSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     const cleanValue = zoomInput.replace(/[^0-9]/g, '');
-    const zoomVal = parseInt(cleanValue);
-    if (!isNaN(zoomVal)) {
-      const clamped = Math.max(25, Math.min(400, zoomVal));
+    const zoomVal = parseInt(cleanValue, 10);
+    
+    if (!isNaN(zoomVal) && zoomVal >= 25 && zoomVal <= 400) {
       setZoomMode('custom');
-      setCustomZoom(clamped);
-      setZoomInput(`${clamped}%`);
+      setCustomZoom(zoomVal);
+      setZoomInput(`${zoomVal}%`);
     } else {
+      // Revert to current scale if invalid or out of range
       setZoomInput(`${Math.round(getScale() * 100)}%`);
     }
   };

@@ -233,7 +233,7 @@ export const MdPreviewToolbar = ({
                   value={pageInput}
                   onChange={handlePageInputChange}
                   onBlur={handlePageInputSubmit}
-                  className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
+                  className="h-5 w-12 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
                 />
                 <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
               </form>
@@ -301,7 +301,7 @@ export const MdPreviewToolbar = ({
                 value={zoomInput}
                 onChange={handleZoomInputChange}
                 onBlur={handleZoomInputSubmit}
-                className="h-5 w-10 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
+                className="h-5 w-14 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
               />
             )}
           </form>
@@ -373,12 +373,12 @@ export const MdPreviewToolbar = ({
             )}>
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={onDownload}
                 disabled={isGenerating}
                 aria-label="Download"
                 className={cn(
-                  "h-6 w-6 rounded-full transition-all duration-200 active:scale-90 group/download relative border border-transparent flex items-center justify-center",
+                  "h-6 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 rounded-full border border-transparent flex items-center justify-center gap-1.5",
                   isDownloaded 
                     ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
                     : !isGenerating ? "text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10" : "",
@@ -392,6 +392,7 @@ export const MdPreviewToolbar = ({
                 ) : (
                   <DownloadCloud className="w-3.5 h-3.5" />
                 )}
+                <span>{isGenerating ? "Generating..." : isDownloaded ? "Downloaded" : "Download PDF"}</span>
               </Button>
             </div>
           </TooltipTrigger>
