@@ -357,7 +357,7 @@ export function ConverterView({
             <button
               onClick={() => setActiveTab('editor')}
               className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-[0.15em] rounded-lg transition-all duration-300 ${
-                activeTab === 'editor' ? 'text-white' : 'text-slate-500 hover:text-slate-300'
+                activeTab === 'editor' ? 'text-white' : 'text-slate-500 hover:text-slate-200'
               }`}
             >
               <FileCode className={`w-3.5 h-3.5 transition-transform duration-300 ${activeTab === 'editor' ? 'scale-110' : ''}`} /> 
@@ -366,7 +366,7 @@ export function ConverterView({
             <button
               onClick={() => setActiveTab('preview')}
               className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-[0.15em] rounded-lg transition-all duration-300 ${
-                activeTab === 'preview' ? 'text-white' : 'text-slate-500 hover:text-slate-300'
+                activeTab === 'preview' ? 'text-white' : 'text-slate-500 hover:text-slate-200'
               }`}
             >
               <Eye className={`w-3.5 h-3.5 transition-transform duration-300 ${activeTab === 'preview' ? 'scale-110' : ''}`} /> 
@@ -401,7 +401,7 @@ export function ConverterView({
                           variant="ghost"
                           size="icon"
                           onClick={() => setIsSelectionMode(true)}
-                          className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+                          className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-all"
                        >
                          <ListChecks className="h-3.5 w-3.5" />
                        </Button>
@@ -416,7 +416,7 @@ export function ConverterView({
                         variant="ghost"
                         size="icon"
                         onClick={() => refreshFiles()}
-                        className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+                        className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-all"
                         disabled={filesLoading}
                      >
                        <RefreshCw className={cn("h-3.5 w-3.5", filesLoading && "animate-spin")} />
@@ -434,7 +434,7 @@ export function ConverterView({
                           e.stopPropagation();
                           setIsSidebarOpen(false);
                         }}
-                        className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+                        className="h-7 w-7 rounded-sm text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-all"
                       >
                         <PanelLeftClose className="h-4 w-4" />
                       </Button>
@@ -446,7 +446,7 @@ export function ConverterView({
 
             <div className="p-3">
               <div className="relative group">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-slate-300 transition-colors" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-slate-200 transition-colors" />
                 <input
                   type="text"
                   placeholder="Search files"
@@ -457,7 +457,7 @@ export function ConverterView({
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-0.5 rounded-full hover:bg-white/10 transition-all"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-200 p-0.5 rounded-full hover:bg-white/10 transition-all"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -470,7 +470,7 @@ export function ConverterView({
               <div className="z-30 bg-slate-950/40 flex flex-col border border-white/10 rounded-xl mx-3 animate-in fade-in slide-in-from-top-2 duration-300 shadow-2xl mb-4 overflow-hidden">
                 <div className="flex items-center justify-between px-3 h-12 bg-white/[0.02] border-b border-white/5">
                   <div className="flex items-center gap-2">
-                     <span className="text-[13px] font-black text-slate-100 tabular-nums tracking-wide">
+                     <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 tabular-nums">
                        {getSelectedCount()} Selected
                      </span>
                   </div>
@@ -494,7 +494,7 @@ export function ConverterView({
                         setIsSelectionMode(false);
                         setSelectedIds(new Set());
                       }}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:text-slate-300 transition-colors flex items-center justify-center cursor-pointer"
+                      className="h-7 w-7 rounded-md text-slate-500 hover:text-slate-200 transition-colors flex items-center justify-center cursor-pointer"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -555,7 +555,7 @@ export function ConverterView({
                     variant="ghost"
                     size="icon"
                     onClick={() => setIsSidebarOpen(true)}
-                    className="hidden lg:flex h-7 w-7 rounded-sm text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+                    className="hidden lg:flex h-7 w-7 rounded-sm text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-all"
                     title="Open Sidebar"
                   >
                     <PanelLeftOpen className="h-4 w-4" />
@@ -594,7 +594,7 @@ export function ConverterView({
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
-                        className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isUploaded ? <Check className="w-3 h-3 mr-1.5 text-green-400" /> : <Upload className="w-3 h-3 mr-1.5" />}
                         File
@@ -611,7 +611,7 @@ export function ConverterView({
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); triggerFolderUpload(); }}
-                        className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         <FolderOpen className="w-3.5 h-3.5 mr-1.5 text-amber-500/70" />
                         Folder
@@ -628,7 +628,7 @@ export function ConverterView({
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); triggerZipUpload(); }}
-                        className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         <FileArchive className="w-3.5 h-3.5 mr-1.5 text-blue-400/70" />
                         Zip
@@ -681,7 +681,7 @@ export function ConverterView({
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleCopy(); }}
-                        className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isCopied ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
                         {isCopied ? 'Copied' : 'Copy'}
@@ -698,7 +698,7 @@ export function ConverterView({
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleReset(); }}
-                        className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isReset ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <RotateCcw className="w-3.5 h-3.5 mr-1.5" />}
                         {isReset ? 'Done' : 'Reset'}
@@ -715,7 +715,7 @@ export function ConverterView({
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleDownloadMd(); }}
-                        className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 px-3 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isDownloaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Download className="w-3.5 h-3.5 mr-1.5" />}
                         Export
@@ -727,7 +727,7 @@ export function ConverterView({
                   <div className="md:hidden ml-1">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" aria-label="Menu" className="h-6 w-6 rounded-full text-slate-400">
+                        <Button variant="ghost" size="icon" aria-label="Menu" className="h-6 w-6 rounded-full text-slate-500 hover:text-slate-200">
                           <MoreVertical className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>

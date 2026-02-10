@@ -80,7 +80,7 @@ export const MdPreviewToolbar = ({
                   "h-6 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 rounded-full border border-transparent flex items-center justify-center gap-1.5",
                   viewMode === 'live'
                     ? "bg-white/10 text-white border-white/20 shadow-sm"
-                    : "text-slate-500 hover:text-slate-100 hover:bg-white/5 hover:border-white/10"
+                    : "text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:border-white/10"
                 )}
               >
                 <Eye className="w-3.5 h-3.5" />
@@ -99,7 +99,7 @@ export const MdPreviewToolbar = ({
                   "h-6 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 rounded-full border border-transparent flex items-center justify-center gap-1.5",
                   viewMode === 'preview'
                       ? "bg-white/10 text-white border-white/20 shadow-sm"
-                      : "text-slate-500 hover:text-slate-100 hover:bg-white/5 hover:border-white/10"
+                      : "text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:border-white/10"
                 )}
               >
                 <Printer className="w-3.5 h-3.5" />
@@ -218,7 +218,7 @@ export const MdPreviewToolbar = ({
                 ? "opacity-100 scale-100 blur-0" 
                 : "opacity-0 scale-75 blur-sm pointer-events-none"
             )}>
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
             </div>
 
             <div className={cn(
@@ -235,7 +235,7 @@ export const MdPreviewToolbar = ({
                   onBlur={handlePageInputSubmit}
                   className="h-5 w-12 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
                 />
-                <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
+                <span className="text-xs text-slate-500 font-bold select-none tabular-nums">/ {totalPages}</span>
               </form>
             </div>
           </div>
@@ -293,7 +293,7 @@ export const MdPreviewToolbar = ({
           <form onSubmit={handleZoomInputSubmit} className="min-w-[3rem] flex justify-center">
             {!isScaleCalculated ? (
               <div className="flex items-center justify-center w-10 h-5">
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
               </div>
             ) : (
               <Input
@@ -404,7 +404,7 @@ export const MdPreviewToolbar = ({
         <div className="lg:hidden flex items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Menu" className="h-7 w-7 rounded-full text-slate-400">
+              <Button variant="ghost" size="icon" aria-label="Menu" className="h-7 w-7 rounded-full text-slate-500 hover:text-slate-200">
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
