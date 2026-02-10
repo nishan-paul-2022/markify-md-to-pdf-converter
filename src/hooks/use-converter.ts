@@ -42,6 +42,7 @@ export function useConverter() {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderInputRef = useRef<HTMLInputElement | null>(null);
+  const zipInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -479,6 +480,25 @@ export function useConverter() {
     folderInputRef.current?.click();
   }, []);
 
+  const triggerZipUpload = useCallback((): void => {
+    zipInputRef.current?.click();
+  }, []);
+
+  const handleZipUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+      const files = event.target.files;
+      if (files && files.length > 0) {
+        // Placeholder for zip upload logic
+        const api = getAlert();
+        if (api) {
+            api.show({ title: 'Feature Coming Soon', message: 'Zip upload functionality is currently under development.', variant: 'default' });
+        } else {
+             alert('Zip upload functionality is currently under development.');
+        }
+        // Clear input
+        event.target.value = '';
+      }
+  }, []);
+
   const handleReset = useCallback(async (): Promise<void> => {
     try {
       const res = await fetch(DEFAULT_MARKDOWN_PATH);
@@ -566,6 +586,7 @@ export function useConverter() {
     selectedFileId,
     fileInputRef,
     folderInputRef,
+    zipInputRef,
     textareaRef,
     stats,
     setActiveTab,
@@ -576,8 +597,10 @@ export function useConverter() {
     handleContentChange,
     handleFileUpload,
     handleFolderUpload,
+    handleZipUpload,
     triggerFileUpload,
     triggerFolderUpload,
+    triggerZipUpload,
     handleReset,
     handleCopy,
     handleDownloadMd,
