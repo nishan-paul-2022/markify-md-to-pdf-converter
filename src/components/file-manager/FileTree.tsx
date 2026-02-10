@@ -23,6 +23,7 @@ interface FileTreeProps {
   isSelectionMode?: boolean;
   selectedIds?: Set<string>;
   onToggleSelection?: (id: string | string[]) => void;
+  defaultExpandAll?: boolean;
 }
 
 export function FileTree({
@@ -35,6 +36,7 @@ export function FileTree({
   isSelectionMode = false,
   selectedIds = new Set(),
   onToggleSelection,
+  defaultExpandAll = false,
 }: FileTreeProps) {
   const { confirm } = useAlert()
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
@@ -52,6 +54,21 @@ export function FileTree({
     });
     return initial;
   });
+
+  // Auto-expand folders when defaultExpandAll is true (e.g. during search)
+  React.useEffect(() => {
+    if (defaultExpandAll) {
+      setExpandedFolders(prev => {
+        const next = new Set(prev);
+        nodes.forEach(node => {
+          if (node.type === 'folder') {
+            next.add(node.path);
+          }
+        });
+        return next;
+      });
+    }
+  }, [defaultExpandAll, nodes]);
 
   const toggleFolderGridMode = (path: string) => {
     setFolderGridModes(prev => {
@@ -385,6 +402,7 @@ export function FileTree({
                       selectedFileId={selectedFileId}
                       isSelectionMode={isSelectionMode}
                       selectedIds={selectedIds}
+                      defaultExpandAll={defaultExpandAll}
                       onToggleSelection={onToggleSelection}
                     />
                   )}

@@ -544,6 +544,7 @@ export function ConverterView({
                   isSelectionMode={isSelectionMode}
                   selectedIds={selectedIds}
                   onToggleSelection={toggleSelection}
+                  defaultExpandAll={searchQuery.length > 0}
                 />
               )}
             </div>
