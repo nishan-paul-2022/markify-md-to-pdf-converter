@@ -439,93 +439,81 @@ export function ConverterView({
                </div>
             </div>
 
-            <div className="relative">
-              {/* Selection Bar Overlay */}
-              {isSelectionMode && (
-                <div className="absolute inset-0 z-30 bg-slate-900/95 backdrop-blur-2xl flex flex-col border-b border-white/5 animate-in slide-in-from-top duration-500 h-fit shadow-2xl">
-                  <div className="flex items-center justify-between px-4 h-12 border-b border-white/5 bg-white/[0.02]">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                       <div className="relative flex h-2 w-2 shrink-0">
-                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                         <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                       </div>
-                       <div className="flex flex-col min-w-0">
-                         <span className="text-[11px] font-bold text-slate-100 tabular-nums truncate">
-                           {selectedIds.size} Selected
-                         </span>
-                         <span className="text-[8px] font-medium uppercase tracking-widest text-slate-500 truncate">
-                           Workspace Management
-                         </span>
-                       </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 ml-2 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleSelectAll}
-                        className="h-7 px-2.5 text-[9px] font-bold uppercase tracking-widest text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors rounded-md border border-white/5"
-                      >
-                        {selectedIds.size === getAllDeletableFileIds().length && selectedIds.size > 0 ? "Reset" : "All"}
-                      </Button>
-                      <button
-                        onClick={() => {
-                          setIsSelectionMode(false);
-                          setSelectedIds(new Set());
-                        }}
-                        className="h-7 w-7 flex items-center justify-center rounded-full text-slate-500 hover:text-white hover:bg-white/5 transition-all"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="p-2 bg-slate-900/40">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={selectedIds.size === 0}
-                      onClick={handleBulkDeleteClick}
-                      className={cn(
-                        "w-full h-9 text-[10px] font-bold uppercase tracking-[0.2em] gap-2 transition-all duration-300 rounded-md",
-                        selectedIds.size > 0 
-                          ? "text-red-400/80 hover:text-red-400 hover:bg-red-400/10 border border-red-400/20"
-                          : "text-slate-600 border border-white/5 opacity-50 cursor-not-allowed"
-                      )}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Delete Selected
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              <div className="p-3">
-                <div className="relative group">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-slate-300 transition-colors" />
-                  <input
-                    type="text"
-                    placeholder="Search files..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-950/50 border border-white/5 rounded-md py-1.5 pl-8 pr-3 text-xs focus:outline-none focus:border-white/10 focus:bg-slate-950 transition-all placeholder:text-slate-600"
-                  />
-                </div>
+            <div className="p-3">
+              <div className="relative group">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-slate-300 transition-colors" />
+                <input
+                  type="text"
+                  placeholder="Search files..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-950/50 border border-white/5 rounded-md py-1.5 pl-8 pr-3 text-xs focus:outline-none focus:border-white/10 focus:bg-slate-950 transition-all placeholder:text-slate-600"
+                />
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
-              {filesLoading && files.length === 0 ? (
-                <div className="px-6 py-4 flex flex-col items-center gap-3 opacity-40">
-                  <div className="h-4 w-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-[10px] uppercase tracking-widest font-bold">Scanning...</span>
+            {/* Selection Toolbar - Replacing Default Items Area */}
+            {isSelectionMode && (
+              <div className="z-30 bg-[#0f111a] flex flex-col border-b border-white/5 animate-in slide-in-from-top duration-300 shadow-xl mb-4">
+                <div className="flex items-center justify-between px-4 h-14 bg-white/[0.03]">
+                  <div className="flex flex-col">
+                     <span className="text-[14px] font-black text-primary tabular-nums tracking-tight">
+                       {selectedIds.size} Selected
+                     </span>
+                     <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                       Management Mode
+                     </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleSelectAll}
+                      className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors rounded-full border border-white/5"
+                    >
+                      {selectedIds.size === getAllDeletableFileIds().length && selectedIds.size > 0 ? "Reset" : "Select All"}
+                    </Button>
+                    <button
+                      onClick={() => {
+                        setIsSelectionMode(false);
+                        setSelectedIds(new Set());
+                      }}
+                      className="h-8 w-8 flex items-center justify-center rounded-full text-slate-500 hover:text-white hover:bg-white/5 transition-all"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
-              ) : files.length === 0 ? (
-                <div className="px-6 py-12 text-center">
-                   <p className="text-xs text-slate-600 font-medium italic">No files found</p>
+                
+                <div className="p-3 bg-white/[0.01]">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={selectedIds.size === 0}
+                    onClick={handleBulkDeleteClick}
+                    className={cn(
+                      "w-full h-11 text-[11px] font-black uppercase tracking-[0.2em] gap-3 transition-all duration-300 rounded-lg",
+                      selectedIds.size > 0 
+                        ? "text-red-500 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20"
+                        : "text-slate-600 border border-white/5 opacity-50 cursor-not-allowed"
+                    )}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Selected Items
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div className="flex-grow overflow-y-auto custom-scrollbar px-2 pb-4">
+              {fileTree.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full opacity-50 space-y-2">
+                  <FolderOpen className="w-5 h-5 text-slate-500" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Empty Explorer</span>
                 </div>
               ) : (
                 <FileTree 
-                  nodes={fileTree} 
+                  nodes={isSelectionMode ? fileTree.filter(node => node.batchId !== 'sample-document' && node.batchId !== 'sample-project') : fileTree} 
                   onFileSelect={onFileSelect} 
                   onDelete={handleFileDelete}
                   onRename={handleFileRename}
