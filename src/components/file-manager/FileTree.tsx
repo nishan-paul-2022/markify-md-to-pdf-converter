@@ -134,6 +134,7 @@ export function FileTree({
   }
 
   const handleRenameStart = (node: FileTreeNode) => {
+    if (node.type === "folder" && node.name === "images") { return; }
     setRenamingId(node.id)
     if (node.type === "file") {
       const parts = node.name.split(".");
@@ -376,7 +377,7 @@ export function FileTree({
                             {isGridMode ? <List className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
                             {isGridMode ? "View as List" : "View as Grid"}
                           </DropdownMenuItem>
-                          {!isDefaultFolder && (
+                          {!isDefaultFolder && node.name !== "images" && (
                             <DropdownMenuItem 
                               onClick={() => handleRenameStart(node)}
                               className="gap-2 text-xs"
