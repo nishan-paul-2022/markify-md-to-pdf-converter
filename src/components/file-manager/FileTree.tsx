@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { ChevronRight, ChevronDown, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink, PencilLine } from "lucide-react"
+import { ChevronRight, ChevronDown, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink, PencilLine, Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FileTreeNode } from "@/lib/file-tree"
 import { Button } from "@/components/ui/button"
@@ -234,8 +234,9 @@ export function FileTree({
                     ) : (
                       <ChevronRight className="h-3.5 w-3.5" />
                     )}
-                    <Folder className="h-4 w-4 text-amber-500/80" />
-                    <span className="truncate">{node.name}</span>
+                    <Folder className={cn("h-4 w-4", isDefaultFolder ? "text-amber-500/50" : "text-amber-500/80")} />
+                    <span className={cn("truncate", isDefaultFolder && "opacity-80 italic")}>{node.name}</span>
+                    {isDefaultFolder && <Lock className="h-2.5 w-2.5 ml-1 opacity-40" />}
                   </button>
                 )}
                 <div className="opacity-0 group-hover/folder:opacity-100 flex items-center px-2">
@@ -317,7 +318,8 @@ export function FileTree({
                 className="flex-1 flex items-center gap-2 py-1.5 text-sm text-left truncate"
               >
                 {getFileIcon(node.name, node.file?.mimeType)}
-                <span className="truncate">{node.name}</span>
+                <span className={cn("truncate", node.id.startsWith("default-") && "opacity-80 italic")}>{node.name}</span>
+                {node.id.startsWith("default-") && <Lock className="h-2.5 w-2.5 ml-1 opacity-40 text-emerald-500/50" />}
               </button>
             )}
             <div className="opacity-0 group-hover:opacity-100 flex items-center px-2">

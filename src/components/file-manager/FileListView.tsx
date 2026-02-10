@@ -2,7 +2,8 @@
 
 import React from "react"
 import { Button } from "@/components/ui/button"
-import { Trash2, Download, FileText, Image as ImageIcon, Loader2, PencilLine } from "lucide-react"
+import { Trash2, Download, FileText, Image as ImageIcon, Loader2, PencilLine, Lock } from "lucide-react"
+import { cn } from "@/lib/utils"
 import {
   Table,
   TableBody,
@@ -176,7 +177,12 @@ export function FileListView({
                           />
                         </div>
                       ) : (
-                        <span className="truncate max-w-xs">{file.originalName}</span>
+                        <div className="flex items-center gap-2">
+                          <span className={cn("truncate max-w-xs", isDefault && "opacity-80 italic")}>
+                            {file.originalName}
+                          </span>
+                          {isDefault && <Lock className="h-3 w-3 opacity-40" />}
+                        </div>
                       )}
                       <span className="text-xs text-muted-foreground">
                         {file.mimeType}

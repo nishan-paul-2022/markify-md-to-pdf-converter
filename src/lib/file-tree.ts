@@ -67,6 +67,23 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
   // Sort: folders first, then alphabetically
   const sortNodes = (nodes: FileTreeNode[]) => {
     nodes.sort((a, b) => {
+      // Priority sorting: 
+      // 1. Default items (sample-document, sample-project)
+      // 2. Folders
+      // 3. Alphabetical
+      
+      const isDefaultA = a.batchId === 'sample-document' || a.batchId === 'sample-project';
+      const isDefaultB = b.batchId === 'sample-document' || b.batchId === 'sample-project';
+
+      if (isDefaultA && !isDefaultB) {return -1;}
+      if (!isDefaultA && isDefaultB) {return 1;}
+      
+      // If both are defaults, sample-document goes before sample-project (or vice versa, but let's keep it consistent)
+      if (isDefaultA && isDefaultB) {
+        if (a.batchId === 'sample-document' && b.batchId === 'sample-project') {return -1;}
+        if (a.batchId === 'sample-project' && b.batchId === 'sample-document') {return 1;}
+      }
+
       if (a.type !== b.type) {
         return a.type === "folder" ? -1 : 1;
       }
