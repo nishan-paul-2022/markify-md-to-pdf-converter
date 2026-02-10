@@ -465,11 +465,19 @@ export function ConverterView({
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-slate-300 transition-colors" />
                 <input
                   type="text"
-                  placeholder="Search files..."
+                  placeholder="Search files"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-950/50 border border-white/5 rounded-md py-1.5 pl-8 pr-3 text-xs focus:outline-none focus:border-white/10 focus:bg-slate-950 transition-all placeholder:text-slate-600"
+                  className="w-full bg-slate-950/50 border border-white/5 rounded-md py-1.5 pl-8 pr-8 text-xs focus:outline-none focus:border-white/10 focus:bg-slate-950 transition-all placeholder:text-slate-600"
                 />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-0.5 rounded-full hover:bg-white/10 transition-all"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
               </div>
             </div>
 
