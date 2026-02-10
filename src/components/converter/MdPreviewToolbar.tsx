@@ -69,7 +69,7 @@ export const MdPreviewToolbar = ({
   return (
     <div className="flex items-center justify-center px-4 h-12 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm relative transition-colors">
       <div className={cn(
-        "flex items-center transition-all duration-500 ease-in-out",
+        "flex items-center",
         viewMode === 'preview' ? "gap-2 sm:gap-4 lg:gap-6" : "gap-4 sm:gap-8 lg:gap-10"
       )}>
         {/* Pill 1: View Mode */}
@@ -116,7 +116,7 @@ export const MdPreviewToolbar = ({
 
         {/* Pill 2: Sync (Preview Mode Only) */}
         {viewMode === 'preview' && (
-          <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner animate-in fade-in slide-in-from-left-2 duration-300">
+          <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

@@ -129,7 +129,7 @@ const MdPreview = React.memo(({
               {/* Live View Layer */}
               {(viewMode === 'live' || !isPdfReady) && (
                 <div className={cn(
-                  "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
+                  "col-start-1 row-start-1 flex flex-col gap-4 origin-top",
                   (viewMode === 'live' || !isPdfReady) ? "relative" : "absolute inset-x-0 top-0 h-0 overflow-hidden",
                   viewMode === 'live' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
                 )}>
@@ -155,7 +155,7 @@ const MdPreview = React.memo(({
 
               {/* PDF Preview Layer */}
               <div className={cn(
-                "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
+                "col-start-1 row-start-1 flex flex-col gap-4 origin-top",
                 (viewMode === 'preview' && isPdfReady) ? "relative" : "absolute inset-x-0 top-0 h-0 overflow-hidden",
                 viewMode === 'preview' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
               )}>
