@@ -121,6 +121,39 @@ export function useFiles() {
     }
   }, [router]);
 
+  const handleRename = useCallback(async (
+    id: string, 
+    newName: string, 
+    type: "file" | "folder", 
+    batchId?: string, 
+    oldPath?: string
+  ): Promise<void> => {
+    try {
+      const response = await fetch("/api/files", {
+        method: "PATCH",
+        body: JSON.stringify({ id, type, newName, batchId, oldPath }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to rename");
+      }
+
+      await fetchFiles();
+      router.refresh();
+    } catch (error: unknown) {
+      console.error("Rename error:", error);
+      const msg = error instanceof Error ? error.message : "Failed to rename";
+      const api = getAlert();
+      if (api) {
+        api.show({ title: "Rename failed", message: msg, variant: "destructive" });
+      } else {
+        alert(msg);
+      }
+      throw error;
+    }
+  }, [fetchFiles, router]);
+
   return {
     files,
     loading,
@@ -129,6 +162,7 @@ export function useFiles() {
     setDeleteId,
     handleDelete,
     handleBulkDelete,
+    handleRename,
     refreshFiles: fetchFiles
   };
 }

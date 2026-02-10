@@ -2,7 +2,7 @@
 
 import React from "react"
 import { Button } from "@/components/ui/button"
-import { Trash2, Download, FileText, Image as ImageIcon, Loader2 } from "lucide-react"
+import { Trash2, Download, FileText, Image as ImageIcon, Loader2, PencilLine, Check } from "lucide-react"
 import {
   Table,
   TableBody,
@@ -30,6 +30,7 @@ interface FileListViewProps {
   deleting: boolean;
   setDeleteId: (id: string | null) => void;
   handleDelete: (id: string) => void;
+  handleRename: (id: string, newName: string, type: "file" | "folder") => Promise<void>;
 }
 
 export function FileListView({
@@ -39,7 +40,39 @@ export function FileListView({
   deleting,
   setDeleteId,
   handleDelete,
+  handleRename,
 }: FileListViewProps) {
+  const [renamingId, setRenamingId] = React.useState<string | null>(null)
+  const [renameValue, setRenameValue] = React.useState("")
+  const [isRenaming, setIsRenaming] = React.useState(false)
+
+  const handleRenameStart = (file: File) => {
+    setRenamingId(file.id)
+    setRenameValue(file.originalName)
+  }
+
+  const handleRenameCancel = () => {
+    setRenamingId(null)
+    setRenameValue("")
+  }
+
+  const handleRenameSubmit = async (file: File) => {
+    if (!renameValue.trim() || renameValue === file.originalName) {
+      handleRenameCancel()
+      return
+    }
+
+    setIsRenaming(true)
+    try {
+      await handleRename(file.id, renameValue.trim(), "file")
+      handleRenameCancel()
+    } catch (error) {
+      console.error("Rename failed:", error)
+    } finally {
+      setIsRenaming(false)
+    }
+  }
+
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) {return "0 Bytes"}
     const k = 1024
@@ -100,43 +133,89 @@ export function FileListView({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {files.map((file) => (
-              <TableRow key={file.id}>
-                <TableCell>{getFileIcon(file.mimeType)}</TableCell>
-                <TableCell className="font-medium">
-                  <div className="flex flex-col">
-                    <span className="truncate max-w-xs">{file.originalName}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {file.mimeType}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>{formatFileSize(file.size)}</TableCell>
-                <TableCell className="text-muted-foreground">
-                  {formatDate(file.createdAt)}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      asChild
-                    >
-                      <a href={file.url} download={file.originalName}>
-                        <Download className="h-4 w-4" />
-                      </a>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setDeleteId(file.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {files.map((file) => {
+              const isDefault = file.id.startsWith("default-");
+              const isCurrentlyRenaming = renamingId === file.id;
+
+              return (
+                <TableRow key={file.id}>
+                  <TableCell>{getFileIcon(file.mimeType)}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex flex-col">
+                      {isCurrentlyRenaming ? (
+                        <div className="flex items-center gap-2 max-w-xs">
+                          <input
+                            autoFocus
+                            className="flex-1 bg-background border border-primary rounded px-2 py-1 text-sm outline-none"
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {handleRenameSubmit(file);}
+                              if (e.key === "Escape") {handleRenameCancel();}
+                            }}
+                            onBlur={() => {
+                              setTimeout(() => {
+                                if (!isRenaming) {handleRenameCancel();}
+                              }, 200);
+                            }}
+                          />
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-green-500"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => handleRenameSubmit(file)}
+                          >
+                             <Check className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="truncate max-w-xs">{file.originalName}</span>
+                      )}
+                      <span className="text-xs text-muted-foreground">
+                        {file.mimeType}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{formatFileSize(file.size)}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {formatDate(file.createdAt)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        asChild
+                      >
+                        <a href={file.url} download={file.originalName}>
+                          <Download className="h-4 w-4" />
+                        </a>
+                      </Button>
+                      {!isDefault && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRenameStart(file)}
+                          disabled={isCurrentlyRenaming}
+                        >
+                          <PencilLine className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {!isDefault && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteId(file.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

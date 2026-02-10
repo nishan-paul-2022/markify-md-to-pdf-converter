@@ -15,7 +15,7 @@ interface ConverterClientProps {
 
 export default function ConverterClient({ user }: ConverterClientProps): React.JSX.Element {
   const converterState = useConverter();
-  const { files, loading: filesLoading, handleDelete, handleBulkDelete, refreshFiles } = useFiles();
+  const { files, loading: filesLoading, handleDelete, handleBulkDelete, handleRename, refreshFiles } = useFiles();
 
   // Initial selection of default file
   React.useEffect(() => {
@@ -88,6 +88,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       files={files}
       filesLoading={filesLoading}
       handleFileDelete={handleUnifiedDelete}
+      handleFileRename={handleRename}
       onFileSelect={handleFileSelect}
       refreshFiles={refreshFiles}
       {...converterState}

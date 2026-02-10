@@ -339,3 +339,122 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     )
   }
 }
+
+export async function PATCH(request: NextRequest): Promise<NextResponse> {
+  try {
+    const session = await auth()
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
+    const { id, type, newName, batchId, oldPath } = await request.json()
+
+    if (!newName || !newName.trim()) {
+      return NextResponse.json(
+        { error: "New name is required" },
+        { status: 400 }
+      )
+    }
+
+    // Protection for default project and document
+    if (id?.startsWith("default-") || batchId === 'no-batch' || (id && id.includes('folder-no-batch'))) {
+      return NextResponse.json(
+        { error: "Changing default project or document is not allowed" },
+        { status: 403 }
+      )
+    }
+
+    if (type === "folder") {
+      if (!batchId || !oldPath) {
+        return NextResponse.json(
+          { error: "BatchId and oldPath required for folder rename" },
+          { status: 400 }
+        )
+      }
+
+      // Rename all files in this folder by updating their relativePath
+      const files = await prisma.file.findMany({
+        where: {
+          userId: session.user.id,
+          batchId: batchId,
+          relativePath: {
+            startsWith: oldPath
+          }
+        }
+      })
+
+      const updates = files.map(file => {
+        const relativePath = file.relativePath || "";
+        const pathParts = relativePath.split('/');
+        const oldPathParts = oldPath.split('/');
+        
+        // Check if it's a true prefix (matching full path segments)
+        let matches = true;
+        for (let i = 0; i < oldPathParts.length; i++) {
+          if (pathParts[i] !== oldPathParts[i]) {
+            matches = false;
+            break;
+          }
+        }
+        
+        if (!matches) {return null;}
+        
+        // Replace segments
+        const newPathParts = [...pathParts];
+        newPathParts[oldPathParts.length - 1] = newName;
+        const newPath = newPathParts.join('/');
+
+        return prisma.file.update({
+          where: { id: file.id },
+          data: {
+            relativePath: newPath,
+          }
+        })
+      }).filter((p): p is NonNullable<typeof p> => p !== null);
+
+      await Promise.all(updates);
+
+      return NextResponse.json({ success: true })
+    } else {
+      // Single file rename
+      const file = await prisma.file.findUnique({
+        where: { id, userId: session.user.id }
+      })
+
+      if (!file) {
+        return NextResponse.json(
+          { error: "File not found" },
+          { status: 404 }
+        )
+      }
+
+      // Update originalName and relativePath
+      let newRelativePath = file.relativePath;
+      if (newRelativePath) {
+        const parts = newRelativePath.split('/');
+        parts[parts.length - 1] = newName;
+        newRelativePath = parts.join('/');
+      }
+
+      await prisma.file.update({
+        where: { id },
+        data: {
+          originalName: newName,
+          relativePath: newRelativePath || newName
+        }
+      })
+
+      return NextResponse.json({ success: true })
+    }
+  } catch (error: unknown) {
+    console.error("Rename error:", error)
+    return NextResponse.json(
+      { error: "Failed to rename" },
+      { status: 500 }
+    )
+  }
+}

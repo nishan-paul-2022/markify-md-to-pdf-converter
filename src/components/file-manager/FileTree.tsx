@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { ChevronRight, ChevronDown, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink } from "lucide-react"
+import { ChevronRight, ChevronDown, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink, PencilLine, Check, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FileTreeNode } from "@/lib/file-tree"
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,7 @@ interface FileTreeProps {
   level?: number;
   onFileSelect: (node: FileTreeNode) => void;
   onDelete: (id: string | string[]) => void;
+  onRename: (id: string, newName: string, type: "file" | "folder", batchId?: string, oldPath?: string) => Promise<void>;
   selectedFileId?: string;
 }
 
@@ -26,10 +27,47 @@ export function FileTree({
   level = 0,
   onFileSelect,
   onDelete,
+  onRename,
   selectedFileId,
 }: FileTreeProps) {
   const { confirm } = useAlert()
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState("")
+  const [isRenaming, setIsRenaming] = useState(false)
+
+  const handleRenameStart = (node: FileTreeNode) => {
+    setRenamingId(node.id)
+    setRenameValue(node.name)
+  }
+
+  const handleRenameCancel = () => {
+    setRenamingId(null)
+    setRenameValue("")
+  }
+
+  const handleRenameSubmit = async (node: FileTreeNode) => {
+    if (!renameValue.trim() || renameValue === node.name) {
+      handleRenameCancel()
+      return
+    }
+
+    setIsRenaming(true)
+    try {
+      await onRename(
+        node.type === "file" ? node.id : node.id, // actually for folder we might use path/nodeKey
+        renameValue.trim(),
+        node.type,
+        node.batchId,
+        node.path
+      )
+      handleRenameCancel()
+    } catch (error) {
+      console.error("Rename failed:", error)
+    } finally {
+      setIsRenaming(false)
+    }
+  }
 
   const handleDeleteClick = async (node: FileTreeNode, isFolder: boolean) => {
     const fileIds = isFolder ? collectFileIds(node) : [node.id]
@@ -129,6 +167,7 @@ export function FileTree({
         const isExpanded = expandedFolders.has(node.path)
         const isSelected = selectedFileId === node.id
         const isFolderActive = containsSelectedFile(node, selectedFileId)
+        const isCurrentlyRenaming = renamingId === node.id
 
         if (node.type === "folder") {
           const folderFileIds = collectFileIds(node);
@@ -136,7 +175,7 @@ export function FileTree({
             folderFileIds.some(id => id.startsWith("default-"));
 
           return (
-            <div key={node.path} className="flex flex-col group/folder">
+            <div key={node.id} className="flex flex-col group/folder">
               <div
                 className={cn(
                   "flex items-center justify-between hover:bg-white/5 transition-all text-slate-400 hover:text-slate-100",
@@ -145,18 +184,58 @@ export function FileTree({
                 )}
                 style={{ paddingLeft: `${(level + 1) * 1}rem` }}
               >
-                <button
-                  onClick={() => toggleFolder(node.path)}
-                  className="flex-1 flex items-center gap-2 py-1.5 text-sm text-left truncate"
-                >
-                  {isExpanded ? (
-                    <ChevronDown className="h-3.5 w-3.5" />
-                  ) : (
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  )}
-                  <Folder className="h-4 w-4 text-amber-500/80" />
-                  <span className="truncate">{node.name}</span>
-                </button>
+                {isCurrentlyRenaming ? (
+                  <div className="flex-1 flex items-center gap-2 py-1.5 h-8">
+                    <Folder className="h-4 w-4 text-amber-500/80 shrink-0" />
+                    <input
+                      autoFocus
+                      className="flex-1 bg-slate-950 border border-amber-500/50 rounded px-1.5 py-0.5 text-sm text-slate-100 outline-none focus:border-amber-500 transition-all"
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {handleRenameSubmit(node);}
+                        if (e.key === "Escape") {handleRenameCancel();}
+                      }}
+                      onBlur={() => {
+                        // Small delay to allow clicking the Save/Cancel buttons
+                        setTimeout(() => {
+                          if (!isRenaming) {handleRenameCancel();}
+                        }, 200);
+                      }}
+                    />
+                    <div className="flex items-center gap-1">
+                      <button 
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleRenameSubmit(node)}
+                        className="p-1 hover:bg-green-500/20 text-green-400 rounded transition-colors"
+                        title="Save"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </button>
+                      <button 
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleRenameCancel()}
+                        className="p-1 hover:bg-red-500/20 text-red-400 rounded transition-colors"
+                        title="Cancel"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => toggleFolder(node.path)}
+                    className="flex-1 flex items-center gap-2 py-1.5 text-sm text-left truncate"
+                  >
+                    {isExpanded ? (
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    ) : (
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    )}
+                    <Folder className="h-4 w-4 text-amber-500/80" />
+                    <span className="truncate">{node.name}</span>
+                  </button>
+                )}
                 <div className="opacity-0 group-hover/folder:opacity-100 flex items-center px-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -165,6 +244,14 @@ export function FileTree({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
+                      {!isDefaultFolder && (
+                        <DropdownMenuItem 
+                          onClick={() => handleRenameStart(node)}
+                          className="gap-2 text-xs"
+                        >
+                          <PencilLine className="h-3.5 w-3.5" /> Rename Folder
+                        </DropdownMenuItem>
+                      )}
                       {!isDefaultFolder && folderFileIds.length > 0 && (
                         <DropdownMenuItem 
                           onClick={() => handleDeleteClick(node, true)}
@@ -186,6 +273,7 @@ export function FileTree({
                   level={level + 1}
                   onFileSelect={onFileSelect}
                   onDelete={onDelete}
+                  onRename={onRename}
                   selectedFileId={selectedFileId}
                 />
               )}
@@ -197,20 +285,59 @@ export function FileTree({
           <div
             key={node.id}
             className={cn(
-              "group flex items-center justify-between hover:bg-white/5 transition-all",
+              "group flex items-center justify-between hover:bg-white/5 transition-all text-slate-400",
               isSelected 
                 ? "bg-white/10 text-white border-l-2 border-emerald-500 shadow-[inset_4px_0_12px_-4px_rgba(16,185,129,0.1)]" 
-                : "text-slate-400 hover:text-slate-100"
+                : "hover:text-slate-100"
             )}
             style={{ paddingLeft: `${(level + 1.5) * 1}rem` }}
           >
-            <button
-              onClick={() => onFileSelect(node)}
-              className="flex-1 flex items-center gap-2 py-1.5 text-sm text-left truncate"
-            >
-              {getFileIcon(node.name, node.file?.mimeType)}
-              <span className="truncate">{node.name}</span>
-            </button>
+            {isCurrentlyRenaming ? (
+               <div className="flex-1 flex items-center gap-2 py-1.5 h-8">
+                {getFileIcon(node.name, node.file?.mimeType)}
+                <input
+                  autoFocus
+                  className="flex-1 bg-slate-950 border border-emerald-500/50 rounded px-1.5 py-0.5 text-sm text-slate-100 outline-none focus:border-emerald-500 transition-all"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {handleRenameSubmit(node);}
+                    if (e.key === "Escape") {handleRenameCancel();}
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => {
+                      if (!isRenaming) {handleRenameCancel();}
+                    }, 200);
+                  }}
+                />
+                <div className="flex items-center gap-1">
+                  <button 
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleRenameSubmit(node)}
+                    className="p-1 hover:bg-green-500/20 text-green-400 rounded transition-colors"
+                    title="Save"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                  </button>
+                  <button 
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleRenameCancel()}
+                    className="p-1 hover:bg-red-500/20 text-red-400 rounded transition-colors"
+                    title="Cancel"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => onFileSelect(node)}
+                className="flex-1 flex items-center gap-2 py-1.5 text-sm text-left truncate"
+              >
+                {getFileIcon(node.name, node.file?.mimeType)}
+                <span className="truncate">{node.name}</span>
+              </button>
+            )}
             <div className="opacity-0 group-hover:opacity-100 flex items-center px-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -222,6 +349,14 @@ export function FileTree({
                   <DropdownMenuItem onClick={() => onFileSelect(node)} className="gap-2 text-xs">
                     <ExternalLink className="h-3.5 w-3.5" /> Open
                   </DropdownMenuItem>
+                  {!node.id.startsWith("default-") && (
+                    <DropdownMenuItem 
+                      onClick={() => handleRenameStart(node)}
+                      className="gap-2 text-xs"
+                    >
+                      <PencilLine className="h-3.5 w-3.5" /> Rename
+                    </DropdownMenuItem>
+                  )}
                   {!node.id.startsWith("default-") && (
                     <DropdownMenuItem 
                       onClick={() => handleDeleteClick(node, false)}
@@ -236,7 +371,6 @@ export function FileTree({
           </div>
         )
       })}
-
-      </div>
+    </div>
   )
 }

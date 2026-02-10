@@ -36,6 +36,7 @@ interface ConverterViewProps {
   files: AppFile[];
   filesLoading: boolean;
   handleFileDelete: (id: string | string[]) => void;
+  handleFileRename: (id: string, newName: string, type: "file" | "folder", batchId?: string, oldPath?: string) => Promise<void>;
   onFileSelect: (node: FileTreeNode) => void;
   refreshFiles: () => Promise<void>;
   rawContent: string;
@@ -92,6 +93,7 @@ export function ConverterView({
   files,
   filesLoading,
   handleFileDelete,
+  handleFileRename,
   onFileSelect,
   refreshFiles,
   rawContent,
@@ -384,6 +386,7 @@ export function ConverterView({
                   nodes={fileTree} 
                   onFileSelect={onFileSelect} 
                   onDelete={handleFileDelete}
+                  onRename={handleFileRename}
                   selectedFileId={selectedFileId || undefined}
                 />
               )}
