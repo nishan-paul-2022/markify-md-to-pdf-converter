@@ -289,7 +289,7 @@ export function FileTree({
         const isSelected = selectedFileId === node.id
         const isFolderActive = containsSelectedFile(node, selectedFileId)
         const isCurrentlyRenaming = renamingId === node.id
-        const isGridMode = folderGridModes.has(node.path)
+        const isGridMode = node.name === "images" && folderGridModes.has(node.path)
 
         if (node.type === "folder") {
           const folderFileIds = collectFileIds(node);
@@ -370,13 +370,15 @@ export function FileTree({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
-                          <DropdownMenuItem 
-                            onClick={() => toggleFolderGridMode(node.path)}
-                            className="gap-2 text-xs"
-                          >
-                            {isGridMode ? <List className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
-                            {isGridMode ? "View as List" : "View as Grid"}
-                          </DropdownMenuItem>
+                          {node.name === "images" && (
+                            <DropdownMenuItem 
+                              onClick={() => toggleFolderGridMode(node.path)}
+                              className="gap-2 text-xs"
+                            >
+                              {isGridMode ? <List className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
+                              {isGridMode ? "View as List" : "View as Grid"}
+                            </DropdownMenuItem>
+                          )}
                           {!isDefaultFolder && node.name !== "images" && (
                             <DropdownMenuItem 
                               onClick={() => handleRenameStart(node)}
