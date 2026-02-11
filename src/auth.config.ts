@@ -38,7 +38,9 @@ export default {
       
       // Define protected routes
       const isProtectedRoute = nextUrl.pathname.startsWith('/dashboard') ||
-                              nextUrl.pathname.startsWith('/api/files')
+                               nextUrl.pathname.startsWith('/editor') ||
+                               nextUrl.pathname.startsWith('/converter') ||
+                               nextUrl.pathname.startsWith('/api/files')
       
       // Define auth routes
       const isAuthRoute = nextUrl.pathname.startsWith('/auth/signin') ||
@@ -51,7 +53,7 @@ export default {
       
       // Redirect to dashboard if accessing auth routes while logged in
       if (isAuthRoute && isLoggedIn) {
-        return Response.redirect(new URL('/dashboard', nextUrl))
+        return Response.redirect(new URL('/editor', nextUrl))
       }
       
       return true

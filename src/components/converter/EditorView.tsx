@@ -31,7 +31,7 @@ import { PanelLeftClose, PanelLeftOpen, RefreshCw, Search } from 'lucide-react';
 import { ImageModal } from '@/components/file-manager/ImageModal';
 import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
 
-interface ConverterViewProps {
+interface EditorViewProps {
   user: {
     name?: string | null;
     email?: string | null;
@@ -93,7 +93,7 @@ interface ConverterViewProps {
   setImageGallery: (images: AppFile[]) => void;
 }
 
-export function ConverterView({
+export function EditorView({
   user,
   files,
   filesLoading,
@@ -143,7 +143,7 @@ export function ConverterView({
   activeImage,
   setActiveImage,
   imageGallery,
-}: ConverterViewProps) {
+}: EditorViewProps) {
   const router = useRouter();
   const { confirm } = useAlert();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
@@ -367,11 +367,11 @@ export function ConverterView({
         <div className="fixed bottom-4 right-4 lg:bottom-6 lg:right-6 z-[60] flex items-center gap-3">
              <Button
                variant="default"
-               onClick={() => router.push('/converter/batch')}
+               onClick={() => router.push('/converter')}
                className="h-10 px-5 bg-slate-900 border border-white/10 hover:border-blue-500/50 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all shadow-2xl group flex items-center gap-2.5 hover:bg-slate-800"
              >
                <Layers className="w-3.5 h-3.5 group-hover:text-blue-400 transition-all duration-300" />
-               <span>Batch Processing</span>
+               <span>Converter</span>
              </Button>
              <UserNav user={user} />
         </div>
