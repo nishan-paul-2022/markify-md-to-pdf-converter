@@ -1,17 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import dynamic from 'next/dynamic';
-
-interface User {
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-}
-
-const BatchConverterClient = dynamic<{ user: User }>(
-  () => import('@/components/converter/BatchConverterClient'),
-  { ssr: false }
-);
+import BatchWrapper from "./BatchWrapper";
 
 export default async function BatchConverterPage(): Promise<React.JSX.Element> {
   const session = await auth();
@@ -20,5 +9,11 @@ export default async function BatchConverterPage(): Promise<React.JSX.Element> {
     redirect("/");
   }
 
-  return <BatchConverterClient user={session.user} />;
+  const user = {
+    name: session.user.name,
+    email: session.user.email,
+    image: session.user.image,
+  };
+
+  return <BatchWrapper user={user} />;
 }
