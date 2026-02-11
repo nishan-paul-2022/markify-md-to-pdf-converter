@@ -54,6 +54,7 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
   // Status and result management
   const [processingStates, setProcessingStates] = React.useState<Record<string, 'pending' | 'converting' | 'done' | 'error'>>({});
   const [convertedFiles, setConvertedFiles] = React.useState<Record<string, Blob>>({});
+  const [batchProgress, setBatchProgress] = React.useState<Record<string, { current: number, total: number }>>({});
 
   // Grouping logic
   const batchGroups = React.useMemo(() => {
@@ -135,10 +136,44 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
       const blob = await response.blob();
       setConvertedFiles(prev => ({ ...prev, [file.id]: blob }));
       setProcessingStates(prev => ({ ...prev, [file.id]: 'done' }));
+      return true;
     } catch (error) {
       console.error('Conversion error:', error);
       setProcessingStates(prev => ({ ...prev, [file.id]: 'error' }));
+      return false;
     }
+  };
+
+  const handleConvertBatch = async (group: BatchGroup) => {
+    const total = group.files.length;
+    setBatchProgress(prev => ({ ...prev, [group.id]: { current: 0, total } }));
+
+    for (let i = 0; i < group.files.length; i++) {
+      const file = group.files[i];
+      // Skip if already converted
+      if (processingStates[file.id] === 'done') {
+        setBatchProgress(prev => ({ 
+          ...prev, 
+          [group.id]: { ...prev[group.id], current: i + 1 } 
+        }));
+        continue;
+      }
+      
+      await handleConvertFile(file);
+      setBatchProgress(prev => ({ 
+        ...prev, 
+        [group.id]: { ...prev[group.id], current: i + 1 } 
+      }));
+    }
+    
+    // Clear progress after a delay
+    setTimeout(() => {
+      setBatchProgress(prev => {
+        const next = { ...prev };
+        delete next[group.id];
+        return next;
+      });
+    }, 5000);
   };
 
   const handleDownloadFile = (file: AppFile, type: 'md' | 'pdf') => {
@@ -478,9 +513,25 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <Button className="flex-1 h-11 bg-white text-slate-950 hover:bg-blue-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] gap-2 transition-all active:scale-[0.98]">
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                        Convert All
+                      <Button 
+                        onClick={() => handleConvertBatch(group)}
+                        disabled={!!batchProgress[group.id]}
+                        className={cn(
+                          "flex-1 h-11 transition-all active:scale-[0.98] rounded-xl text-[10px] font-black uppercase tracking-[0.2em] gap-2",
+                          batchProgress[group.id] ? "bg-blue-600 text-white" : "bg-white text-slate-950 hover:bg-blue-500 hover:text-white"
+                        )}
+                      >
+                        {batchProgress[group.id] ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            {batchProgress[group.id].current} / {batchProgress[group.id].total} Converting...
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-3.5 h-3.5 fill-current" />
+                            Convert All
+                          </>
+                        )}
                       </Button>
                       <Button variant="outline" className="h-11 border-white/10 hover:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] gap-2 text-slate-400">
                         <Download className="w-3.5 h-3.5" />
