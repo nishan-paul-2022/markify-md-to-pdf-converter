@@ -10,20 +10,20 @@ import {
   Search,
   Settings2,
   Filter,
-  FileText,
-  Clock,
-  MoreVertical,
   Download,
-  Trash2,
-  Play,
   Loader2,
-  FileCode,
-  FolderClosed
+  FolderClosed,
+  ChevronRight,
+  FileDown,
+  ArrowRight,
+  Sparkles,
+  Zap,
+  CheckCircle2,
+  FileCode
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import UserNav from '@/components/auth/UserNav';
 import { useFiles, File as AppFile } from '@/hooks/use-files';
-import { formatFileSize } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { generateStandardName, addTimestampToName } from '@/lib/utils/naming';
 import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
@@ -34,13 +34,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getAlert } from '@/components/AlertProvider';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import JSZip from 'jszip';
+
 
 interface User {
   name?: string | null;
@@ -62,7 +56,7 @@ interface BatchGroup {
 
 export default function ConverterClient({ user }: ConverterClientProps): React.JSX.Element {
   const router = useRouter();
-  const { files, loading, refreshFiles, handleDelete } = useFiles();
+  const { files, loading, refreshFiles } = useFiles();
   const [searchQuery, setSearchQuery] = React.useState('');
   
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -73,7 +67,6 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
   const [processingStates, setProcessingStates] = React.useState<Record<string, 'pending' | 'converting' | 'done' | 'error'>>({});
   const [convertedFiles, setConvertedFiles] = React.useState<Record<string, Blob>>({});
   const [batchProgress, setBatchProgress] = React.useState<Record<string, { current: number, total: number }>>({});
-  const [zipLoading, setZipLoading] = React.useState<Record<string, boolean>>({});
 
   // Grouping logic
   const batchGroups = React.useMemo(() => {
@@ -117,6 +110,11 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       g.files.some(f => f.originalName.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [files, searchQuery]);
+
+  // Derived state for the "Converted" column
+  const completedResults = React.useMemo(() => {
+    return files.filter(f => processingStates[f.id] === 'done' || convertedFiles[f.id]);
+  }, [files, processingStates, convertedFiles]);
 
   const handleConvertFile = async (file: AppFile) => {
     setProcessingStates(prev => ({ ...prev, [file.id]: 'converting' }));
@@ -216,56 +214,6 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     }
   };
 
-  const handleDownloadZip = async (group: BatchGroup) => {
-    setZipLoading(prev => ({ ...prev, [group.id]: true }));
-    try {
-      const zip = new JSZip();
-      
-      // Add all converted PDFs to the zip
-      for (const file of group.files) {
-        const blob = convertedFiles[file.id];
-        const baseName = generateStandardName(file.originalName);
-        if (blob) {
-          zip.file(`${baseName}.pdf`, blob);
-        } else {
-          const res = await fetch(file.url);
-          if (res.ok) {
-            const mdBlob = await res.blob();
-            zip.file(`${baseName}.md`, mdBlob);
-          }
-        }
-      }
-
-      const content = await zip.generateAsync({ type: 'blob' });
-      const url = URL.createObjectURL(content);
-      const a = document.createElement('a');
-      a.href = url;
-      const zipName = generateStandardName(group.name);
-      a.download = `${zipName}_batch.zip`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Zip generation error:', error);
-    } finally {
-      setZipLoading(prev => ({ ...prev, [group.id]: false }));
-    }
-  };
-
-  const handleDownloadMulti = async (group: BatchGroup) => {
-    // Trigger multiple individual downloads sequentially with a small delay
-    // to avoid browser download blocking
-    for (const file of group.files) {
-      if (processingStates[file.id] === 'done') {
-        handleDownloadFile(file, 'pdf');
-      } else {
-        handleDownloadFile(file, 'md');
-      }
-      // Brief delay between downloads
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
@@ -439,235 +387,222 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <div className="relative z-10 flex-grow overflow-hidden flex flex-col md:flex-row p-6 gap-6">
+      {/* Pipeline Content Area */}
+      <div className="relative z-10 flex-grow overflow-hidden flex flex-row p-6 gap-6">
         
-
-        {/* Right Panel: Batch Library List */}
-        <section className="flex-grow flex flex-col gap-6">
-          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-slate-500">
-            <div className="flex items-center gap-3">
-               <h2>{loading ? 'Refreshing Library...' : 'Library & Projects'}</h2>
-               {!loading && batchGroups.length > 0 && (
-                 <span className="bg-slate-900 px-2 py-0.5 rounded text-[10px] border border-white/5">{batchGroups.length} Batches</span>
-               )}
+        {/* SEGMENT 1: SOURCE (Upload Hub) */}
+        <section className="w-[300px] flex flex-col gap-4 shrink-0">
+          <div className="flex items-center gap-2 px-2 text-xs font-black uppercase tracking-[0.2em] text-slate-500">
+            <Upload className="w-3.5 h-3.5" />
+            <h2>Source</h2>
+          </div>
+          
+          <div className="flex-grow bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-6 backdrop-blur-md flex flex-col gap-6 shadow-2xl relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+            
+            <div className="flex-grow flex flex-col items-center justify-center text-center gap-6 py-8">
+              <div className="w-20 h-20 bg-slate-950 rounded-[2rem] flex items-center justify-center border border-white/5 shadow-2xl relative group/icon">
+                <div className="absolute inset-0 bg-blue-500/10 blur-2xl animate-pulse" />
+                <Sparkles className="w-8 h-8 text-blue-400 group-hover/icon:scale-110 transition-transform duration-500" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">Ingestion Hub</h3>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed px-4">
+                  Drop files or folders to begin the automated conversion pipeline
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-               <span className="cursor-pointer hover:text-white transition-colors">Sort: Date</span>
-               <div className="h-3 w-[1px] bg-white/10" />
-               <span className="cursor-pointer hover:text-white transition-colors">View: Grid</span>
+
+            <div className="space-y-3 mt-auto">
+              <Button 
+                onClick={triggerFileUpload}
+                className="w-full h-14 bg-white text-slate-950 hover:bg-blue-500 hover:text-white rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn border-none shadow-lg"
+              >
+                <div className="w-9 h-9 bg-slate-100/10 rounded-xl flex items-center justify-center group-hover/btn:bg-white/20 transition-colors">
+                  <FileCode className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <p className="text-[11px] font-black uppercase tracking-wider leading-none mb-1">Upload Files</p>
+                  <p className="text-[9px] opacity-60 font-bold uppercase tracking-widest">Multiple .md files</p>
+                </div>
+              </Button>
+
+              <Button 
+                variant="outline"
+                onClick={triggerFolderUpload}
+                className="w-full h-14 border-white/10 bg-slate-900/50 hover:bg-slate-800 hover:border-amber-500/30 rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn"
+              >
+                <div className="w-9 h-9 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500 group-hover/btn:scale-110 transition-transform">
+                  <FolderOpen className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <p className="text-[11px] font-black uppercase tracking-wider leading-none mb-1 text-slate-300">Upload Project</p>
+                  <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Folder structure</p>
+                </div>
+              </Button>
+
+              <div className="pt-6 mt-6 border-t border-white/5 space-y-4">
+                <div className="flex items-center gap-3 px-1 text-[9px] font-bold uppercase tracking-widest text-slate-500">
+                  <Zap className="w-3 h-3 text-blue-500" />
+                  <span>Cloud Sync Active</span>
+                </div>
+                <div className="flex items-center gap-3 px-1 text-[9px] font-bold uppercase tracking-widest text-slate-500 opacity-50">
+                  <FileArchive className="w-3 h-3" />
+                  <span>ZIP Support WIP</span>
+                </div>
+              </div>
             </div>
           </div>
+        </section>
 
-          <div className="flex-grow overflow-y-scroll custom-scrollbar pb-32">
+        {/* SEGMENT 2: PROCESSING (Management / Batches) */}
+        <section className="flex-grow flex flex-col gap-4 overflow-hidden">
+          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-slate-500">
+            <div className="flex items-center gap-2">
+              <Layers className="w-3.5 h-3.5" />
+              <h2>Processing Engine</h2>
+              {batchGroups.length > 0 && (
+                <span className="ml-2 text-[9px] bg-white/5 border border-white/5 px-2 py-0.5 rounded-full">{batchGroups.length}</span>
+              )}
+            </div>
+            <span className="text-[9px] opacity-50">Auto-Detect Groups</span>
+          </div>
+
+          <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-4 pr-1">
             {!loading && batchGroups.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {batchGroups.map((group, index) => (
-                  <div 
-                    key={group.id} 
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                    className="bg-slate-900/40 border border-white/10 rounded-[2.5rem] p-6 hover:border-blue-500/30 hover:bg-slate-900/60 transition-all group/card shadow-2xl relative overflow-hidden animate-card-in opacity-0"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
+              batchGroups.map((group, index) => (
+                <div 
+                  key={group.id} 
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                  className="bg-slate-900/40 border border-white/5 rounded-[2rem] p-5 hover:border-blue-500/20 transition-all group/card shadow-xl relative overflow-hidden animate-card-in"
+                >
+                  <div className="flex items-start justify-between relative z-10">
+                    <div className="flex items-center gap-4">
+                      <div className={cn(
+                        "w-12 h-12 rounded-xl flex items-center justify-center border border-white/5 transition-transform group-hover/card:scale-105",
+                        group.isProject ? "bg-amber-500/5 text-amber-500/80" : "bg-blue-500/5 text-blue-400/80"
+                      )}>
+                        {group.isProject ? <FolderOpen className="w-6 h-6" /> : <Layers className="w-6 h-6" />}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-black text-white group-hover/card:text-blue-400 transition-colors truncate max-w-[200px]">
+                          {group.name}
+                        </h3>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
+                          {group.files.length} Modules Identified
+                        </p>
+                      </div>
+                    </div>
                     
-                    <div className="flex items-start justify-between mb-6 relative z-10">
-                      <div className="flex items-start gap-4">
-                        <div className={cn(
-                          "w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner border border-white/5 transition-transform group-hover/card:scale-110 duration-500",
-                          group.isProject ? "bg-amber-500/10 text-amber-500" : "bg-blue-500/10 text-blue-400"
-                        )}>
-                          {group.isProject ? <FolderOpen className="w-7 h-7" /> : <Layers className="w-7 h-7" />}
-                        </div>
-                        <div>
-                          <h3 className="text-base font-black text-white mb-1 group-hover/card:text-blue-400 transition-colors truncate max-w-[180px] lg:max-w-[240px]">
-                            {group.name}
-                          </h3>
-                          <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                            <Clock className="w-3 h-3" />
-                            <span>{new Date(group.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                            <span className="text-slate-700">•</span>
-                            <span className="px-1.5 py-0.5 bg-white/5 rounded text-slate-400">{group.files.length} Files</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover/card:opacity-100 transition-all translate-x-2 group-hover/card:translate-x-0">
-                         <DropdownMenu>
-                           <DropdownMenuTrigger asChild>
-                             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-slate-500 hover:text-white transition-all hover:bg-white/5">
-                               <MoreVertical className="w-5 h-5" />
-                             </Button>
-                           </DropdownMenuTrigger>
-                           <DropdownMenuContent align="end" className="w-56 bg-slate-900/95 border-white/10 backdrop-blur-xl text-slate-300">
-                             <DropdownMenuItem 
-                               onClick={() => handleDownloadMulti(group)}
-                               className="hover:bg-white/10 focus:bg-white/10 hover:text-white cursor-pointer gap-3 p-3 text-xs font-bold uppercase tracking-widest"
-                             >
-                               <Download className="w-4 h-4" />
-                               <span>Download All</span>
-                             </DropdownMenuItem>
-                             <div className="h-[1px] bg-white/5 my-1" />
-                             <DropdownMenuItem 
-                               onClick={() => handleDelete(group.files[0].id)} 
-                               className="text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 hover:text-red-400 cursor-pointer gap-3 p-3 text-xs font-bold uppercase tracking-widest"
-                             >
-                               <Trash2 className="w-4 h-4" />
-                               <span>Delete Project</span>
-                             </DropdownMenuItem>
-                           </DropdownMenuContent>
-                         </DropdownMenu>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 mb-8 relative z-10">
-                       {group.files.slice(0, 3).map(file => {
-                         const status = processingStates[file.id] || 'pending';
-                         const isConverted = status === 'done';
-                         const isConverting = status === 'converting';
-
-                         return (
-                           <div key={file.id} className="flex items-center justify-between p-3 rounded-2xl bg-slate-950/40 border border-white/5 group/file hover:border-white/10 transition-all hover:translate-x-1 duration-300">
-                             <div className="flex items-center gap-3">
-                               <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center border border-white/5 transition-colors group-hover/file:border-blue-500/30">
-                                 <FileText className="w-4 h-4 text-slate-600 group-hover/file:text-blue-400 transition-colors" />
-                               </div>
-                               <div>
-                                 <p className="text-[11px] font-bold text-slate-300 truncate max-w-[120px] lg:max-w-[180px] group-hover/file:text-white transition-colors">{file.originalName}</p>
-                                 <p className="text-[9px] text-slate-500 font-medium uppercase tracking-tight">{formatFileSize(file.size)} • {file.mimeType.split('/')[1]}</p>
-                               </div>
-                             </div>
-                             <div className="flex items-center gap-2">
-                                {/* Conversion Status */}
-                                <div className={cn(
-                                  "flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[8px] font-black uppercase tracking-widest transition-all",
-                                  status === 'pending' && "bg-slate-900 border-white/5 text-slate-500",
-                                  status === 'converting' && "bg-blue-500/10 border-blue-500/20 text-blue-400",
-                                  status === 'done' && "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-                                  status === 'error' && "bg-red-500/10 border-red-500/20 text-red-400"
-                                )}>
-                                  <span className={cn(
-                                    "w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]",
-                                    status === 'pending' && "bg-slate-500",
-                                    status === 'converting' && "bg-blue-400 animate-pulse",
-                                    status === 'done' && "bg-emerald-400",
-                                    status === 'error' && "bg-red-400"
-                                  )} />
-                                  {status}
-                                </div>
-                                
-                                <div className="flex items-center gap-1 pl-2 border-l border-white/5">
-                                  {!isConverted ? (
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      onClick={() => handleConvertFile(file)}
-                                      disabled={isConverting}
-                                      className="h-8 w-8 rounded-xl text-slate-500 hover:text-blue-400 hover:bg-blue-500/10"
-                                    >
-                                      {isConverting ? (
-                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                      ) : (
-                                        <Play className="w-3.5 h-3.5" />
-                                      )}
-                                    </Button>
-                                  ) : (
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      onClick={() => handleDownloadFile(file, 'pdf')}
-                                      className="h-8 w-8 rounded-xl text-emerald-400 hover:bg-emerald-500/10"
-                                    >
-                                      <Download className="w-3.5 h-3.5" />
-                                    </Button>
-                                  )}
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    onClick={() => handleDownloadFile(file, 'md')}
-                                    className="h-8 w-8 rounded-xl text-slate-500 hover:text-white hover:bg-white/5"
-                                  >
-                                    <FileText className="w-3.5 h-3.5" />
-                                  </Button>
-                                </div>
-                             </div>
-                           </div>
-                         );
-                       })}
-                       {group.files.length > 3 && (
-                         <button className="w-full text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 hover:text-blue-400 py-2 transition-all hover:tracking-[0.3em]">
-                           + {group.files.length - 3} More Files
-                         </button>
-                       )}
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <Button 
-                        onClick={() => handleConvertBatch(group)}
-                        disabled={!!batchProgress[group.id]}
-                        className={cn(
-                          "flex-1 h-11 transition-all active:scale-[0.98] rounded-xl text-[10px] font-black uppercase tracking-[0.2em] gap-2",
-                          batchProgress[group.id] ? "bg-blue-600 text-white" : "bg-white text-slate-950 hover:bg-blue-500 hover:text-white"
-                        )}
-                      >
-                        {batchProgress[group.id] ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            {batchProgress[group.id].current} / {batchProgress[group.id].total} Converting...
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-3.5 h-3.5 fill-current" />
-                            Convert All
-                          </>
-                        )}
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => handleDownloadZip(group)}
-                        disabled={zipLoading[group.id]}
-                        className="h-11 border-white/10 hover:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] gap-2 text-slate-400 group/zip"
-                      >
-                        {zipLoading[group.id] ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Download className="w-3.5 h-3.5 group-hover/zip:text-blue-400 transition-colors" />
-                        )}
-                        Zip
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        onClick={() => handleDelete(group.files[0].id)} // Placeholder for group delete
-                        className="h-11 w-11 rounded-xl text-slate-600 hover:text-red-500 hover:bg-red-500/10"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <Button 
+                      size="sm"
+                      onClick={() => handleConvertBatch(group)}
+                      disabled={!!batchProgress[group.id]}
+                      className={cn(
+                        "h-10 rounded-xl text-[9px] font-black uppercase tracking-widest px-4 gap-2 shadow-lg active:scale-95 transition-all outline-none border-none",
+                        batchProgress[group.id] ? "bg-blue-600 text-white" : "bg-white text-slate-950 hover:bg-blue-500 hover:text-white"
+                      )}
+                    >
+                      {batchProgress[group.id] ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Zap className="w-3 h-3 fill-current" />
+                      )}
+                      {batchProgress[group.id] ? 'Syncing...' : 'Deploy'}
+                    </Button>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="col-span-full h-[500px] border border-dashed border-white/10 rounded-[3rem] flex flex-col items-center justify-center gap-8 group hover:border-blue-500/20 transition-all duration-700 relative overflow-hidden bg-slate-900/20 backdrop-blur-sm animate-card-in">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--color-blue-500)_0%,_transparent_100%)] opacity-[0.02]" />
-                <div className="w-24 h-24 bg-slate-950 rounded-[2rem] flex items-center justify-center border border-white/5 shadow-2xl relative overflow-hidden group-hover:scale-110 transition-transform duration-700">
-                   <div className="absolute inset-0 bg-blue-500/10 blur-2xl animate-pulse" />
-                   <Upload className="w-10 h-10 text-slate-600 group-hover:text-blue-400 transition-all duration-500 relative z-10 group-hover:-translate-y-1" />
-                   <div className="absolute bottom-4 w-6 h-[2px] bg-blue-500/20 rounded-full group-hover:w-8 group-hover:bg-blue-500/50 transition-all duration-500" />
+
+                  {/* Group progress bar if active */}
+                  {batchProgress[group.id] && (
+                    <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-blue-500 transition-all duration-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                        style={{ width: `${(batchProgress[group.id].current / batchProgress[group.id].total) * 100}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
-                <div className="text-center relative z-10">
-                  <h3 className="text-base font-black text-white uppercase tracking-[0.3em] mb-3 drop-shadow-sm">
-                    {loading ? 'Scanning Private Library...' : 'No Projects Found'}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest max-w-[300px] leading-relaxed mx-auto">
-                    {loading ? 'Please wait while we sync your secure cloud workspace' : 'Your batch conversion library is currently empty. Upload files or folders to start.'}
+              ))
+            ) : (
+              <div className="flex-grow border border-dashed border-white/5 rounded-[2.5rem] flex flex-col items-center justify-center opacity-40">
+                <p className="text-[10px] font-black uppercase tracking-widest">Awaiting Input</p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Divider icon */}
+        <div className="flex flex-col items-center justify-center text-slate-800 self-center">
+          <ChevronRight className="w-6 h-6 animate-pulse" />
+        </div>
+
+        {/* SEGMENT 3: RESULTS (Converted PDFs) */}
+        <section className="w-[380px] flex flex-col gap-4 shrink-0 overflow-hidden">
+          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-slate-500">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+              <h2>Output</h2>
+            </div>
+            {completedResults.length > 0 && (
+              <button 
+                onClick={() => setConvertedFiles({})}
+                className="text-[9px] hover:text-red-400 transition-colors uppercase font-black"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
+
+          <div className="flex-grow bg-slate-900/40 border border-white/5 rounded-[2.5rem] backdrop-blur-md shadow-2xl overflow-hidden flex flex-col p-4">
+            <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-3 pr-1">
+              {completedResults.length > 0 ? (
+                completedResults.map((file, idx) => (
+                  <div 
+                    key={file.id} 
+                    style={{ animationDelay: `${idx * 0.05}s` }}
+                    className="bg-slate-950/40 border border-white/5 rounded-2xl p-4 flex items-center justify-between group/result hover:border-emerald-500/20 transition-all animate-card-in"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/5 flex items-center justify-center text-emerald-500/80 group-hover/result:scale-110 transition-transform">
+                        <FileDown className="w-5 h-5" />
+                      </div>
+                      <div className="max-w-[160px]">
+                        <p className="text-[11px] font-bold text-slate-200 truncate group-hover/result:text-white transition-colors">
+                          {generateStandardName(file.originalName)}.pdf
+                        </p>
+                        <p className="text-[9px] text-slate-600 font-bold uppercase tracking-tight mt-0.5">Ready for Transfer</p>
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      size="icon"
+                      onClick={() => handleDownloadFile(file, 'pdf')}
+                      className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-lg shadow-emerald-950/20"
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <div className="flex-grow flex flex-col items-center justify-center text-center opacity-30 gap-4">
+                  <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center">
+                    <ArrowRight className="w-6 h-6" />
+                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] px-12 leading-relaxed">
+                    Output will materialize here following processing
                   </p>
                 </div>
-                {!loading && (
-                  <Button 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="rounded-2xl bg-white text-slate-950 hover:bg-blue-500 hover:text-white px-10 h-12 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:-translate-y-1 active:scale-95"
-                  >
-                    Get Started
-                  </Button>
-                )}
+              )}
+            </div>
+
+            {completedResults.length > 1 && (
+              <div className="mt-4 pt-4 border-t border-white/5">
+                <Button 
+                  onClick={() => completedResults.forEach(f => handleDownloadFile(f, 'pdf'))}
+                  className="w-full h-12 bg-white text-slate-950 hover:bg-emerald-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all shadow-xl"
+                >
+                  Download Library
+                </Button>
               </div>
             )}
           </div>
