@@ -1,18 +1,18 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: markify-db
+    container_name: ${DB_CONTAINER_NAME}
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-markify_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-markify123}
-      POSTGRES_DB: ${POSTGRES_DB:-markify}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-markify_user} -d $${POSTGRES_DB:-markify}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -21,16 +21,16 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: markify-app
+    container_name: ${APP_CONTAINER_NAME}
     restart: always
     ports:
       - "3000:3000"
     volumes:
       - ./public/uploads:/app/public/uploads
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-markify_user}:${POSTGRES_PASSWORD:-markify123}@db:5432/${POSTGRES_DB:-markify}?schema=public
+      DATABASE_URL: ${DOCKER_DATABASE_URL}
       AUTH_SECRET: ${AUTH_SECRET}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
@@ -43,8 +43,8 @@ services:
     container_name: markify-pgadmin
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@markify.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "5050:80"
     depends_on:

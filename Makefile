@@ -1,7 +1,12 @@
 .PHONY: kill-port setup clean dev up down restart ps logs db-push db-migrate db-studio db-seed help
 
-APP_NAME = markify-app
-DB_NAME = markify-db
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
+APP_NAME = $(APP_CONTAINER_NAME)
+DB_NAME = $(DB_CONTAINER_NAME)
 
 kill-port:
 	@echo "Stopping any process on port 3000..."
@@ -11,7 +16,6 @@ setup: kill-port
 	npm install
 	$(MAKE) up
 	$(MAKE) db-push
-	@echo "Setup complete! Access app at http://localhost:3000"
 
 clean: kill-port
 	docker compose down -v
@@ -20,15 +24,12 @@ clean: kill-port
 dev: kill-port
 	docker compose up -d db
 	npm run dev
-	@echo "Services are running. Access app at http://localhost:3000"
 
 up: kill-port
 	docker compose up -d
-	@echo "Services are running. Access app at http://localhost:3000"
 
 build: kill-port
 	docker compose up -d --build
-	@echo "Services built and running. Access app at http://localhost:3000"
 
 down: kill-port
 	docker compose down

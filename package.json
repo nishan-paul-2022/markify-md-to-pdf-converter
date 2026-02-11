@@ -1,6 +1,6 @@
 {
   "name": "markify",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -54,7 +54,6 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
-    "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.1.0",
     "prisma": "^7.2.0",
