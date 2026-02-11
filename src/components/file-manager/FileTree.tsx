@@ -89,16 +89,8 @@ export function FileTree({
         }
 
         // Expand if folder itself matches or contains matching items
-        // Note: filteredFiles in parent already handles the "contains" logic for the tree structure,
-        // but we verify here to avoid expanding folders that are just parents of matches but don't match themselves
-        // WAIT: If I search "src", "src" matches. It expands.
-        // If I search "button", "src" (no match) -> "components" (no match) -> "Button.tsx" (match).
-        // "src" MUST expand to show "components".
-        // "components" MUST expand to show "Button.tsx".
-        
-        // So logic: If nameMatch OR childrenMatch => Expand THIS folder.
         if (nameMatch || childrenMatch) {
-          foldersToExpand.add(node.path);
+          foldersToExpand.add(node.id);
           return true; // Return true to propagate up to parent
         }
 
@@ -108,20 +100,17 @@ export function FileTree({
       nodes.forEach(checkNode);
       setExpandedFolders(foldersToExpand);
     } else {
-        // Optional: Collapse all when search clears? Or keep previous state?
-        // Usually clearing search collapses everything or restores to pre-search state.
-        // For now, let's reset to collapsed to avoid clutter.
         setExpandedFolders(new Set());
     }
   }, [searchQuery, nodes]);
 
-  const toggleFolderGridMode = (path: string) => {
+  const toggleFolderGridMode = (id: string) => {
     setFolderGridModes(prev => {
       const next = new Set(prev);
-      if (next.has(path)) {
-        next.delete(path);
+      if (next.has(id)) {
+        next.delete(id);
       } else {
-        next.add(path);
+        next.add(id);
       }
       
       // Save to localStorage
@@ -207,12 +196,12 @@ export function FileTree({
     }
   }
 
-  const toggleFolder = (path: string) => {
+  const toggleFolder = (id: string) => {
     const newExpanded = new Set(expandedFolders)
-    if (newExpanded.has(path)) {
-      newExpanded.delete(path)
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id)
     } else {
-      newExpanded.add(path)
+      newExpanded.add(id)
     }
     setExpandedFolders(newExpanded)
   }
@@ -250,7 +239,7 @@ export function FileTree({
             found = true
           } else if (item.children) {
             if (findAndExpand(item.children)) {
-              foldersToExpand.add(item.path)
+              foldersToExpand.add(item.id)
               found = true
             }
           }
@@ -261,7 +250,7 @@ export function FileTree({
       if (findAndExpand(nodes)) {
         setExpandedFolders(prev => {
           const combined = new Set(prev)
-          foldersToExpand.forEach(path => combined.add(path))
+          foldersToExpand.forEach(id => combined.add(id))
           return combined.size === prev.size ? prev : combined
         })
       }
@@ -285,11 +274,11 @@ export function FileTree({
   return (
     <div className="flex flex-col">
       {nodes.map((node) => {
-        const isExpanded = expandedFolders.has(node.path)
+        const isExpanded = expandedFolders.has(node.id)
         const isSelected = selectedFileId === node.id
         const isFolderActive = containsSelectedFile(node, selectedFileId)
         const isCurrentlyRenaming = renamingId === node.id
-        const isGridMode = node.name === "images" && folderGridModes.has(node.path)
+        const isGridMode = node.name === "images" && folderGridModes.has(node.id)
 
         if (node.type === "folder") {
           const folderFileIds = collectFileIds(node);
@@ -325,7 +314,7 @@ export function FileTree({
                   </div>
                 ) : (
                   <button
-                    onClick={() => toggleFolder(node.path)}
+                    onClick={() => toggleFolder(node.id)}
                     className="flex-1 flex items-center gap-2 py-1.5 text-sm text-left truncate"
                   >
                     {isExpanded ? (
@@ -372,7 +361,7 @@ export function FileTree({
                         <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
                           {node.name === "images" && (
                             <DropdownMenuItem 
-                              onClick={() => toggleFolderGridMode(node.path)}
+                              onClick={() => toggleFolderGridMode(node.id)}
                               className="gap-2 text-xs"
                             >
                               {isGridMode ? <List className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
@@ -395,7 +384,7 @@ export function FileTree({
                               <Trash2 className="h-3.5 w-3.5" /> Delete Project
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem onClick={() => toggleFolder(node.path)} className="gap-2 text-xs">
+                          <DropdownMenuItem onClick={() => toggleFolder(node.id)} className="gap-2 text-xs">
                             {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                             {isExpanded ? "Collapse" : "Expand"}
                           </DropdownMenuItem>
