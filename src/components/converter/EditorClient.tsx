@@ -15,7 +15,7 @@ interface EditorClientProps {
 
 export default function EditorClient({ user }: EditorClientProps): React.JSX.Element {
   const converterState = useConverter();
-  const { files, loading: filesLoading, handleDelete, handleBulkDelete, handleRename, refreshFiles } = useFiles();
+  const { files, loading: filesLoading, handleDelete, handleBulkDelete, handleRename, refreshFiles } = useFiles('editor');
 
   // Initial selection of default file
   React.useEffect(() => {

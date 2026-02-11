@@ -49,7 +49,7 @@ interface BatchGroup {
 
 export default function ConverterClient({ user }: ConverterClientProps): React.JSX.Element {
   const router = useRouter();
-  const { files, loading, refreshFiles } = useFiles();
+  const { files, loading, refreshFiles } = useFiles('converter');
   const [searchQuery, setSearchQuery] = React.useState('');
   
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -218,6 +218,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       formData.append('file', file);
       formData.append('batchId', batchId);
       formData.append('relativePath', file.name);
+      formData.append('source', 'converter');
       
       const response = await fetch('/api/files', {
         method: 'POST',
@@ -243,6 +244,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       // Explicitly cast to include webkitRelativePath which exists on files from folder upload
       const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
       formData.append('relativePath', relativePath);
+      formData.append('source', 'converter');
       
       const response = await fetch('/api/files', {
         method: 'POST',

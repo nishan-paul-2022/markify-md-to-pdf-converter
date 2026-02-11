@@ -203,6 +203,7 @@ export function useConverter() {
           formData.append('file', file);
           formData.append('batchId', batchId);
           formData.append('relativePath', file.name);
+          formData.append('source', 'editor');
           
           const response = await fetch('/api/files', {
             method: 'POST',
@@ -340,6 +341,7 @@ export function useConverter() {
           formData.append('batchId', batchId);
           // Use webkitRelativePath for folder structure, fallback to name
           formData.append('relativePath', file.webkitRelativePath || file.name);
+          formData.append('source', 'editor');
           
           console.log(`📤 Uploading file ${index + 1}/${processedFiles.length}:`, file.name);
           

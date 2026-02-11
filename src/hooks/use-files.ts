@@ -24,7 +24,7 @@ interface FileListResponse {
   };
 }
 
-export function useFiles() {
+export function useFiles(source?: string) {
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +34,11 @@ export function useFiles() {
   const fetchFiles = useCallback(async (): Promise<void> => {
     setLoading(true);
     try {
-      const response = await fetch("/api/files?limit=100");
+      const queryParams = new URLSearchParams({ limit: "100" });
+      if (source) {
+        queryParams.append("source", source);
+      }
+      const response = await fetch(`/api/files?${queryParams.toString()}`);
       if (!response.ok) {
         let errorDetail = "";
         try {
@@ -47,7 +51,7 @@ export function useFiles() {
       }
       
       const data: FileListResponse = await response.json();
-      console.log(`📂 Fetched ${data.files.length} files from API (including defaults)`);
+      console.log(`📂 Fetched ${data.files.length} files from API (source: ${source || 'all'})`);
       
       setFiles(data.files);
     } catch (error: unknown) {
@@ -56,7 +60,7 @@ export function useFiles() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [source]);
 
   useEffect(() => {
     fetchFiles();

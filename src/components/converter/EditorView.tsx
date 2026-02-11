@@ -262,6 +262,7 @@ export function EditorView({
           formData.append('file', file);
           formData.append('batchId', batchId);
           formData.append('relativePath', path);
+          formData.append('source', 'editor');
           
           const response = await fetch('/api/files', {
             method: 'POST',

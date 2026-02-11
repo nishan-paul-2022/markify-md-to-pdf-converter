@@ -33,6 +33,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const file = formData.get("file") as File | null
     const batchId = formData.get("batchId") as string | null
     const relativePath = formData.get("relativePath") as string | null
+    const source = formData.get("source") as string | null // 'editor' or 'converter'
 
     if (!file) {
       return NextResponse.json(
@@ -178,6 +179,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           size: file.size,
           storageKey,
           url: `/api/${storageKey}`,
+          metadata: source ? { source } : undefined,
         },
       })
       console.log('✅ File metadata saved to database');
@@ -236,11 +238,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "10")
+    const source = searchParams.get("source") // 'editor' or 'converter'
     const skip = (page - 1) * limit
 
     const [files, total, defaults] = await Promise.all([
       prisma.file.findMany({
-        where: { userId: session.user.id },
+        where: {
+          userId: session.user.id,
+          ...(source ? {
+            metadata: {
+              path: ["source"],
+              equals: source
+            }
+          } : {})
+        },
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
@@ -258,9 +269,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         },
       }),
       prisma.file.count({
-        where: { userId: session.user.id },
+        where: {
+          userId: session.user.id,
+          ...(source ? {
+            metadata: {
+              path: ["source"],
+              equals: source
+            }
+          } : {})
+        },
       }),
-      getDefaultFiles().catch(() => []),
+      !source || source === 'editor' ? getDefaultFiles().catch(() => []) : Promise.resolve([]),
     ])
 
     return NextResponse.json({
