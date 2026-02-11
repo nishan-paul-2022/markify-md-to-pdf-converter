@@ -17,7 +17,8 @@ import {
   Trash2,
   Play,
   Loader2,
-  FileCode
+  FileCode,
+  FolderClosed
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import UserNav from '@/components/auth/UserNav';
@@ -26,6 +27,13 @@ import { formatFileSize } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { generateStandardName, addTimestampToName } from '@/lib/utils/naming';
 import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { getAlert } from '@/components/AlertProvider';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +67,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
   
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const folderInputRef = React.useRef<HTMLInputElement>(null);
+  const zipInputRef = React.useRef<HTMLInputElement>(null);
 
   // Status and result management
   const [processingStates, setProcessingStates] = React.useState<Record<string, 'pending' | 'converting' | 'done' | 'error'>>({});
@@ -305,25 +314,27 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     await refreshFiles();
     if (folderInputRef.current) {folderInputRef.current.value = '';}
   };
+  const triggerFileUpload = () => fileInputRef.current?.click();
+  const triggerFolderUpload = () => folderInputRef.current?.click();
+  const triggerZipUpload = () => zipInputRef.current?.click();
+
+  const handleZipUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const api = getAlert();
+    if (api) {
+      api.show({ 
+        title: 'Feature Coming Soon', 
+        message: 'Zip upload functionality is currently under development.', 
+        variant: 'default' 
+      });
+    } else {
+      alert('Zip upload functionality is currently under development.');
+    }
+    e.target.value = '';
+  };
 
   return (
+    <TooltipProvider>
     <main className="h-dvh w-full bg-slate-950 text-slate-100 flex flex-col overflow-hidden relative selection:bg-blue-500/30">
-      <input 
-        type="file" 
-        multiple 
-        accept=".md" 
-        ref={fileInputRef} 
-        onChange={handleFileUpload} 
-        className="hidden" 
-      />
-      <input 
-        type="file" 
-        ref={folderInputRef} 
-        onChange={handleFolderUpload} 
-        className="hidden" 
-        {...({ webkitdirectory: "", directory: "" } as React.InputHTMLAttributes<HTMLInputElement>)}
-      />
-
       {/* Background Decorative Elements */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full" />
@@ -333,35 +344,97 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
       {/* Header */}
       <header className="relative z-10 h-16 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl flex items-center justify-between px-6 shrink-0">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 w-[280px]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center shadow-inner">
               <Layers className="w-5 h-5 text-blue-400" />
             </div>
-            <div>
+            <div className="hidden sm:block">
               <h1 className="text-sm font-bold tracking-tight text-white uppercase tracking-[0.1em]">Converter</h1>
-              <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest">Multi-File Processing Engine</p>
+              <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest leading-none">Multi-File Engine</p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative group hidden md:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+        {/* Center: Upload Group (Editor Style) */}
+        <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
+          <input 
+            type="file" 
+            multiple 
+            accept=".md" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            className="hidden" 
+          />
+          <input 
+            type="file" 
+            ref={folderInputRef} 
+            onChange={handleFolderUpload} 
+            className="hidden" 
+            {...( { webkitdirectory: "", directory: "" } as React.InputHTMLAttributes<HTMLInputElement> )}
+          />
+          <input 
+            type="file" 
+            accept=".zip" 
+            ref={zipInputRef} 
+            onChange={handleZipUpload} 
+            className="hidden" 
+          />
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={triggerFileUpload}
+                className="h-6 w-8 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+              >
+                <FileCode className="h-4 w-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="bg-slate-900 border-white/10 text-xs">Upload Markdown Files</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={triggerFolderUpload}
+                className="h-6 w-8 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+              >
+                <FolderClosed className="h-4 w-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="bg-slate-900 border-white/10 text-xs">Upload Project Folder</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={triggerZipUpload}
+                className="h-6 w-8 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+              >
+                <FileArchive className="h-4 w-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="bg-slate-900 border-white/10 text-xs shadow-2xl">Upload ZIP Archive</TooltipContent>
+          </Tooltip>
+        </div>
+
+        <div className="flex items-center justify-end gap-3 w-[280px]">
+          <div className="relative group hidden lg:block">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
             <input
               type="text"
-              placeholder="Search batches..."
+              placeholder="Search library..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-slate-900/50 border border-white/5 rounded-full py-2 pl-10 pr-4 text-xs w-64 focus:outline-none focus:border-blue-500/50 focus:bg-slate-900 transition-all placeholder:text-slate-600"
+              className="bg-slate-900/50 border border-white/5 rounded-full py-1.5 pl-9 pr-4 text-[11px] w-40 focus:outline-none focus:border-blue-500/50 focus:bg-slate-900 transition-all placeholder:text-slate-600"
             />
           </div>
           <div className="h-4 w-[1px] bg-white/5 hidden md:block" />
-          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-slate-500 hover:text-white hover:bg-white/5">
-            <Filter className="w-4 h-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-500 hover:text-white hover:bg-white/5 transition-colors">
+            <Filter className="w-3.5 h-3.5" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-slate-500 hover:text-white hover:bg-white/5">
-            <Settings2 className="w-4 h-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-500 hover:text-white hover:bg-white/5 transition-colors">
+            <Settings2 className="w-3.5 h-3.5" />
           </Button>
         </div>
       </header>
@@ -369,73 +442,6 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       {/* Main Content Area */}
       <div className="relative z-10 flex-grow overflow-hidden flex flex-col md:flex-row p-6 gap-6">
         
-        {/* Left Panel: Upload Controls */}
-        <aside className="w-full md:w-80 flex flex-col gap-6 shrink-0">
-          <div className="bg-slate-900/40 border border-white/5 rounded-[2rem] p-6 backdrop-blur-sm flex flex-col gap-6 shadow-2xl relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div>
-              <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-4 px-1">Upload Options</h2>
-              <div className="flex flex-col gap-3">
-                <Button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="h-14 bg-white text-slate-950 hover:bg-slate-200 rounded-2xl flex items-center justify-start px-5 gap-4 shadow-xl shadow-blue-500/10 group/btn transition-all active:scale-[0.98] border-none"
-                >
-                  <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center group-hover/btn:scale-110 group-hover/btn:rotate-6 transition-all duration-500 shadow-sm">
-                    <Upload className="w-5 h-5 text-slate-950" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[11px] font-black uppercase tracking-wider leading-none mb-1">Upload Files</p>
-                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Select multiple .md files</p>
-                  </div>
-                </Button>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => folderInputRef.current?.click()}
-                    className="h-32 flex-col border-white/5 bg-slate-900/40 hover:bg-slate-900/80 hover:border-amber-500/30 rounded-3xl gap-4 transition-all group/upload relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-b from-amber-500/[0.03] to-transparent opacity-0 group-hover/upload:opacity-100 transition-opacity" />
-                    <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 group-hover/upload:scale-110 group-hover/upload:-rotate-3 transition-all duration-500 border border-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.05)]">
-                      <FolderOpen className="w-6 h-6" />
-                    </div>
-                    <div className="text-center relative z-10">
-                      <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-1 text-slate-300">Folder</p>
-                      <p className="text-[9px] text-slate-600 font-bold uppercase tracking-tight">Project upload</p>
-                    </div>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-32 flex-col border-white/5 bg-slate-900/40 hover:bg-slate-900/80 hover:border-blue-500/30 rounded-3xl gap-4 transition-all group/upload relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-b from-blue-500/[0.03] to-transparent opacity-0 group-hover/upload:opacity-100 transition-opacity" />
-                    <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 group-hover/upload:scale-110 group-hover/upload:rotate-3 transition-all duration-500 border border-blue-500/5 shadow-[0_0_20px_rgba(59,130,246,0.05)]">
-                      <FileArchive className="w-6 h-6" />
-                    </div>
-                    <div className="text-center relative z-10">
-                      <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-1 text-slate-300">Zip</p>
-                      <p className="text-[9px] text-slate-600 font-bold uppercase tracking-tight">Archive upload</p>
-                    </div>
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-6 border-t border-white/5">
-              <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-4 px-1">Information</h2>
-              <div className="space-y-4 px-1">
-                <div className="flex items-start gap-4">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5" />
-                  <p className="text-[11px] text-slate-400 leading-relaxed font-medium">Batch processing allows you to convert multiple Markdown files to PDF simultaneously.</p>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5" />
-                  <p className="text-[11px] text-slate-400 leading-relaxed font-medium">Supports folder structure and localized assets (images/ subfolders).</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </aside>
 
         {/* Right Panel: Batch Library List */}
         <section className="flex-grow flex flex-col gap-6">
@@ -682,5 +688,6 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
            <UserNav user={user} />
       </div>
     </main>
+    </TooltipProvider>
   );
 }
