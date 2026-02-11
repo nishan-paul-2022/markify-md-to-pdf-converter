@@ -6,7 +6,6 @@ import {
   Layers, 
   Upload, 
   FolderOpen, 
-  FileArchive, 
   Search,
   Download,
   Loader2,
@@ -292,7 +291,6 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             </div>
             <div className="hidden sm:block">
               <h1 className="text-sm font-bold tracking-tight text-white uppercase tracking-[0.1em]">Converter</h1>
-              <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest leading-none">Management Pipeline</p>
             </div>
           </div>
         </div>
@@ -322,13 +320,13 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
         <div className="flex items-center justify-end gap-4">
           <div className="relative group hidden lg:block overflow-hidden">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-blue-400 transition-colors" />
             <input
               type="text"
               placeholder="Search library..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-slate-900/50 border border-white/5 rounded-full py-1.5 pl-9 pr-4 text-[11px] w-40 focus:outline-none focus:border-blue-500/50 focus:bg-slate-900 transition-all placeholder:text-slate-600 focus:w-56"
+              className="bg-slate-800 border border-white/20 rounded-full py-2 pl-10 pr-4 text-xs w-64 focus:outline-none focus:border-blue-500 focus:bg-slate-900 transition-all text-white placeholder:text-slate-400/90 font-medium shadow-lg"
             />
           </div>
           
@@ -401,16 +399,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                 </div>
               </Button>
 
-              <div className="pt-6 mt-6 border-t border-white/5 space-y-4">
-                <div className="flex items-center gap-3 px-1 text-[9px] font-bold uppercase tracking-widest text-slate-500">
-                  <Zap className="w-3 h-3 text-amber-400/80" />
-                  <span>Cloud Sync Active</span>
-                </div>
-                <div className="flex items-center gap-3 px-1 text-[9px] font-bold uppercase tracking-widest text-slate-500 opacity-50">
-                  <FileArchive className="w-3 h-3" />
-                  <span>ZIP Support WIP</span>
-                </div>
-              </div>
+
             </div>
           </div>
         </section>
@@ -425,7 +414,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                 <span className="ml-2 text-[9px] bg-indigo-400/10 border border-indigo-400/20 px-2 py-0.5 rounded-full text-indigo-300/80">{batchGroups.length}</span>
               )}
             </div>
-            <span className="text-[9px] text-slate-500 opacity-50">Auto-Detect Groups</span>
+
           </div>
 
           <div className="flex-grow bg-indigo-400/[0.03] border border-indigo-400/10 rounded-[2.5rem] p-4 flex flex-col overflow-hidden relative group/engine backdrop-blur-xl">
