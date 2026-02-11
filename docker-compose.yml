@@ -21,8 +21,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        DATABASE_URL: postgresql://${POSTGRES_USER:-markify_user}:${POSTGRES_PASSWORD:-markify123}@db:5432/${POSTGRES_DB:-markify}?schema=public
     container_name: markify-app
     restart: always
     ports:

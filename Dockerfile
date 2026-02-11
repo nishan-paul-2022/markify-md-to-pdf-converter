@@ -1,6 +1,7 @@
 FROM node:20-slim AS base
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
 
 FROM base AS deps
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
@@ -13,9 +14,6 @@ FROM base AS builder
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-ARG DATABASE_URL
-ENV DATABASE_URL=${DATABASE_URL}
 
 RUN npx prisma generate
 RUN --mount=type=cache,target=/app/.next/cache \
