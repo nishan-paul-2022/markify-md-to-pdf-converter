@@ -16,7 +16,8 @@ import {
   MoreVertical,
   Download,
   Trash2, 
-  Play
+  Play,
+  Loader2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import UserNav from '@/components/auth/UserNav';
@@ -49,6 +50,10 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
   
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const folderInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Status and result management
+  const [processingStates, setProcessingStates] = React.useState<Record<string, 'pending' | 'converting' | 'done' | 'error'>>({});
+  const [convertedFiles, setConvertedFiles] = React.useState<Record<string, Blob>>({});
 
   // Grouping logic
   const batchGroups = React.useMemo(() => {
@@ -92,6 +97,72 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
       g.files.some(f => f.originalName.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [files, searchQuery]);
+
+  const handleConvertFile = async (file: AppFile) => {
+    setProcessingStates(prev => ({ ...prev, [file.id]: 'converting' }));
+    
+    try {
+      // 1. Fetch original content
+      const contentRes = await fetch(file.url);
+      if (!contentRes.ok) { throw new Error('Failed to fetch file content'); }
+      const markdown = await contentRes.text();
+
+      // 2. Prepare metadata and base path
+      const lastSlashIndex = file.url.lastIndexOf('/');
+      const basePath = file.url.substring(0, lastSlashIndex);
+
+      // 3. Call PDF generation API
+      const response = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          markdown,
+          basePath: basePath.startsWith('/api') ? basePath : `/api${basePath}`,
+          metadata: {
+            title: file.originalName.replace('.md', ''),
+            author: user.name || 'Markify User',
+            subject: 'Converted via Markify Batch',
+            keywords: 'markdown, pdf, batch',
+            pageFormat: 'a4',
+            orientation: 'portrait',
+            margin: '20'
+          }
+        }),
+      });
+
+      if (!response.ok) { throw new Error('PDF generation failed'); }
+      
+      const blob = await response.blob();
+      setConvertedFiles(prev => ({ ...prev, [file.id]: blob }));
+      setProcessingStates(prev => ({ ...prev, [file.id]: 'done' }));
+    } catch (error) {
+      console.error('Conversion error:', error);
+      setProcessingStates(prev => ({ ...prev, [file.id]: 'error' }));
+    }
+  };
+
+  const handleDownloadFile = (file: AppFile, type: 'md' | 'pdf') => {
+    if (type === 'md') {
+      const a = document.createElement('a');
+      a.href = file.url;
+      a.download = file.originalName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      const blob = convertedFiles[file.id];
+      if (!blob) { return; }
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.originalName.replace('.md', '.pdf');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
@@ -328,24 +399,77 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
                     </div>
 
                     <div className="space-y-3 mb-8">
-                       {group.files.slice(0, 3).map(file => (
-                         <div key={file.id} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/30 border border-white/5 group/file">
-                           <div className="flex items-center gap-3">
-                             <FileText className="w-4 h-4 text-slate-600" />
-                             <div>
-                               <p className="text-[11px] font-bold text-slate-300 truncate max-w-[150px]">{file.originalName}</p>
-                               <p className="text-[9px] text-slate-500 font-medium uppercase tracking-tight">{formatFileSize(file.size)} • {file.mimeType.split('/')[1]}</p>
+                       {group.files.slice(0, 3).map(file => {
+                         const status = processingStates[file.id] || 'pending';
+                         const isConverted = status === 'done';
+                         const isConverting = status === 'converting';
+
+                         return (
+                           <div key={file.id} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/30 border border-white/5 group/file hover:bg-slate-950/50 transition-colors">
+                             <div className="flex items-center gap-3">
+                               <FileText className="w-4 h-4 text-slate-600" />
+                               <div>
+                                 <p className="text-[11px] font-bold text-slate-300 truncate max-w-[150px]">{file.originalName}</p>
+                                 <p className="text-[9px] text-slate-500 font-medium uppercase tracking-tight">{formatFileSize(file.size)} • {file.mimeType.split('/')[1]}</p>
+                               </div>
+                             </div>
+                             <div className="flex items-center gap-2">
+                                {/* Conversion Status */}
+                                <div className={cn(
+                                  "flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[8px] font-black uppercase tracking-widest transition-all",
+                                  status === 'pending' && "bg-slate-900 border-white/5 text-slate-500",
+                                  status === 'converting' && "bg-blue-500/10 border-blue-500/20 text-blue-400 animate-pulse",
+                                  status === 'done' && "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+                                  status === 'error' && "bg-red-500/10 border-red-500/20 text-red-400"
+                                )}>
+                                  <span className={cn(
+                                    "w-1 h-1 rounded-full",
+                                    status === 'pending' && "bg-slate-500",
+                                    status === 'converting' && "bg-blue-400",
+                                    status === 'done' && "bg-emerald-400",
+                                    status === 'error' && "bg-red-400"
+                                  )} />
+                                  {status}
+                                </div>
+                                
+                                <div className="flex items-center gap-1 pl-2 border-l border-white/5">
+                                  {!isConverted ? (
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      onClick={() => handleConvertFile(file)}
+                                      disabled={isConverting}
+                                      className="h-7 w-7 rounded-lg text-slate-500 hover:text-blue-400 hover:bg-blue-500/10"
+                                    >
+                                      {isConverting ? (
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                      ) : (
+                                        <Play className="w-3 h-3" />
+                                      )}
+                                    </Button>
+                                  ) : (
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      onClick={() => handleDownloadFile(file, 'pdf')}
+                                      className="h-7 w-7 rounded-lg text-emerald-400 hover:bg-emerald-500/10"
+                                    >
+                                      <Download className="w-3 h-3" />
+                                    </Button>
+                                  )}
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => handleDownloadFile(file, 'md')}
+                                    className="h-7 w-7 rounded-lg text-slate-500 hover:text-white"
+                                  >
+                                    <FileText className="w-3 h-3" />
+                                  </Button>
+                                </div>
                              </div>
                            </div>
-                           <div className="flex items-center gap-2">
-                              {/* Conversion Status Placeholder */}
-                              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-900 border border-white/5 text-[8px] font-black uppercase tracking-widest text-slate-500">
-                                <span className="w-1 h-1 rounded-full bg-slate-500" />
-                                Pending
-                              </div>
-                           </div>
-                         </div>
-                       ))}
+                         );
+                       })}
                        {group.files.length > 3 && (
                          <button className="w-full text-center text-[9px] font-black uppercase tracking-[0.2em] text-slate-600 hover:text-slate-400 py-1 transition-colors">
                            + {group.files.length - 3} More Files
