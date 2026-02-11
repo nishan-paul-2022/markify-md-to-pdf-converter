@@ -14,7 +14,7 @@ import {
   Clock,
   MoreVertical,
   Download,
-  Trash2, 
+  Trash2,
   Play,
   Loader2,
   FileCode
@@ -24,7 +24,8 @@ import UserNav from '@/components/auth/UserNav';
 import { useFiles, File as AppFile } from '@/hooks/use-files';
 import { formatFileSize } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
-import { generateStandardName } from '@/lib/utils/naming';
+import { generateStandardName, addTimestampToName } from '@/lib/utils/naming';
+import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -121,22 +122,18 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       const lastSlashIndex = file.url.lastIndexOf('/');
       const basePath = file.url.substring(0, lastSlashIndex);
 
-      // 3. Call PDF generation API
+      // 3. Parse Metadata and Content (Consistently with Editor)
+      const parsedMetadata = parseMetadataFromMarkdown(markdown);
+      const contentWithoutLandingPage = removeLandingPageSection(markdown);
+
+      // 4. Call PDF generation API
       const response = await fetch('/api/generate-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          markdown,
+          markdown: contentWithoutLandingPage,
           basePath: basePath.startsWith('/api') ? basePath : `/api${basePath}`,
-          metadata: {
-            title: file.originalName.replace('.md', ''),
-            author: user.name || 'Markify User',
-            subject: 'Converted via Markify Batch',
-            keywords: 'markdown, pdf, batch',
-            pageFormat: 'a4',
-            orientation: 'portrait',
-            margin: '20'
-          }
+          metadata: parsedMetadata // Use parsed metadata directly to match Editor logic
         }),
       });
 
@@ -200,8 +197,9 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const fileName = generateStandardName(file.originalName);
-      a.download = `${fileName}.pdf`;
+      const baseName = generateStandardName(file.originalName);
+      const timestampedName = addTimestampToName(baseName);
+      a.download = `${timestampedName}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
