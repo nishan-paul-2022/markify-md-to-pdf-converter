@@ -9,8 +9,6 @@ interface FileUploadViewProps {
   files: File[];
   uploading: boolean;
   uploadProgress: number;
-  error: string | null;
-  setError: (error: string | null) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   folderInputRef: React.RefObject<HTMLInputElement | null>;
   setFiles: (files: File[]) => void;
@@ -24,8 +22,6 @@ export function FileUploadView({
   files,
   uploading,
   uploadProgress,
-  error,
-  setError,
   fileInputRef,
   folderInputRef,
   setFiles,
@@ -80,7 +76,6 @@ export function FileUploadView({
         type="file"
         ref={fileInputRef}
         className="hidden"
-        multiple
         accept=".md"
         onChange={handleFileSelect}
       />
@@ -92,26 +87,8 @@ export function FileUploadView({
         onChange={handleFileSelect}
       />
 
-      {/* Error Message */}
-      {error && (
-        <div className="bg-destructive/5 border-l-4 border-destructive text-destructive rounded-r-lg p-4 flex items-start gap-4 animate-in fade-in slide-in-from-left-2 shadow-sm">
-          <div className="flex-1 text-sm">
-            <p className="font-bold uppercase text-[10px] tracking-widest mb-1 opacity-70">Violation Detected</p>
-            <p className="whitespace-pre-line leading-relaxed font-medium">{error}</p>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-6 w-6 opacity-50 hover:opacity-100" 
-            onClick={() => setError(null)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-
       {/* Empty State / Instruction */}
-      {files.length === 0 && !error && (
+      {files.length === 0 && (
         <div className="py-12 px-6 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/30 dark:bg-gray-900/10 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl shadow-sm flex items-center justify-center mb-4 rotate-3">
              <Upload className="h-8 w-8 text-gray-200" />
@@ -131,7 +108,6 @@ export function FileUploadView({
               size="sm" 
               onClick={() => {
                 setFiles([]);
-                setError(null);
               }} 
               disabled={uploading} 
               className="h-auto p-0 text-xs text-destructive hover:no-underline"

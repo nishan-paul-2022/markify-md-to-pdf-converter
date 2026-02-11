@@ -61,20 +61,29 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
 
   // --- Independent File Uploads (Strict) ---
   if (!isFolderUpload) {
+    if (files.length > 1) {
+      return {
+        case: 2,
+        valid: false,
+        error: "Upload failed — only .md file is allowed here.",
+        filteredFiles: []
+      };
+    }
+
     for (const file of files) {
       if (file.name.startsWith('.')) {continue;}
       if (file.name.toLowerCase().endsWith('.md')) {
         filteredFiles.push(file);
       } else {
-        violations.push(`Forbidden file '${file.name}'. Only .md files are allowed in selective mode.`);
+        violations.push(`Violation: Only .md allowed (${file.name})`);
       }
     }
 
     if (violations.length > 0) {
       return {
-        case: filteredFiles.length <= 1 ? 1 : 2,
+        case: 1,
         valid: false,
-        error: `Selection rejected! Invalid files detected:\n${violations.slice(0, 3).join('\n')}`,
+        error: "Upload failed — only .md file is allowed here.",
         filteredFiles: []
       };
     }
@@ -124,7 +133,7 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
         filteredFiles.push(file);
         mdFilesInRootCount++;
       } else {
-        violations.push(`Violation: Unexpected file at root: ${fullPath}`);
+        violations.push(`Violation: Invalid root file: ${fileName}`);
       }
     } 
     else if (subParts.length === 2 && subParts[0] === 'images') {
@@ -138,36 +147,33 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
           if (referencedImages.has(internalPath)) {foundImageRefs.add(internalPath);}
           if (referencedImages.has(fileName)) {foundImageRefs.add(fileName);}
         } else {
-          violations.push(`Violation: Unreferenced image in images/ folder: ${fileName}`);
+          violations.push(`Violation: Unused image: ${fileName}`);
         }
       } else {
-        violations.push(`Violation: Non-image file in images/ folder: ${fileName}`);
+        violations.push(`Violation: Invalid file in images/: ${fileName}`);
       }
     } else {
-      violations.push(`Violation: Unauthorized structure: ${fullPath}`);
+      violations.push(`Violation: Invalid item: ${fileName}`);
     }
   }
 
   // Final structural integrity checks
-  // Rule: Folder must have .md file(s) in root
   if (mdFilesInRootCount === 0) {
-    violations.push("Critical: No Markdown files found in the root of the folder.");
+    violations.push("Critical: Missing Markdown file in root");
   }
 
-  // Rule: Only one subfolder allowed, and it must be named "images/"
   if (subdirectories.size === 0) {
     if (referencedImages.size > 0) {
-      violations.push("Critical: Markdown references images but 'images/' subfolder is missing.");
+      violations.push("Critical: Missing 'images/' folder");
     }
   } else if (subdirectories.size > 1 || !subdirectories.has('images')) {
-    const others = Array.from(subdirectories).filter(s => s !== 'images');
-    violations.push(`Critical: Unauthorized folders: ${others.join(', ')}. Only one subfolder named 'images/' is allowed.`);
+    violations.push("Critical: Only 'images/' subfolder is allowed");
   }
 
   // Ensure all referenced images are present
   referencedImages.forEach(ref => {
     if (!foundImageRefs.has(ref)) {
-      violations.push(`Critical: Referenced image missing from images/ folder: ${ref}`);
+      violations.push(`Critical: Missing image: ${ref}`);
     }
   });
 
@@ -175,7 +181,7 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
     return {
       case: mdFilesInRootCount === 1 ? 3 : 4,
       valid: false,
-      error: `Project structural violation! Upload blocked:\n${violations.slice(0, 5).join('\n')}${violations.length > 5 ? `\n...and ${violations.length - 5} more` : ''}`,
+      error: "Project structure is invalid. Ensure it follows the required Markdown + Images layout.",
       filteredFiles: []
     };
   }

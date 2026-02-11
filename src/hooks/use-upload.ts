@@ -40,13 +40,28 @@ export function useUpload() {
       const validation = validateUploadStructure(inputFiles, referencedImages);
       
       if (!validation.valid) {
-        setError(validation.error || "Invalid file structure.");
+        const api = getAlert();
+        if (api) {
+          api.show({ 
+            title: "Invalid File", 
+            message: validation.error || "Invalid selection.",
+            variant: "warning"
+          });
+        } else {
+          setError(validation.error || "Invalid file structure.");
+        }
         return;
       }
 
       setError(null);
       const processedFiles = processFilesWithNaming(validation.filteredFiles, validation.case);
-      setFiles((prev) => [...prev, ...processedFiles]);
+      
+      // For selective file uploads, we only allow one file at a time
+      if (validation.case <= 2) {
+        setFiles(processedFiles);
+      } else {
+        setFiles((prev) => [...prev, ...processedFiles]);
+      }
   }, []);
 
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,7 +127,7 @@ export function useUpload() {
       const msg = error instanceof Error ? error.message : "Failed to upload files";
       const api = getAlert();
       if (api) {
-        api.show({ title: "Upload failed", message: msg });
+        api.show({ title: "Invalid File", message: msg });
       } else {
         alert(msg);
       }

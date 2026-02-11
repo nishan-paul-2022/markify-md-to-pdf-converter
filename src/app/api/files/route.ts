@@ -45,7 +45,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const maxSize = 10 * 1024 * 1024 // 10MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "File size exceeds 10MB limit" },
+        { error: "Selection exceeds 10MB limit." },
         { status: 400 }
       )
     }
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!allowedTypes.includes(file.type) && !isMarkdown) {
       console.log(`❌ Upload rejected - invalid file type: ${file.type} for file: ${file.name}`);
       return NextResponse.json(
-        { error: "Invalid file type: " + file.type + ". Only Markdown (.md) and image files are allowed." },
+        { error: "Upload failed — only .md file is allowed here." },
         { status: 400 }
       )
     }
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (effectiveParts.length === 1) {
         if (!effectiveParts[0].toLowerCase().endsWith('.md')) {
           return NextResponse.json(
-            { error: `Violation: Unauthorized root file '${normalizedPath}'. Only .md files allowed.` },
+            { error: "Upload failed — only .md file is allowed here." },
             { status: 400 }
           );
         }
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       else if (effectiveParts.length === 2) {
         if (effectiveParts[0] !== 'images') {
           return NextResponse.json(
-            { error: `Violation: Unauthorized folder structure '${normalizedPath}'. Only 'images/' subfolder is allowed.` },
+            { error: "Structure mismatch. Only 'images/' subfolder is supported." },
             { status: 400 }
           );
         }
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const isImage = allowedTypes.includes(file.type);
         if (!isImage) {
            return NextResponse.json(
-            { error: `Violation: Non-image file '${file.name}' in images/ folder.` },
+            { error: "Asset violation. Only images are allowed in the images/ folder." },
             { status: 400 }
           );
         }
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Rule 3: No nested folders or depth > 2 (effective)
       else {
         return NextResponse.json(
-          { error: `Violation: Unauthorized nested structure '${normalizedPath}'.` },
+          { error: "Invalid depth detected. Please simplify your folder structure." },
           { status: 400 }
         );
       }
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error("File upload error detailed:", error)
     const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: `Failed to upload file: ${errorMessage}` },
+      { error: errorMessage },
       { status: 500 }
     )
   }

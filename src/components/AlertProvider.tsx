@@ -7,7 +7,7 @@ import React, {
   useEffect,
   useState,
 } from "react"
-import { AlertTriangle, Info, CheckCircle2 } from "lucide-react"
+import { AlertTriangle, Info, CheckCircle2, X } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -135,85 +135,75 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
       }}>
         <AlertDialogContent
           variant={variant === "destructive" ? "destructive" : "default"}
-          className="sm:max-w-[450px]"
+          className="w-fit sm:max-w-[450px] bg-slate-900/95 border-white/10 backdrop-blur-xl shadow-2xl overflow-hidden p-0 gap-0"
         >
-          <AlertDialogHeader>
-            {title ? (
-              <AlertDialogTitle className={cn(
-                "flex items-center gap-2",
-                variant === "warning" && "text-amber-500",
-                variant === "info" && "text-blue-500",
-                variant === "destructive" && "text-red-500"
-              )}>
-                {variant === "warning" && <AlertTriangle className="h-5 w-5" />}
-                {variant === "info" && <Info className="h-5 w-5" />}
-                {variant === "destructive" && <AlertTriangle className="h-5 w-5" />}
-                {variant === "default" && <CheckCircle2 className="h-5 w-5 text-emerald-500" />}
-                {title}
-              </AlertDialogTitle>
-            ) : null}
-            <AlertDialogDescription
-              className={cn(
-                "text-slate-300 leading-relaxed",
-                !title && "text-foreground font-medium"
-              )}
-              asChild
+          <div className="relative p-6 sm:p-8">
+            {/* Background Decoration */}
+            <div className={cn(
+              "absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full blur-3xl pointer-events-none opacity-20",
+              variant === "destructive" ? "bg-red-500/20" : 
+              variant === "warning" ? "bg-amber-500/20" : 
+              variant === "info" ? "bg-blue-500/20" : "bg-emerald-500/20"
+            )} />
+
+            <button 
+              onClick={handleCancel}
+              className="absolute top-4 right-4 p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-full transition-all z-10 cursor-pointer"
             >
-              <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar mt-2">
-                {message.split("\n").map((line, i) => {
-                  const isViolation = line.includes("Violation:") || line.includes("Critical:") || line.includes("Forbidden:");
-                  const isHeader = i === 0 && message.includes("\n");
-                  
-                  if (isHeader) {
-                    return (
-                      <p key={i} className="font-semibold text-slate-100 mb-2 text-sm italic">
-                        {line}
-                      </p>
-                    );
-                  }
+              <X className="h-4 w-4" />
+            </button>
 
-                  if (isViolation) {
-                    const parts = line.split(":");
-                    const label = parts[0];
-                    const content = parts.slice(1).join(":");
-                    
-                    return (
-                      <div key={i} className="flex gap-2 items-start mb-2 group">
-                        <span className={cn(
-                          "text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded shrink-0 mt-0.5",
-                          label.includes("Critical") ? "bg-red-500/20 text-red-400" : "bg-amber-500/20 text-amber-400"
-                        )}>
-                          {label}
-                        </span>
-                        <span className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
-                          {content}
-                        </span>
-                      </div>
-                    );
-                  }
+            <AlertDialogHeader className="relative z-10">
+              {title ? (
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={cn(
+                    "p-2.5 rounded-xl bg-opacity-10 shadow-inner",
+                    variant === "warning" && "bg-amber-500/10 text-amber-500",
+                    variant === "info" && "bg-blue-500/10 text-blue-500",
+                    variant === "destructive" && "bg-red-500/10 text-red-500",
+                    variant === "default" && "bg-emerald-500/10 text-emerald-500"
+                  )}>
+                    {variant === "warning" && <AlertTriangle className="h-6 w-6" />}
+                    {variant === "info" && <Info className="h-6 w-6" />}
+                    {variant === "destructive" && <AlertTriangle className="h-6 w-6" />}
+                    {variant === "default" && <CheckCircle2 className="h-6 w-6" />}
+                  </div>
+                  <AlertDialogTitle className="text-xl font-bold text-white tracking-tight">
+                    {title}
+                  </AlertDialogTitle>
+                </div>
+              ) : null}
+              
+              <AlertDialogDescription
+                className={cn(
+                  "text-slate-300 leading-relaxed mt-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 relative z-10",
+                  !title && "text-foreground font-medium"
+                )}
+                asChild
+              >
+                <div className="flex items-center">
+                  <p className="text-xs sm:text-sm text-slate-300 font-medium leading-normal tracking-wide italic">
+                    {message}
+                  </p>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+          </div>
 
-                  return (
-                    <p key={i} className={cn("text-xs mb-1", i === 0 ? "text-slate-300" : "text-slate-400")}>
-                      {line}
-                    </p>
-                  );
-                })}
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className={cn(
-            isConfirm ? "sm:justify-end" : "sm:justify-center"
-          )}>
+          <AlertDialogFooter className="p-6 pt-2 sm:flex-row gap-3 relative z-10 bg-white/[0.01]">
             {isConfirm && (
-              <AlertDialogCancel onClick={handleCancel}>
+              <AlertDialogCancel onClick={handleCancel} className="sm:flex-1 h-10 bg-transparent border-none text-slate-500 hover:text-slate-200 hover:bg-white/5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all">
                 {cancelText}
               </AlertDialogCancel>
             )}
             <AlertDialogAction 
               onClick={handleAction}
               className={cn(
-                variant === "warning" && "bg-amber-600 hover:bg-amber-700",
-                variant === "info" && "bg-blue-600 hover:bg-blue-700"
+                "sm:flex-1 h-10 rounded-lg text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300 shadow-lg",
+                variant === "warning" && "bg-amber-600 hover:bg-amber-500 text-white shadow-amber-900/20",
+                variant === "info" && "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/20",
+                variant === "destructive" && "bg-red-600 hover:bg-red-500 text-white shadow-red-900/20",
+                variant === "default" && "bg-slate-100 text-slate-950 hover:bg-white shadow-slate-950/20"
               )}
             >
               {confirmText}
@@ -221,6 +211,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
     </AlertContext.Provider>
   )
 }

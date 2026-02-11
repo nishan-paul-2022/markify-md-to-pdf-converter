@@ -233,11 +233,11 @@ export function useConverter() {
           const api = getAlert();
           const firstError = (failedResults[0] as { error: string }).error;
           const msg = failedResults.length === 1 
-            ? `Failed to upload file: ${firstError}`
-            : `Failed to upload ${failedResults.length} files. First error: ${firstError}`;
+            ? firstError
+            : firstError;
             
           if (api) {
-            api.show({ title: 'Upload Issue', message: msg, variant: 'destructive' });
+            api.show({ title: 'Invalid File', message: msg, variant: 'destructive' });
           } else {
             alert(msg);
           }
@@ -379,11 +379,11 @@ export function useConverter() {
           const api = getAlert();
           const firstError = (failedResults[0] as { error: string }).error;
           const msg = failedResults.length === 1 
-            ? `Failed to upload ${failedResults.length} file: ${firstError}`
-            : `Failed to upload ${failedResults.length} files. First error: ${firstError}`;
+            ? firstError
+            : firstError;
             
           if (api) {
-            api.show({ title: 'Upload Issue', message: msg, variant: 'destructive' });
+            api.show({ title: 'Invalid File', message: msg, variant: 'destructive' });
           } else {
             alert(msg);
           }

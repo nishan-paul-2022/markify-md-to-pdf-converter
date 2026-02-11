@@ -62,19 +62,19 @@ function AlertDialogContent({
         data-slot="alert-dialog-content"
         data-variant={variant}
         className={cn(
-          "fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%]",
-          "grid gap-5 p-6 sm:p-7",
-          "rounded-2xl border shadow-2xl duration-200 ease-out",
+          "fixed top-[50%] left-[50%] z-50 w-full translate-x-[-50%] translate-y-[-50%]",
+          "grid gap-0 p-0", // Remove padding/gap here as we'll handle it in usage for better control
+          "rounded-3xl border shadow-2xl duration-200 ease-out",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           "sm:max-w-[400px]",
-          "bg-card/95 dark:bg-card/98 backdrop-blur-xl",
-          "border-border/80 dark:border-white/10",
-          "shadow-[0_0_0_1px_var(--border),0_25px_50px_-12px_rgba(0,0,0,0.4)]",
-          "dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_25px_50px_-12px_rgba(0,0,0,0.6)]",
+          "bg-slate-900/95 dark:bg-slate-900/98 backdrop-blur-2xl",
+          "border-white/10 dark:border-white/10",
+          "shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_30px_60px_-12px_rgba(0,0,0,0.6)]",
           variant === "destructive" &&
-            "border-destructive/20 dark:border-destructive/30",
+            "border-red-500/20 dark:border-red-500/30",
+          "overflow-hidden",
           className
         )}
         {...props}
