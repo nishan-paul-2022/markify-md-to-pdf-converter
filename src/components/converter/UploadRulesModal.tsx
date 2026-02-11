@@ -111,7 +111,7 @@ export function UploadRulesModal({
                   <div>
                     <h4 className="text-sm font-semibold text-slate-200">Strict Validation</h4>
                     <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                      Extra subfolders, files, or images will fail validation.
+                      Extra subfolders or files will fail validation.
                     </p>
                   </div>
                 </div>

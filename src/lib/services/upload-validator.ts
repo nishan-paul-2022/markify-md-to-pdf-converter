@@ -181,7 +181,7 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
     return {
       case: mdFilesInRootCount === 1 ? 3 : 4,
       valid: false,
-      error: "Project structure is invalid. Ensure it follows the required Markdown + Images layout.",
+      error: "Project structure is invalid. Ensure it follows the required .md + images/ layout.",
       filteredFiles: []
     };
   }

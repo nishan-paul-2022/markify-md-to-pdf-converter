@@ -97,7 +97,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       else if (effectiveParts.length === 2) {
         if (effectiveParts[0] !== 'images') {
           return NextResponse.json(
-            { error: "Structure mismatch. Only 'images/' subfolder is supported." },
+            { error: "Project structure is invalid. Ensure it follows the required .md + images/ layout." },
             { status: 400 }
           );
         }
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const isImage = allowedTypes.includes(file.type);
         if (!isImage) {
            return NextResponse.json(
-            { error: "Asset violation. Only images are allowed in the images/ folder." },
+            { error: "Project structure is invalid. Ensure it follows the required .md + images/ layout." },
             { status: 400 }
           );
         }
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Rule 3: No nested folders or depth > 2 (effective)
       else {
         return NextResponse.json(
-          { error: "Invalid depth detected. Please simplify your folder structure." },
+          { error: "Project structure is invalid. Ensure it follows the required .md + images/ layout." },
           { status: 400 }
         );
       }

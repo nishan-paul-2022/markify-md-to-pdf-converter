@@ -135,9 +135,9 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
       }}>
         <AlertDialogContent
           variant={variant === "destructive" ? "destructive" : "default"}
-          className="w-fit sm:max-w-[450px] bg-slate-900/95 border-white/10 backdrop-blur-xl shadow-2xl overflow-hidden p-0 gap-0"
+          className="w-fit sm:max-w-none bg-slate-900/95 border-white/10 backdrop-blur-xl shadow-2xl overflow-hidden p-0 gap-0"
         >
-          <div className="relative p-6 sm:p-8">
+          <div className="relative p-6 sm:p-8 min-w-[320px]">
             {/* Background Decoration */}
             <div className={cn(
               "absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full blur-3xl pointer-events-none opacity-20",
@@ -181,9 +181,20 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
                 )}
                 asChild
               >
-                <div className="flex items-center">
-                  <p className="text-xs sm:text-sm text-slate-300 font-medium leading-normal tracking-wide italic">
-                    {message}
+                <div className="flex items-center whitespace-nowrap">
+                  <p className="text-xs sm:text-sm text-slate-300 font-medium leading-normal tracking-wide italic whitespace-nowrap">
+                    {message.split(/(\.md|images\/|`.+?`)/).map((part, i) => {
+                      const isHighlighted = part === ".md" || part === "images/" || (part.startsWith('`') && part.endsWith('`'));
+                      const cleanPart = (part.startsWith('`') && part.endsWith('`')) ? part.slice(1, -1) : part;
+                      
+                      return isHighlighted ? (
+                        <span key={i} className="text-blue-400 font-mono font-bold not-italic mx-0.5">
+                          {cleanPart}
+                        </span>
+                      ) : (
+                        part
+                      );
+                    })}
                   </p>
                 </div>
               </AlertDialogDescription>

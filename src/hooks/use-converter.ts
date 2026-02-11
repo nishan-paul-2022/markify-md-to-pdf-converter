@@ -297,7 +297,7 @@ export function useConverter() {
         const msg = validation.error ?? 'Invalid folder structure. Upload blocked.';
         const api = getAlert();
       if (api) {
-        api.show({ title: 'Invalid folder', message: msg });
+        api.show({ title: 'Invalid Folder', message: msg, variant: 'destructive' });
       } else {
         alert(msg);
       }
@@ -383,7 +383,7 @@ export function useConverter() {
             : firstError;
             
           if (api) {
-            api.show({ title: 'Invalid File', message: msg, variant: 'destructive' });
+            api.show({ title: 'Invalid Folder', message: msg, variant: 'destructive' });
           } else {
             alert(msg);
           }

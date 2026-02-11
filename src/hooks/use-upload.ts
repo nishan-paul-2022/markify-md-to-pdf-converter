@@ -43,9 +43,9 @@ export function useUpload() {
         const api = getAlert();
         if (api) {
           api.show({ 
-            title: "Invalid File", 
+            title: validation.case <= 2 ? "Invalid File" : "Invalid Folder", 
             message: validation.error || "Invalid selection.",
-            variant: "warning"
+            variant: "destructive"
           });
         } else {
           setError(validation.error || "Invalid file structure.");
