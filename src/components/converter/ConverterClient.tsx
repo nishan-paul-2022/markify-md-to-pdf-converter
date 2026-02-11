@@ -8,11 +8,8 @@ import {
   FolderOpen, 
   FileArchive, 
   Search,
-  Settings2,
-  Filter,
   Download,
   Loader2,
-  FolderClosed,
   ChevronRight,
   FileDown,
   ArrowRight,
@@ -28,10 +25,7 @@ import { cn } from '@/lib/utils';
 import { generateStandardName, addTimestampToName } from '@/lib/utils/naming';
 import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getAlert } from '@/components/AlertProvider';
 
@@ -264,7 +258,6 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
   };
   const triggerFileUpload = () => fileInputRef.current?.click();
   const triggerFolderUpload = () => folderInputRef.current?.click();
-  const triggerZipUpload = () => zipInputRef.current?.click();
 
   const handleZipUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const api = getAlert();
@@ -299,91 +292,58 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             </div>
             <div className="hidden sm:block">
               <h1 className="text-sm font-bold tracking-tight text-white uppercase tracking-[0.1em]">Converter</h1>
-              <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest leading-none">Multi-File Engine</p>
+              <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest leading-none">Management Pipeline</p>
             </div>
           </div>
         </div>
 
-        {/* Center: Upload Group (Editor Style) */}
-        <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
-          <input 
-            type="file" 
-            multiple 
-            accept=".md" 
-            ref={fileInputRef} 
-            onChange={handleFileUpload} 
-            className="hidden" 
-          />
-          <input 
-            type="file" 
-            ref={folderInputRef} 
-            onChange={handleFolderUpload} 
-            className="hidden" 
-            {...( { webkitdirectory: "", directory: "" } as React.InputHTMLAttributes<HTMLInputElement> )}
-          />
-          <input 
-            type="file" 
-            accept=".zip" 
-            ref={zipInputRef} 
-            onChange={handleZipUpload} 
-            className="hidden" 
-          />
+        <input 
+          type="file" 
+          multiple 
+          accept=".md" 
+          ref={fileInputRef} 
+          onChange={handleFileUpload} 
+          className="hidden" 
+        />
+        <input 
+          type="file" 
+          ref={folderInputRef} 
+          onChange={handleFolderUpload} 
+          className="hidden" 
+          {...( { webkitdirectory: "", directory: "" } as React.InputHTMLAttributes<HTMLInputElement> )}
+        />
+        <input 
+          type="file" 
+          accept=".zip" 
+          ref={zipInputRef} 
+          onChange={handleZipUpload} 
+          className="hidden" 
+        />
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={triggerFileUpload}
-                className="h-6 w-8 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
-              >
-                <FileCode className="h-4 w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="bg-slate-900 border-white/10 text-xs">Upload Markdown Files</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={triggerFolderUpload}
-                className="h-6 w-8 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
-              >
-                <FolderClosed className="h-4 w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="bg-slate-900 border-white/10 text-xs">Upload Project Folder</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={triggerZipUpload}
-                className="h-6 w-8 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
-              >
-                <FileArchive className="h-4 w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="bg-slate-900 border-white/10 text-xs shadow-2xl">Upload ZIP Archive</TooltipContent>
-          </Tooltip>
-        </div>
-
-        <div className="flex items-center justify-end gap-3 w-[280px]">
-          <div className="relative group hidden lg:block">
+        <div className="flex items-center justify-end gap-4">
+          <div className="relative group hidden lg:block overflow-hidden">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
             <input
               type="text"
               placeholder="Search library..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-slate-900/50 border border-white/5 rounded-full py-1.5 pl-9 pr-4 text-[11px] w-40 focus:outline-none focus:border-blue-500/50 focus:bg-slate-900 transition-all placeholder:text-slate-600"
+              className="bg-slate-900/50 border border-white/5 rounded-full py-1.5 pl-9 pr-4 text-[11px] w-40 focus:outline-none focus:border-blue-500/50 focus:bg-slate-900 transition-all placeholder:text-slate-600 focus:w-56"
             />
           </div>
+          
           <div className="h-4 w-[1px] bg-white/5 hidden md:block" />
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-500 hover:text-white hover:bg-white/5 transition-colors">
-            <Filter className="w-3.5 h-3.5" />
+          
+          <Button
+            variant="ghost"
+            onClick={() => router.push('/editor')}
+            className="h-9 px-4 bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-blue-500/5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all group flex items-center gap-2"
+          >
+            <FileCode className="w-3.5 h-3.5 group-hover:text-blue-400 transition-colors" />
+            <span>Editor</span>
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-500 hover:text-white hover:bg-white/5 transition-colors">
-            <Settings2 className="w-3.5 h-3.5" />
-          </Button>
+
+          <UserNav user={user} />
         </div>
       </header>
 
@@ -610,18 +570,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
       </div>
       
-      {/* Absolute User Nav (Bottom Right) */}
-      <div className="fixed bottom-4 right-4 lg:bottom-6 lg:right-6 z-[60] flex items-center gap-3">
-           <Button
-             variant="default"
-             onClick={() => router.push('/editor')}
-             className="h-10 px-4 bg-slate-900 border border-white/10 hover:border-blue-500/50 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all shadow-2xl group flex items-center gap-2.5 hover:bg-slate-800"
-           >
-             <FileCode className="w-3.5 h-3.5 group-hover:text-blue-400 transition-colors" />
-             <span>Editor</span>
-           </Button>
-           <UserNav user={user} />
-      </div>
+
     </main>
     </TooltipProvider>
   );
