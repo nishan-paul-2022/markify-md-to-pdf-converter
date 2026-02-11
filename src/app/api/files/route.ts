@@ -68,7 +68,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!allowedTypes.includes(file.type) && !isMarkdown) {
       console.log(`❌ Upload rejected - invalid file type: ${file.type} for file: ${file.name}`);
       return NextResponse.json(
-        { error: "Upload failed — only .md file is allowed here." },
+        { error: "Upload failed — only .md files are allowed here." },
         { status: 400 }
       )
     }
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (effectiveParts.length === 1) {
         if (!effectiveParts[0].toLowerCase().endsWith('.md')) {
           return NextResponse.json(
-            { error: "Upload failed — only .md file is allowed here." },
+            { error: "Upload failed — only .md files are allowed here." },
             { status: 400 }
           );
         }

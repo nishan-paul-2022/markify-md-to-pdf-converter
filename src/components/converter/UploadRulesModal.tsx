@@ -67,14 +67,14 @@ export function UploadRulesModal({
 
           <div className="mt-8 space-y-4 relative z-10">
             {isFile ? (
-              <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
-                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
+                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
                   <CheckCircle2 className="h-4 w-4" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-slate-200">Single File Only</h4>
+                  <h4 className="text-sm font-semibold text-slate-200">Markdown Files</h4>
                   <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                    Upload exactly one <span className="text-blue-400 font-mono font-bold">.md</span> file at a time.
+                    Upload one or more <span className="text-emerald-400 font-mono font-bold">.md</span> files at a time.
                   </p>
                 </div>
               </div>

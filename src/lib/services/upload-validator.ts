@@ -65,7 +65,7 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
       return {
         case: 2,
         valid: false,
-        error: "Upload failed — only .md file is allowed here.",
+        error: "Upload failed — only .md files are allowed here.",
         filteredFiles: []
       };
     }
@@ -83,7 +83,7 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
       return {
         case: 1,
         valid: false,
-        error: "Upload failed — only .md file is allowed here.",
+        error: "Upload failed — only .md files are allowed here.",
         filteredFiles: []
       };
     }

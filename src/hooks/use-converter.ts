@@ -232,13 +232,11 @@ export function useConverter() {
 
         if (failedResults.length > 0) {
           const api = getAlert();
-          const firstError = (failedResults[0] as { error: string }).error;
-          const msg = failedResults.length === 1 
-            ? firstError
-            : firstError;
+          // Just take the first error message directly as returned by the server
+          const msg = (failedResults[0] as { error: string }).error;
             
           if (api) {
-            api.show({ title: 'Invalid File', message: msg, variant: 'destructive' });
+            api.show({ title: 'Upload Failed', message: msg, variant: 'destructive' });
           } else {
             alert(msg);
           }
