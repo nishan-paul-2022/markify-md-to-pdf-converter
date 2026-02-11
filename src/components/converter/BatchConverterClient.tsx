@@ -24,6 +24,14 @@ import UserNav from '@/components/auth/UserNav';
 import { useFiles, File as AppFile } from '@/hooks/use-files';
 import { formatFileSize } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
+import { generateStandardName } from '@/lib/utils/naming';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import JSZip from 'jszip';
 
 interface User {
   name?: string | null;
@@ -55,6 +63,7 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
   const [processingStates, setProcessingStates] = React.useState<Record<string, 'pending' | 'converting' | 'done' | 'error'>>({});
   const [convertedFiles, setConvertedFiles] = React.useState<Record<string, Blob>>({});
   const [batchProgress, setBatchProgress] = React.useState<Record<string, { current: number, total: number }>>({});
+  const [zipLoading, setZipLoading] = React.useState<Record<string, boolean>>({});
 
   // Grouping logic
   const batchGroups = React.useMemo(() => {
@@ -191,11 +200,63 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = file.originalName.replace('.md', '.pdf');
+      const fileName = generateStandardName(file.originalName);
+      a.download = `${fileName}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleDownloadZip = async (group: BatchGroup) => {
+    setZipLoading(prev => ({ ...prev, [group.id]: true }));
+    try {
+      const zip = new JSZip();
+      
+      // Add all converted PDFs to the zip
+      for (const file of group.files) {
+        const blob = convertedFiles[file.id];
+        const baseName = generateStandardName(file.originalName);
+        if (blob) {
+          zip.file(`${baseName}.pdf`, blob);
+        } else {
+          const res = await fetch(file.url);
+          if (res.ok) {
+            const mdBlob = await res.blob();
+            zip.file(`${baseName}.md`, mdBlob);
+          }
+        }
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      const zipName = generateStandardName(group.name);
+      a.download = `${zipName}_batch.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Zip generation error:', error);
+    } finally {
+      setZipLoading(prev => ({ ...prev, [group.id]: false }));
+    }
+  };
+
+  const handleDownloadMulti = async (group: BatchGroup) => {
+    // Trigger multiple individual downloads sequentially with a small delay
+    // to avoid browser download blocking
+    for (const file of group.files) {
+      if (processingStates[file.id] === 'done') {
+        handleDownloadFile(file, 'pdf');
+      } else {
+        handleDownloadFile(file, 'md');
+      }
+      // Brief delay between downloads
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
   };
 
@@ -429,7 +490,29 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
                         </div>
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                         <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-white"><MoreVertical className="w-4 h-4" /></Button>
+                         <DropdownMenu>
+                           <DropdownMenuTrigger asChild>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-white transition-all">
+                               <MoreVertical className="w-4 h-4" />
+                             </Button>
+                           </DropdownMenuTrigger>
+                           <DropdownMenuContent align="end" className="w-56 bg-slate-900/95 border-white/10 backdrop-blur-xl text-slate-300">
+                             <DropdownMenuItem 
+                               onClick={() => handleDownloadMulti(group)}
+                               className="hover:bg-white/10 focus:bg-white/10 hover:text-white cursor-pointer gap-2"
+                             >
+                               <Download className="w-4 h-4" />
+                               <span>Download All (Individual)</span>
+                             </DropdownMenuItem>
+                             <DropdownMenuItem 
+                               onClick={() => handleDelete(group.files[0].id)} 
+                               className="text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 hover:text-red-400 cursor-pointer gap-2"
+                             >
+                               <Trash2 className="w-4 h-4" />
+                               <span>Delete Group</span>
+                             </DropdownMenuItem>
+                           </DropdownMenuContent>
+                         </DropdownMenu>
                       </div>
                     </div>
 
@@ -533,8 +616,17 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
                           </>
                         )}
                       </Button>
-                      <Button variant="outline" className="h-11 border-white/10 hover:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] gap-2 text-slate-400">
-                        <Download className="w-3.5 h-3.5" />
+                      <Button 
+                        variant="outline" 
+                        onClick={() => handleDownloadZip(group)}
+                        disabled={zipLoading[group.id]}
+                        className="h-11 border-white/10 hover:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] gap-2 text-slate-400 group/zip"
+                      >
+                        {zipLoading[group.id] ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Download className="w-3.5 h-3.5 group-hover/zip:text-blue-400 transition-colors" />
+                        )}
                         Zip
                       </Button>
                       <Button 
