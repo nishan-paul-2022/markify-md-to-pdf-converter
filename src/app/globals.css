@@ -183,6 +183,21 @@
     animation: shimmer 2s infinite linear;
   }
 
+  @keyframes pulse-subtle {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.9;
+      transform: scale(1.02);
+    }
+  }
+
+  .animate-pulse-subtle {
+    animation: pulse-subtle 3s infinite ease-in-out;
+  }
+
   /* Ensure the native element knows it's in dark mode to fix the track color */
   .dark-editor {
     color-scheme: dark;

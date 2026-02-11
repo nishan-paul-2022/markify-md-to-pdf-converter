@@ -4,7 +4,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Layers, 
-  ArrowLeft, 
   Upload, 
   FolderOpen, 
   FileArchive, 
@@ -17,7 +16,8 @@ import {
   Download,
   Trash2, 
   Play,
-  Loader2
+  Loader2,
+  FileCode
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import UserNav from '@/components/auth/UserNav';
@@ -336,15 +336,6 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
       {/* Header */}
       <header className="relative z-10 h-16 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl flex items-center justify-between px-6 shrink-0">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => router.push('/converter')}
-            className="h-9 w-9 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div className="h-8 w-[1px] bg-white/5" />
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center shadow-inner">
               <Layers className="w-5 h-5 text-blue-400" />
@@ -682,6 +673,14 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
       
       {/* Absolute User Nav (Bottom Right) */}
       <div className="fixed bottom-4 right-4 lg:bottom-6 lg:right-6 z-[60] flex items-center gap-3">
+           <Button
+             variant="default"
+             onClick={() => router.push('/converter')}
+             className="h-10 px-4 bg-slate-900 border border-white/10 hover:border-blue-500/50 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all shadow-2xl group flex items-center gap-2.5 hover:bg-slate-800"
+           >
+             <FileCode className="w-3.5 h-3.5 group-hover:text-blue-400 transition-colors" />
+             <span>Converter</span>
+           </Button>
            <UserNav user={user} />
       </div>
     </main>

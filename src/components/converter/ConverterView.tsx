@@ -4,7 +4,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import MdPreview from '@/components/converter/MdPreview';
 import Editor from '@/components/converter/Editor';
-import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, Check, Copy, Download, Eye, MoreVertical, FolderOpen, Trash2, ListChecks, FileArchive, X } from 'lucide-react';
+import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, Check, Copy, Download, Eye, MoreVertical, FolderOpen, Trash2, ListChecks, FileArchive, X, Layers } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -22,6 +22,7 @@ import { Metadata } from '@/constants/default-content';
 import { formatDateTime } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 
+import { useRouter } from 'next/navigation';
 import { File as AppFile } from '@/hooks/use-files';
 import { useAlert } from "@/components/AlertProvider";
 import { FileTree } from '@/components/file-manager/FileTree';
@@ -143,6 +144,7 @@ export function ConverterView({
   setActiveImage,
   imageGallery,
 }: ConverterViewProps) {
+  const router = useRouter();
   const { confirm } = useAlert();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -363,6 +365,14 @@ export function ConverterView({
           </div>
         )}
         <div className="fixed bottom-4 right-4 lg:bottom-6 lg:right-6 z-[60] flex items-center gap-3">
+             <Button
+               variant="default"
+               onClick={() => router.push('/converter/batch')}
+               className="h-10 px-5 bg-slate-900 border border-white/10 hover:border-blue-500/50 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all shadow-2xl group flex items-center gap-2.5 hover:bg-slate-800"
+             >
+               <Layers className="w-3.5 h-3.5 group-hover:text-blue-400 transition-all duration-300" />
+               <span>Batch Processing</span>
+             </Button>
              <UserNav user={user} />
         </div>
 
