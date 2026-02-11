@@ -389,14 +389,14 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
               <div className="flex flex-col gap-3">
                 <Button 
                   onClick={() => fileInputRef.current?.click()}
-                  className="h-14 bg-white text-slate-950 hover:bg-slate-200 rounded-2xl flex items-center justify-start px-5 gap-4 shadow-xl shadow-blue-500/10 group/btn transition-all active:scale-[0.98]"
+                  className="h-14 bg-white text-slate-950 hover:bg-slate-200 rounded-2xl flex items-center justify-start px-5 gap-4 shadow-xl shadow-blue-500/10 group/btn transition-all active:scale-[0.98] border-none"
                 >
-                  <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center group-hover/btn:scale-110 transition-transform">
-                    <Upload className="w-4 h-4" />
+                  <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center group-hover/btn:scale-110 group-hover/btn:rotate-6 transition-all duration-500 shadow-sm">
+                    <Upload className="w-5 h-5 text-slate-950" />
                   </div>
                   <div className="text-left">
-                    <p className="text-xs font-black uppercase tracking-wider leading-none mb-1">Upload Files</p>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Select multiple .md files</p>
+                    <p className="text-[11px] font-black uppercase tracking-wider leading-none mb-1">Upload Files</p>
+                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Select multiple .md files</p>
                   </div>
                 </Button>
                 
@@ -404,25 +404,28 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
                   <Button 
                     variant="outline" 
                     onClick={() => folderInputRef.current?.click()}
-                    className="h-28 flex-col border-white/5 bg-slate-900/50 hover:bg-slate-800 hover:border-amber-500/30 rounded-2xl gap-3 transition-all group/upload relative overflow-hidden"
+                    className="h-32 flex-col border-white/5 bg-slate-900/40 hover:bg-slate-900/80 hover:border-amber-500/30 rounded-3xl gap-4 transition-all group/upload relative overflow-hidden"
                   >
-                    <div className="absolute inset-0 bg-amber-500/5 opacity-0 group-hover/upload:opacity-100 transition-opacity" />
-                    <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500 group-hover/upload:scale-110 transition-transform relative z-10">
-                      <FolderOpen className="w-5 h-5" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-amber-500/[0.03] to-transparent opacity-0 group-hover/upload:opacity-100 transition-opacity" />
+                    <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 group-hover/upload:scale-110 group-hover/upload:-rotate-3 transition-all duration-500 border border-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.05)]">
+                      <FolderOpen className="w-6 h-6" />
                     </div>
                     <div className="text-center relative z-10">
-                      <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Folder</p>
-                      <p className="text-[8px] text-slate-600 font-bold uppercase tracking-tight">Project Upload</p>
+                      <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-1 text-slate-300">Folder</p>
+                      <p className="text-[9px] text-slate-600 font-bold uppercase tracking-tight">Project upload</p>
                     </div>
                   </Button>
-                  <Button variant="outline" className="h-28 flex-col border-white/5 bg-slate-900/50 hover:bg-slate-800 hover:border-blue-500/30 rounded-2xl gap-3 transition-all group/upload relative overflow-hidden">
-                    <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover/upload:opacity-100 transition-opacity" />
-                    <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400 group-hover/upload:scale-110 transition-transform relative z-10">
-                      <FileArchive className="w-5 h-5" />
+                  <Button 
+                    variant="outline" 
+                    className="h-32 flex-col border-white/5 bg-slate-900/40 hover:bg-slate-900/80 hover:border-blue-500/30 rounded-3xl gap-4 transition-all group/upload relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-b from-blue-500/[0.03] to-transparent opacity-0 group-hover/upload:opacity-100 transition-opacity" />
+                    <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 group-hover/upload:scale-110 group-hover/upload:rotate-3 transition-all duration-500 border border-blue-500/5 shadow-[0_0_20px_rgba(59,130,246,0.05)]">
+                      <FileArchive className="w-6 h-6" />
                     </div>
                     <div className="text-center relative z-10">
-                      <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Zip</p>
-                      <p className="text-[8px] text-slate-600 font-bold uppercase tracking-tight">Archive Upload</p>
+                      <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-1 text-slate-300">Zip</p>
+                      <p className="text-[9px] text-slate-600 font-bold uppercase tracking-tight">Archive upload</p>
                     </div>
                   </Button>
                 </div>
@@ -464,86 +467,92 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
           <div className="flex-grow overflow-y-scroll custom-scrollbar pb-32">
             {!loading && batchGroups.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {batchGroups.map(group => (
+                {batchGroups.map((group, index) => (
                   <div 
                     key={group.id} 
-                    className="bg-slate-900/30 border border-white/10 rounded-[2rem] p-6 hover:border-white/20 hover:bg-slate-900/50 transition-all group/card shadow-lg"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                    className="bg-slate-900/40 border border-white/10 rounded-[2.5rem] p-6 hover:border-blue-500/30 hover:bg-slate-900/60 transition-all group/card shadow-2xl relative overflow-hidden animate-card-in opacity-0"
                   >
-                    <div className="flex items-start justify-between mb-6">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                    
+                    <div className="flex items-start justify-between mb-6 relative z-10">
                       <div className="flex items-start gap-4">
                         <div className={cn(
-                          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner border border-white/5",
+                          "w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner border border-white/5 transition-transform group-hover/card:scale-110 duration-500",
                           group.isProject ? "bg-amber-500/10 text-amber-500" : "bg-blue-500/10 text-blue-400"
                         )}>
-                          {group.isProject ? <FolderOpen className="w-6 h-6" /> : <Layers className="w-6 h-6" />}
+                          {group.isProject ? <FolderOpen className="w-7 h-7" /> : <Layers className="w-7 h-7" />}
                         </div>
                         <div>
-                          <h3 className="text-sm font-bold text-white mb-1 group-hover/card:text-blue-400 transition-colors truncate max-w-[200px]">
+                          <h3 className="text-base font-black text-white mb-1 group-hover/card:text-blue-400 transition-colors truncate max-w-[180px] lg:max-w-[240px]">
                             {group.name}
                           </h3>
                           <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
                             <Clock className="w-3 h-3" />
-                            <span>{new Date(group.createdAt).toLocaleDateString()}</span>
+                            <span>{new Date(group.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                             <span className="text-slate-700">•</span>
-                            <span>{group.files.length} Files</span>
+                            <span className="px-1.5 py-0.5 bg-white/5 rounded text-slate-400">{group.files.length} Files</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 opacity-0 group-hover/card:opacity-100 transition-all translate-x-2 group-hover/card:translate-x-0">
                          <DropdownMenu>
                            <DropdownMenuTrigger asChild>
-                             <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-white transition-all">
-                               <MoreVertical className="w-4 h-4" />
+                             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-slate-500 hover:text-white transition-all hover:bg-white/5">
+                               <MoreVertical className="w-5 h-5" />
                              </Button>
                            </DropdownMenuTrigger>
                            <DropdownMenuContent align="end" className="w-56 bg-slate-900/95 border-white/10 backdrop-blur-xl text-slate-300">
                              <DropdownMenuItem 
                                onClick={() => handleDownloadMulti(group)}
-                               className="hover:bg-white/10 focus:bg-white/10 hover:text-white cursor-pointer gap-2"
+                               className="hover:bg-white/10 focus:bg-white/10 hover:text-white cursor-pointer gap-3 p-3 text-xs font-bold uppercase tracking-widest"
                              >
                                <Download className="w-4 h-4" />
-                               <span>Download All (Individual)</span>
+                               <span>Download All</span>
                              </DropdownMenuItem>
+                             <div className="h-[1px] bg-white/5 my-1" />
                              <DropdownMenuItem 
                                onClick={() => handleDelete(group.files[0].id)} 
-                               className="text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 hover:text-red-400 cursor-pointer gap-2"
+                               className="text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 hover:text-red-400 cursor-pointer gap-3 p-3 text-xs font-bold uppercase tracking-widest"
                              >
                                <Trash2 className="w-4 h-4" />
-                               <span>Delete Group</span>
+                               <span>Delete Project</span>
                              </DropdownMenuItem>
                            </DropdownMenuContent>
                          </DropdownMenu>
                       </div>
                     </div>
 
-                    <div className="space-y-3 mb-8">
+                    <div className="space-y-3 mb-8 relative z-10">
                        {group.files.slice(0, 3).map(file => {
                          const status = processingStates[file.id] || 'pending';
                          const isConverted = status === 'done';
                          const isConverting = status === 'converting';
 
                          return (
-                           <div key={file.id} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/30 border border-white/5 group/file hover:bg-slate-950/50 transition-colors">
+                           <div key={file.id} className="flex items-center justify-between p-3 rounded-2xl bg-slate-950/40 border border-white/5 group/file hover:border-white/10 transition-all hover:translate-x-1 duration-300">
                              <div className="flex items-center gap-3">
-                               <FileText className="w-4 h-4 text-slate-600" />
+                               <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center border border-white/5 transition-colors group-hover/file:border-blue-500/30">
+                                 <FileText className="w-4 h-4 text-slate-600 group-hover/file:text-blue-400 transition-colors" />
+                               </div>
                                <div>
-                                 <p className="text-[11px] font-bold text-slate-300 truncate max-w-[150px]">{file.originalName}</p>
+                                 <p className="text-[11px] font-bold text-slate-300 truncate max-w-[120px] lg:max-w-[180px] group-hover/file:text-white transition-colors">{file.originalName}</p>
                                  <p className="text-[9px] text-slate-500 font-medium uppercase tracking-tight">{formatFileSize(file.size)} • {file.mimeType.split('/')[1]}</p>
                                </div>
                              </div>
                              <div className="flex items-center gap-2">
                                 {/* Conversion Status */}
                                 <div className={cn(
-                                  "flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[8px] font-black uppercase tracking-widest transition-all",
+                                  "flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[8px] font-black uppercase tracking-widest transition-all",
                                   status === 'pending' && "bg-slate-900 border-white/5 text-slate-500",
-                                  status === 'converting' && "bg-blue-500/10 border-blue-500/20 text-blue-400 animate-pulse",
+                                  status === 'converting' && "bg-blue-500/10 border-blue-500/20 text-blue-400",
                                   status === 'done' && "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
                                   status === 'error' && "bg-red-500/10 border-red-500/20 text-red-400"
                                 )}>
                                   <span className={cn(
-                                    "w-1 h-1 rounded-full",
+                                    "w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]",
                                     status === 'pending' && "bg-slate-500",
-                                    status === 'converting' && "bg-blue-400",
+                                    status === 'converting' && "bg-blue-400 animate-pulse",
                                     status === 'done' && "bg-emerald-400",
                                     status === 'error' && "bg-red-400"
                                   )} />
@@ -557,12 +566,12 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
                                       size="icon" 
                                       onClick={() => handleConvertFile(file)}
                                       disabled={isConverting}
-                                      className="h-7 w-7 rounded-lg text-slate-500 hover:text-blue-400 hover:bg-blue-500/10"
+                                      className="h-8 w-8 rounded-xl text-slate-500 hover:text-blue-400 hover:bg-blue-500/10"
                                     >
                                       {isConverting ? (
-                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                       ) : (
-                                        <Play className="w-3 h-3" />
+                                        <Play className="w-3.5 h-3.5" />
                                       )}
                                     </Button>
                                   ) : (
@@ -570,18 +579,18 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
                                       variant="ghost" 
                                       size="icon" 
                                       onClick={() => handleDownloadFile(file, 'pdf')}
-                                      className="h-7 w-7 rounded-lg text-emerald-400 hover:bg-emerald-500/10"
+                                      className="h-8 w-8 rounded-xl text-emerald-400 hover:bg-emerald-500/10"
                                     >
-                                      <Download className="w-3 h-3" />
+                                      <Download className="w-3.5 h-3.5" />
                                     </Button>
                                   )}
                                   <Button 
                                     variant="ghost" 
                                     size="icon" 
                                     onClick={() => handleDownloadFile(file, 'md')}
-                                    className="h-7 w-7 rounded-lg text-slate-500 hover:text-white"
+                                    className="h-8 w-8 rounded-xl text-slate-500 hover:text-white hover:bg-white/5"
                                   >
-                                    <FileText className="w-3 h-3" />
+                                    <FileText className="w-3.5 h-3.5" />
                                   </Button>
                                 </div>
                              </div>
@@ -589,7 +598,7 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
                          );
                        })}
                        {group.files.length > 3 && (
-                         <button className="w-full text-center text-[9px] font-black uppercase tracking-[0.2em] text-slate-600 hover:text-slate-400 py-1 transition-colors">
+                         <button className="w-full text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 hover:text-blue-400 py-2 transition-all hover:tracking-[0.3em]">
                            + {group.files.length - 3} More Files
                          </button>
                        )}
@@ -641,26 +650,27 @@ export default function BatchConverterClient({ user }: BatchConverterClientProps
                 ))}
               </div>
             ) : (
-              <div className="col-span-full h-[400px] border-2 border-dashed border-white/5 rounded-[2.5rem] flex flex-col items-center justify-center gap-6 group hover:border-white/10 transition-colors">
-                <div className="w-20 h-20 bg-slate-900 rounded-3xl flex items-center justify-center border border-white/5 shadow-inner relative overflow-hidden">
-                   <div className="absolute inset-0 bg-blue-500/5 blur-xl animate-pulse" />
-                   <Upload className="w-8 h-8 text-slate-600 group-hover:text-blue-400 transition-colors relative z-10" />
+              <div className="col-span-full h-[500px] border border-dashed border-white/10 rounded-[3rem] flex flex-col items-center justify-center gap-8 group hover:border-blue-500/20 transition-all duration-700 relative overflow-hidden bg-slate-900/20 backdrop-blur-sm animate-card-in">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--color-blue-500)_0%,_transparent_100%)] opacity-[0.02]" />
+                <div className="w-24 h-24 bg-slate-950 rounded-[2rem] flex items-center justify-center border border-white/5 shadow-2xl relative overflow-hidden group-hover:scale-110 transition-transform duration-700">
+                   <div className="absolute inset-0 bg-blue-500/10 blur-2xl animate-pulse" />
+                   <Upload className="w-10 h-10 text-slate-600 group-hover:text-blue-400 transition-all duration-500 relative z-10 group-hover:-translate-y-1" />
+                   <div className="absolute bottom-4 w-6 h-[2px] bg-blue-500/20 rounded-full group-hover:w-8 group-hover:bg-blue-500/50 transition-all duration-500" />
                 </div>
-                <div className="text-center">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-2">
-                    {loading ? 'Scanning Files...' : 'No batches found'}
+                <div className="text-center relative z-10">
+                  <h3 className="text-base font-black text-white uppercase tracking-[0.3em] mb-3 drop-shadow-sm">
+                    {loading ? 'Scanning Private Library...' : 'No Projects Found'}
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium">
-                    {loading ? 'Accessing your private library' : 'Upload a project folder or select files to get started'}
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest max-w-[300px] leading-relaxed mx-auto">
+                    {loading ? 'Please wait while we sync your secure cloud workspace' : 'Your batch conversion library is currently empty. Upload files or folders to start.'}
                   </p>
                 </div>
                 {!loading && (
                   <Button 
                     onClick={() => fileInputRef.current?.click()}
-                    variant="outline" 
-                    className="rounded-full border-white/10 hover:bg-white/5 px-8 text-xs font-bold uppercase tracking-widest"
+                    className="rounded-2xl bg-white text-slate-950 hover:bg-blue-500 hover:text-white px-10 h-12 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:-translate-y-1 active:scale-95"
                   >
-                    Browse Files
+                    Get Started
                   </Button>
                 )}
               </div>

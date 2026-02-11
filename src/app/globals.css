@@ -153,22 +153,36 @@
     cursor: auto;
   }
   
-  /* Animated Tab Transitions */
-  .tab-enter {
-    animation: tab-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  }
-  
-  @keyframes tab-in {
+  @keyframes card-in {
     from {
       opacity: 0;
-      transform: translateY(4px);
+      transform: translateY(20px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  
+
+  .animate-card-in {
+    animation: card-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
   /* Ensure the native element knows it's in dark mode to fix the track color */
   .dark-editor {
     color-scheme: dark;
@@ -218,3 +232,4 @@
     }
   }
 }
+
