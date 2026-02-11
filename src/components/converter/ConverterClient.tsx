@@ -352,31 +352,31 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         
         {/* SEGMENT 1: SOURCE (Upload Hub) */}
         <section className="w-[300px] flex flex-col gap-4 shrink-0">
-          <div className="flex items-center gap-2 px-2 text-xs font-black uppercase tracking-[0.2em] text-slate-500">
+          <div className="flex items-center gap-2 px-2 text-xs font-black uppercase tracking-[0.2em] text-amber-400/80">
             <Upload className="w-3.5 h-3.5" />
             <h2>Source</h2>
           </div>
           
-          <div className="flex-grow bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-6 backdrop-blur-md flex flex-col gap-6 shadow-2xl relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+          <div className="flex-grow bg-amber-400/[0.03] border border-amber-400/10 rounded-[2.5rem] p-6 backdrop-blur-xl flex flex-col gap-6 shadow-2xl relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-400/[0.05] to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
             
-            <div className="flex-grow flex flex-col items-center justify-center text-center gap-6 py-8">
+            <div className="flex-grow flex flex-col items-center justify-center text-center gap-6 py-8 relative z-10">
               <div className="w-20 h-20 bg-slate-950 rounded-[2rem] flex items-center justify-center border border-white/5 shadow-2xl relative group/icon">
-                <div className="absolute inset-0 bg-blue-500/10 blur-2xl animate-pulse" />
-                <Sparkles className="w-8 h-8 text-blue-400 group-hover/icon:scale-110 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-amber-400/10 blur-2xl animate-pulse" />
+                <Sparkles className="w-8 h-8 text-amber-400 group-hover/icon:scale-110 transition-transform duration-500" />
               </div>
               <div>
                 <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">Ingestion Hub</h3>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed px-4">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed px-4">
                   Drop files or folders to begin the automated conversion pipeline
                 </p>
               </div>
             </div>
 
-            <div className="space-y-3 mt-auto">
+            <div className="space-y-3 mt-auto relative z-10">
               <Button 
                 onClick={triggerFileUpload}
-                className="w-full h-14 bg-white text-slate-950 hover:bg-blue-500 hover:text-white rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn border-none shadow-lg"
+                className="w-full h-14 bg-white text-slate-950 hover:bg-amber-500 hover:text-white rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn border-none shadow-lg"
               >
                 <div className="w-9 h-9 bg-slate-100/10 rounded-xl flex items-center justify-center group-hover/btn:bg-white/20 transition-colors">
                   <FileCode className="w-5 h-5" />
@@ -390,9 +390,9 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
               <Button 
                 variant="outline"
                 onClick={triggerFolderUpload}
-                className="w-full h-14 border-white/10 bg-slate-900/50 hover:bg-slate-800 hover:border-amber-500/30 rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn"
+                className="w-full h-14 border-white/10 bg-slate-900/50 hover:bg-slate-800 hover:border-amber-400/30 rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn"
               >
-                <div className="w-9 h-9 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500 group-hover/btn:scale-110 transition-transform">
+                <div className="w-9 h-9 bg-amber-400/10 rounded-xl flex items-center justify-center text-amber-400 group-hover/btn:scale-110 transition-transform">
                   <FolderOpen className="w-5 h-5" />
                 </div>
                 <div className="text-left">
@@ -403,7 +403,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
               <div className="pt-6 mt-6 border-t border-white/5 space-y-4">
                 <div className="flex items-center gap-3 px-1 text-[9px] font-bold uppercase tracking-widest text-slate-500">
-                  <Zap className="w-3 h-3 text-blue-500" />
+                  <Zap className="w-3 h-3 text-amber-400/80" />
                   <span>Cloud Sync Active</span>
                 </div>
                 <div className="flex items-center gap-3 px-1 text-[9px] font-bold uppercase tracking-widest text-slate-500 opacity-50">
@@ -417,20 +417,22 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
         {/* SEGMENT 2: PROCESSING (Management / Batches) */}
         <section className="flex-grow flex flex-col gap-4 overflow-hidden">
-          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-slate-500">
+          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-indigo-400/80">
             <div className="flex items-center gap-2">
               <Layers className="w-3.5 h-3.5" />
               <h2>Processing Engine</h2>
               {batchGroups.length > 0 && (
-                <span className="ml-2 text-[9px] bg-white/5 border border-white/5 px-2 py-0.5 rounded-full">{batchGroups.length}</span>
+                <span className="ml-2 text-[9px] bg-indigo-400/10 border border-indigo-400/20 px-2 py-0.5 rounded-full text-indigo-300/80">{batchGroups.length}</span>
               )}
             </div>
-            <span className="text-[9px] opacity-50">Auto-Detect Groups</span>
+            <span className="text-[9px] text-slate-500 opacity-50">Auto-Detect Groups</span>
           </div>
 
-          <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-4 pr-1">
-            {!loading && batchGroups.length > 0 ? (
-              batchGroups.map((group, index) => (
+          <div className="flex-grow bg-indigo-400/[0.03] border border-indigo-400/10 rounded-[2.5rem] p-4 flex flex-col overflow-hidden relative group/engine backdrop-blur-xl">
+             <div className="absolute inset-0 bg-gradient-to-b from-indigo-400/[0.05] to-transparent pointer-events-none" />
+             <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-4 pr-1 relative z-10">
+              {!loading && batchGroups.length > 0 ? (
+                batchGroups.map((group, index) => (
                 <div 
                   key={group.id} 
                   style={{ animationDelay: `${index * 0.1}s` }}
@@ -485,9 +487,10 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
               ))
             ) : (
               <div className="flex-grow border border-dashed border-white/5 rounded-[2.5rem] flex flex-col items-center justify-center opacity-40">
-                <p className="text-[10px] font-black uppercase tracking-widest">Awaiting Input</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500/50">Awaiting Ingestion</p>
               </div>
             )}
+            </div>
           </div>
         </section>
 
@@ -498,9 +501,9 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
         {/* SEGMENT 3: RESULTS (Converted PDFs) */}
         <section className="w-[380px] flex flex-col gap-4 shrink-0 overflow-hidden">
-          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-slate-500">
+          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-emerald-400/80">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400/80 shadow-[0_0_15px_rgba(52,211,153,0.3)]" />
               <h2>Output</h2>
             </div>
             {completedResults.length > 0 && (
@@ -513,8 +516,9 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             )}
           </div>
 
-          <div className="flex-grow bg-slate-900/40 border border-white/5 rounded-[2.5rem] backdrop-blur-md shadow-2xl overflow-hidden flex flex-col p-4">
-            <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-3 pr-1">
+          <div className="flex-grow bg-emerald-400/[0.03] border border-emerald-400/10 rounded-[2.5rem] backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col p-4 relative group/results">
+            <div className="absolute inset-0 bg-gradient-to-tr from-emerald-400/[0.05] to-transparent pointer-events-none" />
+            <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-3 pr-1 relative z-10">
               {completedResults.length > 0 ? (
                 completedResults.map((file, idx) => (
                   <div 
