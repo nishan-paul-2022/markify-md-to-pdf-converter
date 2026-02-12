@@ -318,39 +318,43 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     const selectedFiles = e.target.files;
     if (!selectedFiles || selectedFiles.length === 0) {return;}
 
-    const archiveFile = selectedFiles[0];
+    const archiveFiles = Array.from(selectedFiles);
     
     // Support ZIP, 7Z, RAR, and TAR formats
-    const isSupportedArchive = archiveFile.name.match(/\.(zip|7z|rar|tar|tar\.gz|tgz)$/i);
-    if (!isSupportedArchive) {
-      showAlert({ title: 'Invalid File', message: 'Upload failed — only ZIP, 7Z, RAR, or TAR archives are allowed here.', variant: 'destructive' });
+    const unsupportedFiles = archiveFiles.filter(f => !f.name.match(/\.(zip|7z|rar|tar|tar\.gz|tgz)$/i));
+    if (unsupportedFiles.length > 0) {
+      const msg = `Upload failed — only ZIP, 7Z, RAR, or TAR archives are allowed. Unsupported: ${unsupportedFiles.map(f => f.name).join(', ')}`;
+      showAlert({ title: 'Invalid File', message: msg, variant: 'destructive' });
       if (zipInputRef.current) {zipInputRef.current.value = '';}
       return;
     }
 
     try {
-      const formData = new FormData();
-      formData.append('file', archiveFile);
-      formData.append('source', 'converter');
-      
-      const response = await fetch('/api/files/archive', {
-        method: 'POST',
-        body: formData,
+      const uploadPromises = archiveFiles.map(async (archiveFile) => {
+        const formData = new FormData();
+        formData.append('file', archiveFile);
+        formData.append('source', 'converter');
+        
+        const response = await fetch('/api/files/archive', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || `Archive processing failed for ${archiveFile.name}`);
+        }
+        return result;
       });
-      
-      const result = await response.json();
-      
-      if (!response.ok) {
-        const errorMsg = result.error || "Archive processing failed";
-        showAlert({ title: 'Upload Failed', message: errorMsg, variant: 'destructive' });
-        return;
-      }
 
-      // Successfully uploaded and extracted
+      await Promise.all(uploadPromises);
+      
+      // Successfully uploaded and extracted all
       await refreshFiles();
     } catch (error) {
-      console.error('Error processing archive file:', error);
-      showAlert({ title: 'Processing Failed', message: 'Failed to process the archive.', variant: 'destructive' });
+      console.error('Error processing archive files:', error);
+      const msg = error instanceof Error ? error.message : 'Failed to process the archives.';
+      showAlert({ title: 'Processing Failed', message: msg, variant: 'destructive' });
     } finally {
       if (zipInputRef.current) {zipInputRef.current.value = '';}
     }
@@ -396,6 +400,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         />
         <input 
           type="file" 
+          multiple
           accept=".zip,.7z,.rar,.tar,.tar.gz,.tgz" 
           ref={zipInputRef} 
           onChange={handleZipUpload} 

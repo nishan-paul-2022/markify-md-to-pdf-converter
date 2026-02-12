@@ -475,16 +475,18 @@ export function useConverter() {
       const files = event.target.files;
       if (!files || files.length === 0) {return;}
 
-      const archiveFile = files[0];
+      const archiveFiles = Array.from(files);
       
       // Support ZIP, 7Z, RAR, and TAR formats
-      const isSupportedArchive = archiveFile.name.match(/\.(zip|7z|rar|tar|tar\.gz|tgz)$/i);
-      if (!isSupportedArchive) {
+      const unsupportedFiles = archiveFiles.filter(f => !f.name.match(/\.(zip|7z|rar|tar|tar\.gz|tgz)$/i));
+      
+      if (unsupportedFiles.length > 0) {
         const api = getAlert();
+        const msg = `Upload failed — only ZIP, 7Z, RAR, or TAR archives are allowed. Unsupported: ${unsupportedFiles.map(f => f.name).join(', ')}`;
         if (api) {
-          api.show({ title: 'Invalid File', message: 'Upload failed — only ZIP, 7Z, RAR, or TAR archives are allowed.', variant: 'destructive' });
+          api.show({ title: 'Invalid File', message: msg, variant: 'destructive' });
         } else {
-          alert('Upload failed — only ZIP, 7Z, RAR, or TAR archives are allowed.');
+          alert(msg);
         }
         event.target.value = '';
         return;
@@ -492,33 +494,41 @@ export function useConverter() {
 
       setIsLoading(true);
       try {
-        const formData = new FormData();
-        formData.append('file', archiveFile);
-        formData.append('source', 'editor');
-        
-        const response = await fetch('/api/files/archive', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        const result = await response.json();
-        
-        if (!response.ok) {
-          const api = getAlert();
-          const errorMsg = result.error || "Archive processing failed";
-          if (api) {
-            api.show({ title: 'Upload Failed', message: errorMsg, variant: 'destructive' });
-          } else {
-            alert(errorMsg);
+        const uploadPromises = archiveFiles.map(async (archiveFile) => {
+          const formData = new FormData();
+          formData.append('file', archiveFile);
+          formData.append('source', 'editor');
+          
+          const response = await fetch('/api/files/archive', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(result.error || `Archive processing failed for ${archiveFile.name}`);
           }
-          return;
-        }
+          return result;
+        });
 
-        // Successfully uploaded and extracted
-        const extractedFiles = result.files || [];
+        const results = await Promise.all(uploadPromises);
         
-        // Find and select the main MD file for preview
-        const mdFileResult = extractedFiles.find((f: { originalName: string, url: string, id: string }) => f.originalName.endsWith('.md'));
+        // aggregate all extracted files from all successful results
+        interface ExtractedFile {
+          originalName: string;
+          url: string;
+          id: string;
+        }
+        let allExtractedFiles: ExtractedFile[] = [];
+        results.forEach(res => {
+          if (res.files) {
+            allExtractedFiles = [...allExtractedFiles, ...res.files];
+          }
+        });
+
+        // Find and select the first MD file for preview among ALL extracted files
+        const mdFileResult = allExtractedFiles.find((f) => f.originalName.endsWith('.md'));
+        
         if (mdFileResult) {
           // Load the content of the first MD file for preview
           const contentRes = await fetch(mdFileResult.url);
@@ -529,7 +539,7 @@ export function useConverter() {
           setFilename(mdFileResult.originalName);
           setSelectedFileId(mdFileResult.id);
           
-          // Set base path for images
+          // Set base path for images (using the first MD file's directory)
           if (mdFileResult.url) {
             const fileUrl = mdFileResult.url;
             const lastSlashIndex = fileUrl.lastIndexOf('/');
@@ -546,10 +556,11 @@ export function useConverter() {
         setIsUploaded(true);
         setTimeout(() => setIsUploaded(false), 2000);
       } catch (error) {
-        console.error("Error processing archive:", error);
+        console.error("Error processing archive(s):", error);
         const api = getAlert();
+        const msg = error instanceof Error ? error.message : 'An error occurred while processing the archives.';
         if (api) {
-          api.show({ title: 'Processing Failed', message: 'An error occurred while processing the archive.', variant: 'destructive' });
+          api.show({ title: 'Processing Failed', message: msg, variant: 'destructive' });
         }
       } finally {
         setIsLoading(false);
