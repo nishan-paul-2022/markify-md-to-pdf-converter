@@ -608,7 +608,7 @@ export function EditorView({
                   />
                   <input
                     type="file"
-                    accept=".zip"
+                    accept=".zip,.7z,.rar,.tar,.tar.gz,.tgz"
                     ref={zipInputRef}
                     onChange={handleZipUpload}
                     className="hidden"

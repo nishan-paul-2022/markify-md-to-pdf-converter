@@ -315,12 +315,45 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
   };
 
   const handleZipUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Placeholder for future zip logic
     const selectedFiles = e.target.files;
     if (!selectedFiles || selectedFiles.length === 0) {return;}
-    showAlert({ title: 'Feature Coming Soon', message: 'Zip upload functionality is currently under development.', variant: 'default' });
-    // Clear input
-    if (zipInputRef.current) {zipInputRef.current.value = '';}
+
+    const archiveFile = selectedFiles[0];
+    
+    // Support ZIP, 7Z, RAR, and TAR formats
+    const isSupportedArchive = archiveFile.name.match(/\.(zip|7z|rar|tar|tar\.gz|tgz)$/i);
+    if (!isSupportedArchive) {
+      showAlert({ title: 'Invalid File', message: 'Upload failed — only ZIP, 7Z, RAR, or TAR archives are allowed here.', variant: 'destructive' });
+      if (zipInputRef.current) {zipInputRef.current.value = '';}
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('file', archiveFile);
+      formData.append('source', 'converter');
+      
+      const response = await fetch('/api/files/archive', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        const errorMsg = result.error || "Archive processing failed";
+        showAlert({ title: 'Upload Failed', message: errorMsg, variant: 'destructive' });
+        return;
+      }
+
+      // Successfully uploaded and extracted
+      await refreshFiles();
+    } catch (error) {
+      console.error('Error processing archive file:', error);
+      showAlert({ title: 'Processing Failed', message: 'Failed to process the archive.', variant: 'destructive' });
+    } finally {
+      if (zipInputRef.current) {zipInputRef.current.value = '';}
+    }
   };
 
   return (
@@ -363,7 +396,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         />
         <input 
           type="file" 
-          accept=".zip" 
+          accept=".zip,.7z,.rar,.tar,.tar.gz,.tgz" 
           ref={zipInputRef} 
           onChange={handleZipUpload} 
           className="hidden" 

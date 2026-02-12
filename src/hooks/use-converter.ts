@@ -473,18 +473,89 @@ export function useConverter() {
 
   const handleZipUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
       const files = event.target.files;
-      if (files && files.length > 0) {
-        // Placeholder for zip upload logic
+      if (!files || files.length === 0) {return;}
+
+      const archiveFile = files[0];
+      
+      // Support ZIP, 7Z, RAR, and TAR formats
+      const isSupportedArchive = archiveFile.name.match(/\.(zip|7z|rar|tar|tar\.gz|tgz)$/i);
+      if (!isSupportedArchive) {
         const api = getAlert();
         if (api) {
-            api.show({ title: 'Feature Coming Soon', message: 'Zip upload functionality is currently under development.', variant: 'default' });
+          api.show({ title: 'Invalid File', message: 'Upload failed — only ZIP, 7Z, RAR, or TAR archives are allowed.', variant: 'destructive' });
         } else {
-             alert('Zip upload functionality is currently under development.');
+          alert('Upload failed — only ZIP, 7Z, RAR, or TAR archives are allowed.');
         }
-        // Clear input
+        event.target.value = '';
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', archiveFile);
+        formData.append('source', 'editor');
+        
+        const response = await fetch('/api/files/archive', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+          const api = getAlert();
+          const errorMsg = result.error || "Archive processing failed";
+          if (api) {
+            api.show({ title: 'Upload Failed', message: errorMsg, variant: 'destructive' });
+          } else {
+            alert(errorMsg);
+          }
+          return;
+        }
+
+        // Successfully uploaded and extracted
+        const extractedFiles = result.files || [];
+        
+        // Find and select the main MD file for preview
+        const mdFileResult = extractedFiles.find((f: { originalName: string, url: string, id: string }) => f.originalName.endsWith('.md'));
+        if (mdFileResult) {
+          // Load the content of the first MD file for preview
+          const contentRes = await fetch(mdFileResult.url);
+          if (contentRes.ok) {
+            const text = await contentRes.text();
+            handleContentChange(text);
+          }
+          setFilename(mdFileResult.originalName);
+          setSelectedFileId(mdFileResult.id);
+          
+          // Set base path for images
+          if (mdFileResult.url) {
+            const fileUrl = mdFileResult.url;
+            const lastSlashIndex = fileUrl.lastIndexOf('/');
+            if (lastSlashIndex !== -1) {
+              const directoryPath = fileUrl.substring(0, lastSlashIndex);
+              setBasePath(directoryPath.startsWith('/api/') ? directoryPath : `/api${directoryPath}`);
+            }
+          }
+        }
+
+        const now = new Date();
+        setUploadTime(now);
+        setLastModifiedTime(now);
+        setIsUploaded(true);
+        setTimeout(() => setIsUploaded(false), 2000);
+      } catch (error) {
+        console.error("Error processing archive:", error);
+        const api = getAlert();
+        if (api) {
+          api.show({ title: 'Processing Failed', message: 'An error occurred while processing the archive.', variant: 'destructive' });
+        }
+      } finally {
+        setIsLoading(false);
         event.target.value = '';
       }
-  }, []);
+  }, [handleContentChange]);
 
   const handleReset = useCallback(async (): Promise<void> => {
     try {

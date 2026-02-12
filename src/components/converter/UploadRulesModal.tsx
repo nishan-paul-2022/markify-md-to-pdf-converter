@@ -59,7 +59,7 @@ export function UploadRulesModal({
               </div>
               <div>
                 <AlertDialogTitle className="text-xl font-bold text-white tracking-tight">
-                  {isFile ? "File Upload Rules" : (type === "folder" ? "Folder Upload Rules" : "Zip Archive Rules")}
+                  {isFile ? "File Upload Rules" : (type === "folder" ? "Folder Upload Rules" : "Zip Upload Rules")}
                 </AlertDialogTitle>
               </div>
             </div>
@@ -78,6 +78,68 @@ export function UploadRulesModal({
                   </p>
                 </div>
               </div>
+            ) : type === "zip" ? (
+              <>
+                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                    <CheckCircle2 className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-200">Archive Formats</h4>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
+                      Supports <span className="text-emerald-400 font-mono font-bold">.zip</span>, <span className="text-emerald-400 font-mono font-bold">.7z</span>, <span className="text-emerald-400 font-mono font-bold">.rar</span>, and <span className="text-emerald-400 font-mono font-bold">.tar</span> formats.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                  <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 group-hover:scale-110 transition-transform">
+                    <CheckCircle2 className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-200">Direct Files</h4>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
+                      ZIP can contain one or more <span className="text-emerald-400 font-mono font-bold">.md</span> files directly.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
+                    <ImageIcon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-200">Folder Structure</h4>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
+                      ZIP can contain folders with <span className="text-emerald-400 font-mono font-bold">.md</span> + optional <span className="text-blue-400 font-mono font-bold">images/</span> subfolder.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-amber-500/[0.02] border border-amber-500/10 hover:border-amber-500/20 transition-all duration-300">
+                  <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 group-hover:scale-110 transition-transform">
+                    <AlertCircle className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-200">Required Content</h4>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
+                      At least one <span className="text-emerald-400 font-mono font-bold">.md</span> file must exist (direct or in folder).
+                    </p>
+                  </div>
+                </div>
+
+                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-red-500/[0.02] border border-red-500/10 hover:border-red-500/20 transition-all duration-300">
+                  <div className="p-2 rounded-lg bg-red-500/10 text-red-400 group-hover:scale-110 transition-transform">
+                    <AlertCircle className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-200">Strict Validation</h4>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
+                      Only <span className="text-blue-400 font-mono font-bold">images/</span> subfolder allowed. Extra folders will fail validation.
+                    </p>
+                  </div>
+                </div>
+              </>
             ) : (
               <>
                 <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
@@ -85,9 +147,9 @@ export function UploadRulesModal({
                     <CheckCircle2 className="h-4 w-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-slate-200">{type === "zip" ? "Archive Contents" : "Markdown Files"}</h4>
+                    <h4 className="text-sm font-semibold text-slate-200">Markdown Files</h4>
                     <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                      {type === "zip" ? "Archive" : "Folder"} must contain one or more <span className="text-emerald-400 font-mono font-bold">.md</span> files.
+                      Folder must contain one or more <span className="text-emerald-400 font-mono font-bold">.md</span> files.
                     </p>
                   </div>
                 </div>
