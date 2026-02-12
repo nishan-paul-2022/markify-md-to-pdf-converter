@@ -68,7 +68,7 @@ export function UploadRulesModal({
 
           <div className="mt-8 space-y-4 relative z-10">
             {isFile ? (
-                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+              <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
                 <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
                   <CheckCircle2 className="h-4 w-4" />
                 </div>
@@ -81,51 +81,60 @@ export function UploadRulesModal({
               </div>
             ) : type === "zip" ? (
               <>
-                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
-                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
-                    <CheckCircle2 className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-slate-200">Archive Formats</h4>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                      Supports <span className="text-emerald-400 font-mono font-bold">.zip</span>, <span className="text-emerald-400 font-mono font-bold">.7z</span>, <span className="text-emerald-400 font-mono font-bold">.rar</span>, and <span className="text-emerald-400 font-mono font-bold">.tar</span> formats.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
-                  <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 group-hover:scale-110 transition-transform">
-                    <CheckCircle2 className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-slate-200">Direct Files</h4>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                      ZIP can contain one or more <span className="text-emerald-400 font-mono font-bold">.md</span> files directly.
-                    </p>
+                <div className="space-y-4">
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] px-1">Archive</div>
+                  <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                      <CheckCircle2 className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-200">Archive Formats</h4>
+                      <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
+                        Supports <span className="text-emerald-400 font-mono font-bold">.zip</span>, <span className="text-emerald-400 font-mono font-bold">.7z</span>, <span className="text-emerald-400 font-mono font-bold">.rar</span>, and <span className="text-emerald-400 font-mono font-bold">.tar</span> formats.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
-                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
-                    <ImageIcon className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-slate-200">Folder Structure</h4>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                      ZIP can contain folders with <span className="text-emerald-400 font-mono font-bold">.md</span> + optional <span className="text-blue-400 font-mono font-bold">images/</span> subfolder.
-                    </p>
+                <div className="space-y-4 pt-2">
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] px-1">File</div>
+                  <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                      <CheckCircle2 className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-200">Markdown Files</h4>
+                      <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
+                        Upload one or more <span className="text-emerald-400 font-mono font-bold">.md</span> files at a time.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-amber-500/[0.02] border border-amber-500/10 hover:border-amber-500/20 transition-all duration-300">
-                  <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 group-hover:scale-110 transition-transform">
-                    <AlertCircle className="h-4 w-4" />
+                <div className="space-y-4 pt-2">
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] px-1">Folder</div>
+                  <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                      <CheckCircle2 className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-200">Markdown Files</h4>
+                      <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
+                        Folder must contain one or more <span className="text-emerald-400 font-mono font-bold">.md</span> files.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-slate-200">Required Content</h4>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                      At least one <span className="text-emerald-400 font-mono font-bold">.md</span> file must exist (direct or in folder).
-                    </p>
+
+                  <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                    <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
+                      <ImageIcon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-200">Assets Hierarchy</h4>
+                      <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
+                        Store referenced images in an <span className="text-blue-400 font-mono font-bold">images/</span> subfolder.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -136,7 +145,7 @@ export function UploadRulesModal({
                   <div>
                     <h4 className="text-sm font-semibold text-slate-200">Strict Validation</h4>
                     <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                      Only <span className="text-blue-400 font-mono font-bold">images/</span> subfolder allowed. Extra folders will fail validation.
+                      Extra subfolders or files will fail validation.
                     </p>
                   </div>
                 </div>
@@ -162,7 +171,7 @@ export function UploadRulesModal({
                   <div>
                     <h4 className="text-sm font-semibold text-slate-200">Assets Hierarchy</h4>
                     <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                       Store referenced images in an <span className="text-blue-400 font-mono font-bold">images/</span> subfolder.
+                      Store referenced images in an <span className="text-blue-400 font-mono font-bold">images/</span> subfolder.
                     </p>
                   </div>
                 </div>
