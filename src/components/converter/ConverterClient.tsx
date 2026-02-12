@@ -12,7 +12,9 @@ import {
   FileDown,
   Zap,
   CheckCircle2,
-  FileCode
+  FileCode,
+  Trash2,
+  ExternalLink
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import UserNav from '@/components/auth/UserNav';
@@ -38,17 +40,9 @@ interface ConverterClientProps {
   user: User;
 }
 
-interface BatchGroup {
-  id: string;
-  name: string;
-  files: AppFile[];
-  createdAt: string;
-  isProject: boolean;
-}
-
 export default function ConverterClient({ user }: ConverterClientProps): React.JSX.Element {
   const router = useRouter();
-  const { files, loading, refreshFiles } = useFiles('converter');
+  const { files, loading, refreshFiles, handleDelete } = useFiles('converter');
   const { show: showAlert } = useAlert();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [uploadRulesModal, setUploadRulesModal] = React.useState<{ isOpen: boolean, type: 'file' | 'folder' | 'zip' }>({ isOpen: false, type: 'file' });
@@ -60,49 +54,21 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
   // Status and result management
   const [processingStates, setProcessingStates] = React.useState<Record<string, 'pending' | 'converting' | 'done' | 'error'>>({});
   const [convertedFiles, setConvertedFiles] = React.useState<Record<string, Blob>>({});
-  const [batchProgress, setBatchProgress] = React.useState<Record<string, { current: number, total: number }>>({});
 
   // Grouping logic
-  const batchGroups = React.useMemo(() => {
-    const groups: Record<string, BatchGroup> = {};
-    
-    // Sort files by creation date first
-    const sortedFiles = [...files].sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-
-    sortedFiles.forEach(file => {
-      if (file.id.startsWith('default-') || file.batchId === 'sample-document' || file.batchId === 'sample-project') {
-        return;
-      }
-
-      const batchId = file.batchId || 'ungrouped';
-      if (!groups[batchId]) {
-        // Determine a name for the batch
-        let name = file.originalName;
-        const isProject = !!file.relativePath && file.relativePath.includes('/');
-        
-        if (isProject && file.relativePath) {
-          name = file.relativePath.split('/')[0];
-        } else if (file.batchId) {
-          name = `Batch: ${file.batchId.substring(0, 8)}`;
-        }
-
-        groups[batchId] = {
-          id: batchId,
-          name: name,
-          files: [],
-          createdAt: file.createdAt,
-          isProject: isProject
-        };
-      }
-      groups[batchId].files.push(file);
-    });
-
-    return Object.values(groups).filter(g => 
-      g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      g.files.some(f => f.originalName.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+  const filteredMdFiles = React.useMemo(() => {
+    return files
+      .filter(f => 
+        !f.id.startsWith('default-') && 
+        f.batchId !== 'sample-document' && 
+        f.batchId !== 'sample-project' &&
+        (f.originalName.toLowerCase().endsWith('.md') || f.mimeType === 'text/markdown')
+      )
+      .filter(f => 
+        f.originalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (f.relativePath && f.relativePath.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [files, searchQuery]);
 
   // Derived state for the "Converted" column
@@ -149,38 +115,6 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       setProcessingStates(prev => ({ ...prev, [file.id]: 'error' }));
       return false;
     }
-  };
-
-  const handleConvertBatch = async (group: BatchGroup) => {
-    const total = group.files.length;
-    setBatchProgress(prev => ({ ...prev, [group.id]: { current: 0, total } }));
-
-    for (let i = 0; i < group.files.length; i++) {
-      const file = group.files[i];
-      // Skip if already converted
-      if (processingStates[file.id] === 'done') {
-        setBatchProgress(prev => ({ 
-          ...prev, 
-          [group.id]: { ...prev[group.id], current: i + 1 } 
-        }));
-        continue;
-      }
-      
-      await handleConvertFile(file);
-      setBatchProgress(prev => ({ 
-        ...prev, 
-        [group.id]: { ...prev[group.id], current: i + 1 } 
-      }));
-    }
-    
-    // Clear progress after a delay
-    setTimeout(() => {
-      setBatchProgress(prev => {
-        const next = { ...prev };
-        delete next[group.id];
-        return next;
-      });
-    }, 5000);
   };
 
   const handleDownloadFile = (file: AppFile, type: 'md' | 'pdf') => {
@@ -497,8 +431,8 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             <div className="flex items-center gap-2">
               <Layers className="w-3.5 h-3.5" />
               <h2>Processing Engine</h2>
-              {batchGroups.length > 0 && (
-                <span className="ml-2 text-[9px] bg-indigo-400/10 border border-indigo-400/20 px-2 py-0.5 rounded-full text-indigo-300/80">{batchGroups.length}</span>
+              {filteredMdFiles.length > 0 && (
+                <span className="ml-2 text-[9px] bg-indigo-400/10 border border-indigo-400/20 px-2 py-0.5 rounded-full text-indigo-300/80">{filteredMdFiles.length}</span>
               )}
             </div>
 
@@ -507,56 +441,81 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
           <div className="flex-grow bg-indigo-400/[0.03] border border-indigo-400/10 rounded-[2.5rem] p-4 flex flex-col overflow-hidden relative group/engine backdrop-blur-xl">
              <div className="absolute inset-0 bg-gradient-to-b from-indigo-400/[0.05] to-transparent pointer-events-none" />
              <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-4 pr-1 relative z-10">
-              {!loading && batchGroups.length > 0 ? (
-                batchGroups.map((group, index) => (
+              {!loading && filteredMdFiles.length > 0 ? (
+                filteredMdFiles.map((file, index) => (
                 <div 
-                  key={group.id} 
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                  className="bg-slate-900/40 border border-white/5 rounded-[2rem] p-5 hover:border-blue-500/20 transition-all group/card shadow-xl relative overflow-hidden animate-card-in"
+                  key={file.id} 
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                  className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 hover:border-blue-500/30 transition-all group/card shadow-2xl relative overflow-hidden animate-card-in shrink-0"
                 >
-                  <div className="flex items-start justify-between relative z-10">
-                    <div className="flex items-center gap-4">
-                      <div className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center border border-white/5 transition-transform group-hover/card:scale-105",
-                        group.isProject ? "bg-amber-500/5 text-amber-500/80" : "bg-blue-500/5 text-blue-400/80"
-                      )}>
-                        {group.isProject ? <FolderOpen className="w-6 h-6" /> : <Layers className="w-6 h-6" />}
+                  <div className="flex items-center justify-between relative z-10 gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center border border-white/10 bg-white/5 text-blue-400/80 transition-all group-hover/card:scale-105 group-hover/card:border-blue-500/30 shrink-0 shadow-inner">
+                        <FileCode className="w-7 h-7" />
                       </div>
-                      <div>
-                        <h3 className="text-sm font-black text-white group-hover/card:text-blue-400 transition-colors truncate max-w-[200px]">
-                          {group.name}
+                      <div className="min-w-0 flex-grow py-1">
+                        <h3 className="text-[15px] font-black text-white group-hover/card:text-blue-400 transition-colors truncate leading-tight">
+                          {file.originalName}
                         </h3>
-                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
-                          {group.files.length} Modules Identified
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.15em] mt-1.5 truncate leading-relaxed">
+                          {file.relativePath || 'Root Directory'}
                         </p>
                       </div>
                     </div>
                     
-                    <Button 
-                      size="sm"
-                      onClick={() => handleConvertBatch(group)}
-                      disabled={!!batchProgress[group.id]}
-                      className={cn(
-                        "h-10 rounded-xl text-[9px] font-black uppercase tracking-widest px-4 gap-2 shadow-lg active:scale-95 transition-all outline-none border-none",
-                        batchProgress[group.id] ? "bg-blue-600 text-white" : "bg-white text-slate-950 hover:bg-blue-500 hover:text-white"
-                      )}
-                    >
-                      {batchProgress[group.id] ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : (
-                        <Zap className="w-3 h-3 fill-current" />
-                      )}
-                      {batchProgress[group.id] ? 'Syncing...' : 'Deploy'}
-                    </Button>
+                    <div className="flex items-center gap-3 shrink-0">
+                       {/* Delete Button */}
+                       <Button 
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleDelete(file.id)}
+                        className="h-11 w-11 rounded-2xl border border-white/5 bg-white/5 text-slate-500 hover:text-red-400 hover:bg-red-400/10 hover:border-red-400/20 transition-all shrink-0 shadow-sm"
+                        title="Delete source file"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+
+                      {/* Open in Editor */}
+                      <Button 
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => router.push(`/editor?fileId=${file.id}`)}
+                        className="h-11 w-11 rounded-2xl border border-white/5 bg-white/5 text-slate-500 hover:text-blue-400 hover:bg-blue-400/10 hover:border-blue-400/20 transition-all shrink-0 shadow-sm"
+                        title="Open in editor"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </Button>
+
+                      {/* Convert Button */}
+                      <Button 
+                        size="sm"
+                        onClick={() => handleConvertFile(file)}
+                        disabled={processingStates[file.id] === 'converting'}
+                        className={cn(
+                          "h-11 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-4 gap-2 shadow-xl active:scale-95 transition-all outline-none border-none shrink-0",
+                          processingStates[file.id] === 'done' 
+                            ? "bg-emerald-500 text-white" 
+                            : processingStates[file.id] === 'converting'
+                              ? "bg-blue-600 text-white cursor-wait"
+                              : "bg-white text-slate-950 hover:bg-blue-500 hover:text-white"
+                        )}
+                      >
+                        {processingStates[file.id] === 'converting' ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Zap className="w-3.5 h-3.5 fill-current" />
+                        )}
+                        <span className="relative top-[0.5px]">
+                          {processingStates[file.id] === 'converting' ? 'Syncing...' : processingStates[file.id] === 'done' ? 'Converted' : 'Deploy'}
+                        </span>
+                      </Button>
+                    </div>
                   </div>
 
-                  {/* Group progress bar if active */}
-                  {batchProgress[group.id] && (
-                    <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-blue-500 transition-all duration-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-                        style={{ width: `${(batchProgress[group.id].current / batchProgress[group.id].total) * 100}%` }}
-                      />
+                  {/* Individual Progress Bar (Subtle) */}
+                  {processingStates[file.id] === 'converting' && (
+                    <div className="absolute bottom-0 left-0 h-1 w-full bg-blue-500/10">
+                      <div className="h-full bg-blue-500 animate-pulse-width" />
                     </div>
                   )}
                 </div>

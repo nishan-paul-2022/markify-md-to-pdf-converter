@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useConverter } from '@/hooks/use-converter';
 import { useFiles } from '@/hooks/use-files';
 import { EditorView } from '@/components/converter/EditorView';
@@ -17,15 +18,58 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
   const converterState = useConverter();
   const { files, loading: filesLoading, handleDelete, handleBulkDelete, handleRename, refreshFiles } = useFiles('editor');
 
-  // Initial selection of default file
-  React.useEffect(() => {
+  const searchParams = useSearchParams();
+  const fileIdFromUrl = searchParams.get('fileId');
+
+  // Initial selection of file (either from URL or default)
+  useEffect(() => {
     if (!filesLoading && files.length > 0 && !converterState.selectedFileId) {
+      // 1. Check if we have a fileId in the URL
+      if (fileIdFromUrl) {
+        const targetFile = files.find(f => f.id === fileIdFromUrl);
+        if (targetFile) {
+          // Manual fetch and state update (similar to handleFileSelect but for a flat File object)
+          const loadFile = async () => {
+            try {
+              const fileUrl = targetFile.url || '';
+              const fetchUrl = (fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/')) 
+                ? `/api${fileUrl}` 
+                : fileUrl;
+                
+              const response = await fetch(fetchUrl);
+              if (response.ok) {
+                const text = await response.text();
+                converterState.handleContentChange(text);
+                converterState.setFilename(targetFile.originalName);
+                converterState.setSelectedFileId(targetFile.id);
+                
+                if (fileUrl) {
+                  const lastSlashIndex = fileUrl.lastIndexOf('/');
+                  if (lastSlashIndex !== -1) {
+                    const directoryPath = fileUrl.substring(0, lastSlashIndex);
+                    const finalBasePath = (directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')) 
+                      ? directoryPath 
+                      : `/api${directoryPath}`;
+                    converterState.setBasePath(finalBasePath);
+                  }
+                }
+              }
+            } catch (error) {
+              console.error('Failed to load file from URL param:', error);
+            }
+          };
+          loadFile();
+          return;
+        }
+      }
+
+      // 2. Fallback to default file
       const defaultFile = files.find(f => f.url === DEFAULT_MARKDOWN_PATH);
       if (defaultFile) {
         converterState.setSelectedFileId(defaultFile.id);
       }
     }
-  }, [files, filesLoading, converterState.selectedFileId, converterState]);
+  }, [files, filesLoading, converterState.selectedFileId, converterState, fileIdFromUrl]);
 
   const handleUnifiedDelete = useCallback((id: string | string[]) => {
     if (Array.isArray(id)) {
