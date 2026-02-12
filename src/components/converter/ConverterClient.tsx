@@ -9,7 +9,6 @@ import {
   Search,
   Download,
   Loader2,
-  ChevronRight,
   FileDown,
   Zap,
   CheckCircle2,
@@ -24,7 +23,7 @@ import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants
 import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { getAlert } from '@/components/AlertProvider';
+
 
 
 interface User {
@@ -257,19 +256,16 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
   };
   const triggerFileUpload = () => fileInputRef.current?.click();
   const triggerFolderUpload = () => folderInputRef.current?.click();
+  const triggerZipUpload = () => {
+    zipInputRef.current?.click();
+  };
 
   const handleZipUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const api = getAlert();
-    if (api) {
-      api.show({ 
-        title: 'Feature Coming Soon', 
-        message: 'Zip upload functionality is currently under development.', 
-        variant: 'default' 
-      });
-    } else {
-      alert('Zip upload functionality is currently under development.');
-    }
-    e.target.value = '';
+    // Placeholder for future zip logic
+    const selectedFiles = e.target.files;
+    if (!selectedFiles || selectedFiles.length === 0) {return;}
+    alert("ZIP upload coming soon!");
+    if (zipInputRef.current) {zipInputRef.current.value = '';}
   };
 
   return (
@@ -323,7 +319,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-blue-400 transition-colors" />
             <input
               type="text"
-              placeholder="Search library..."
+              placeholder="Search file"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-slate-800 border border-white/20 rounded-full py-2 pl-10 pr-4 text-xs w-64 focus:outline-none focus:border-blue-500 focus:bg-slate-900 transition-all text-white placeholder:text-slate-400/90 font-medium shadow-lg"
@@ -355,36 +351,45 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             <h2>Source</h2>
           </div>
           
-          <div className="flex-grow bg-amber-400/[0.03] border border-amber-400/10 rounded-[2.5rem] p-6 backdrop-blur-xl flex flex-col gap-6 shadow-2xl relative overflow-hidden group">
+          <div className="flex-grow bg-amber-400/[0.03] border border-amber-400/10 rounded-[2.5rem] p-6 backdrop-blur-xl flex flex-col justify-center gap-6 shadow-2xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-400/[0.05] to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
             
 
 
-            <div className="space-y-3 mt-auto relative z-10">
+            <div className="space-y-3 w-full relative z-10">
               <Button 
                 onClick={triggerFileUpload}
-                className="w-full h-14 bg-white text-slate-950 hover:bg-amber-500 hover:text-white rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn border-none shadow-lg"
+                className="w-full h-14 bg-slate-900/40 border border-white/5 hover:border-amber-500/50 hover:bg-slate-900/60 rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
               >
-                <div className="w-9 h-9 bg-slate-100/10 rounded-xl flex items-center justify-center group-hover/btn:bg-white/20 transition-colors">
+                <div className="w-9 h-9 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500 group-hover/btn:scale-110 transition-transform">
                   <FileCode className="w-5 h-5" />
                 </div>
-                <div className="text-left">
-                  <p className="text-[11px] font-black uppercase tracking-wider leading-none mb-1">Upload Files</p>
-                  <p className="text-[9px] opacity-60 font-bold uppercase tracking-widest">Multiple .md files</p>
+                <div className="text-left flex-grow">
+                  <p className="text-[11px] font-black uppercase tracking-wider leading-none text-slate-300 group-hover/btn:text-amber-400 transition-colors">Upload Files</p>
                 </div>
               </Button>
 
               <Button 
-                variant="outline"
                 onClick={triggerFolderUpload}
-                className="w-full h-14 border-white/10 bg-slate-900/50 hover:bg-slate-800 hover:border-amber-400/30 rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn"
+                className="w-full h-14 bg-slate-900/40 border border-white/5 hover:border-indigo-400/50 hover:bg-slate-900/60 rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
               >
-                <div className="w-9 h-9 bg-amber-400/10 rounded-xl flex items-center justify-center text-amber-400 group-hover/btn:scale-110 transition-transform">
+                <div className="w-9 h-9 bg-indigo-400/10 rounded-xl flex items-center justify-center text-indigo-400 group-hover/btn:scale-110 transition-transform">
                   <FolderOpen className="w-5 h-5" />
                 </div>
-                <div className="text-left">
-                  <p className="text-[11px] font-black uppercase tracking-wider leading-none mb-1 text-slate-300">Upload Project</p>
-                  <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Folder structure</p>
+                <div className="text-left flex-grow">
+                  <p className="text-[11px] font-black uppercase tracking-wider leading-none text-slate-300 group-hover/btn:text-indigo-300 transition-colors">Upload Project</p>
+                </div>
+              </Button>
+
+              <Button 
+                onClick={triggerZipUpload}
+                className="w-full h-14 bg-slate-900/40 border border-white/5 hover:border-cyan-400/50 hover:bg-slate-900/60 rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
+              >
+                <div className="w-9 h-9 bg-cyan-400/10 rounded-xl flex items-center justify-center text-cyan-400 group-hover/btn:scale-110 transition-transform">
+                  <FileDown className="w-5 h-5" />
+                </div>
+                <div className="text-left flex-grow">
+                  <p className="text-[11px] font-black uppercase tracking-wider leading-none text-slate-300 group-hover/btn:text-cyan-300 transition-colors">Upload Zip</p>
                 </div>
               </Button>
 
@@ -472,10 +477,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
           </div>
         </section>
 
-        {/* Divider icon */}
-        <div className="flex flex-col items-center justify-center text-slate-800 self-center">
-          <ChevronRight className="w-6 h-6 animate-pulse" />
-        </div>
+
 
         {/* SEGMENT 3: RESULTS (Converted PDFs) */}
         <section className="w-[380px] flex flex-col gap-4 shrink-0 overflow-hidden">
