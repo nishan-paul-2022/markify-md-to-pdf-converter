@@ -9,9 +9,21 @@ import { promisify } from "util"
 import path7za from "7zip-bin"
 
 const execPromise = promisify(exec)
-const path7zaBinary = path7za.path7za
+
+// Robust way to find 7za binary: 
+// 1. Try system-wide '7za' command
+// 2. Fallback to 7zip-bin package path
+async function get7zaPath() {
+  try {
+    await execPromise('7za --help')
+    return '7za'
+  } catch {
+    return path7za.path7za
+  }
+}
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const path7zaBinary = await get7zaPath()
   let tempDir = ""
   try {
     const session = await auth()
@@ -84,21 +96,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
        return NextResponse.json({ error: "Upload failed — only .md files are allowed here." }, { status: 400 })
     }
 
+    // Determine if there's a common wrapper folder to strip
+    // A wrapper exists if all files share the same first path segment, 
+    // and that segment is NOT "images", and no files are at the root level relative to it.
+    const firstSegments = new Set(allFiles.map(f => f.relativePath.split('/')[0]))
+    const hasWrapper = firstSegments.size === 1 && 
+                       ![...firstSegments][0].toLowerCase().endsWith('.md') && 
+                       [...firstSegments][0].toLowerCase() !== 'images'
+
     // Strict Path Validation Logic (Mirrored from single file route)
     const allowedImageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg']
     const validFiles: typeof allFiles = []
 
     for (const file of allFiles) {
-      const normalizedPath = file.relativePath.replace(/^\//, '')
-      const actualParts = normalizedPath.split('/')
+      const actualParts = file.relativePath.split('/')
+      const effectiveParts = hasWrapper ? actualParts.slice(1) : actualParts
       
-      // Handle potential wrapper folder
-      let effectiveParts = actualParts
-      if (actualParts.length > 1 && actualParts[0].toLowerCase() !== 'images') {
-        // If there's a wrapper, we only allow it if it's the only folder at root level or similar
-        // For simplicity, we skip the wrapper if it exists and apply rules to contents
-        effectiveParts = actualParts.slice(1)
-      }
+      if (effectiveParts.length === 0) { continue; } // Skip the wrapper folder entry itself if it exists
 
       const fileName = file.name.toLowerCase()
       const isMd = fileName.endsWith('.md')
@@ -135,10 +149,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     for (const file of validFiles) {
        // Normalize the relative path for saving (remove wrapper if any)
        const actualParts = file.relativePath.split('/')
-       let savedRelPath = file.relativePath
-       if (actualParts.length > 1 && actualParts[0].toLowerCase() !== 'images') {
-         savedRelPath = actualParts.slice(1).join('/')
-       }
+       const savedRelPath = hasWrapper ? actualParts.slice(1).join('/') : file.relativePath
 
        const storageKey = `uploads/${session.user.id}/${batchId}/${savedRelPath}`
        const destinationPath = join(process.cwd(), "public", storageKey)

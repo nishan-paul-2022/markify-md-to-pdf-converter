@@ -31,6 +31,7 @@ RUN apt-get update && apt-get install -y \
     fonts-noto-color-emoji \
     fonts-freefont-ttf \
     openssl \
+    p7zip-full \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/public ./public
