@@ -315,18 +315,18 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         />
 
         <div className="flex items-center justify-end gap-4">
-          <div className="relative group hidden lg:block overflow-hidden">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-blue-400 transition-colors" />
+          <div className="relative group hidden lg:block">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
             <input
               type="text"
-              placeholder="Search file"
+              placeholder="SEARCH"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-slate-800 border border-white/20 rounded-full py-2 pl-10 pr-4 text-xs w-64 focus:outline-none focus:border-blue-500 focus:bg-slate-900 transition-all text-white placeholder:text-slate-400/90 font-medium shadow-lg"
+              className="h-9 w-56 bg-white/5 border border-white/5 rounded-full pl-9 pr-4 text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/30 focus:bg-blue-500/5 focus:text-blue-100 transition-all"
             />
           </div>
           
-          <div className="h-4 w-[1px] bg-white/5 hidden md:block" />
+
           
           <Button
             variant="ghost"
@@ -356,40 +356,40 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             
 
 
-            <div className="space-y-3 w-full relative z-10">
+            <div className="space-y-4 w-full relative z-10">
               <Button 
                 onClick={triggerFileUpload}
-                className="w-full h-14 bg-slate-900/40 border border-white/5 hover:border-amber-500/50 hover:bg-slate-900/60 rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
+                className="w-full h-16 bg-slate-900/40 border border-white/10 hover:border-amber-500/50 hover:bg-amber-500/10 rounded-2xl flex items-center justify-start px-6 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
               >
-                <div className="w-9 h-9 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500 group-hover/btn:scale-110 transition-transform">
-                  <FileCode className="w-5 h-5" />
+                <div className="w-11 h-11 bg-amber-500/5 rounded-xl flex items-center justify-center text-amber-500/60 group-hover/btn:bg-amber-500/20 group-hover/btn:text-amber-400 group-hover/btn:scale-110 transition-all">
+                  <FileCode className="w-6 h-6" />
                 </div>
                 <div className="text-left flex-grow">
-                  <p className="text-[11px] font-black uppercase tracking-wider leading-none text-slate-300 group-hover/btn:text-amber-400 transition-colors">Upload Files</p>
+                  <p className="text-[12px] font-black uppercase tracking-wider leading-none text-slate-400 group-hover/btn:text-amber-300 transition-colors">Upload Files</p>
                 </div>
               </Button>
 
               <Button 
                 onClick={triggerFolderUpload}
-                className="w-full h-14 bg-slate-900/40 border border-white/5 hover:border-indigo-400/50 hover:bg-slate-900/60 rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
+                className="w-full h-16 bg-slate-900/40 border border-white/10 hover:border-indigo-400/50 hover:bg-indigo-400/10 rounded-2xl flex items-center justify-start px-6 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
               >
-                <div className="w-9 h-9 bg-indigo-400/10 rounded-xl flex items-center justify-center text-indigo-400 group-hover/btn:scale-110 transition-transform">
-                  <FolderOpen className="w-5 h-5" />
+                <div className="w-11 h-11 bg-indigo-400/5 rounded-xl flex items-center justify-center text-indigo-400/60 group-hover/btn:bg-indigo-400/20 group-hover/btn:text-indigo-400 group-hover/btn:scale-110 transition-all">
+                  <FolderOpen className="w-6 h-6" />
                 </div>
                 <div className="text-left flex-grow">
-                  <p className="text-[11px] font-black uppercase tracking-wider leading-none text-slate-300 group-hover/btn:text-indigo-300 transition-colors">Upload Project</p>
+                  <p className="text-[12px] font-black uppercase tracking-wider leading-none text-slate-400 group-hover/btn:text-indigo-300 transition-colors">Upload Project</p>
                 </div>
               </Button>
 
               <Button 
                 onClick={triggerZipUpload}
-                className="w-full h-14 bg-slate-900/40 border border-white/5 hover:border-cyan-400/50 hover:bg-slate-900/60 rounded-2xl flex items-center justify-start px-5 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
+                className="w-full h-16 bg-slate-900/40 border border-white/10 hover:border-cyan-400/50 hover:bg-cyan-400/10 rounded-2xl flex items-center justify-start px-6 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
               >
-                <div className="w-9 h-9 bg-cyan-400/10 rounded-xl flex items-center justify-center text-cyan-400 group-hover/btn:scale-110 transition-transform">
-                  <FileDown className="w-5 h-5" />
+                <div className="w-11 h-11 bg-cyan-400/5 rounded-xl flex items-center justify-center text-cyan-400/60 group-hover/btn:bg-cyan-400/20 group-hover/btn:text-cyan-400 group-hover/btn:scale-110 transition-all">
+                  <FileDown className="w-6 h-6" />
                 </div>
                 <div className="text-left flex-grow">
-                  <p className="text-[11px] font-black uppercase tracking-wider leading-none text-slate-300 group-hover/btn:text-cyan-300 transition-colors">Upload Zip</p>
+                  <p className="text-[12px] font-black uppercase tracking-wider leading-none text-slate-400 group-hover/btn:text-cyan-300 transition-colors">Upload Zip</p>
                 </div>
               </Button>
 
