@@ -23,6 +23,8 @@ import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants
 import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { useAlert } from "@/components/AlertProvider";
+import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
 
 
 
@@ -47,7 +49,9 @@ interface BatchGroup {
 export default function ConverterClient({ user }: ConverterClientProps): React.JSX.Element {
   const router = useRouter();
   const { files, loading, refreshFiles } = useFiles('converter');
+  const { show: showAlert } = useAlert();
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [uploadRulesModal, setUploadRulesModal] = React.useState<{ isOpen: boolean, type: 'file' | 'folder' | 'zip' }>({ isOpen: false, type: 'file' });
   
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const folderInputRef = React.useRef<HTMLInputElement>(null);
@@ -221,10 +225,30 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         method: 'POST',
         body: formData,
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMsg = "Upload failed";
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMsg = errorJson.error || errorMsg;
+        } catch {
+          errorMsg = errorText || errorMsg;
+        }
+        return { error: errorMsg, file: file.name };
+      }
+      
       return response.ok;
     });
 
-    await Promise.all(uploadPromises);
+    const results = await Promise.all(uploadPromises);
+    const failedResults = results.filter(r => r && typeof r === 'object' && 'error' in r);
+    
+    if (failedResults.length > 0) {
+      const msg = (failedResults[0] as { error: string }).error;
+      showAlert({ title: 'Upload Failed', message: msg, variant: 'destructive' });
+    }
+    
     await refreshFiles();
     if (fileInputRef.current) {fileInputRef.current.value = '';}
   };
@@ -247,24 +271,55 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         method: 'POST',
         body: formData,
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMsg = "Upload failed";
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMsg = errorJson.error || errorMsg;
+        } catch {
+          errorMsg = errorText || errorMsg;
+        }
+        return { error: errorMsg, file: file.name };
+      }
+      
       return response.ok;
     });
 
-    await Promise.all(uploadPromises);
+    const results = await Promise.all(uploadPromises);
+    const failedResults = results.filter(r => r && typeof r === 'object' && 'error' in r);
+    
+    if (failedResults.length > 0) {
+      const msg = (failedResults[0] as { error: string }).error;
+      showAlert({ title: 'Invalid Folder', message: msg, variant: 'destructive' });
+    }
+    
     await refreshFiles();
     if (folderInputRef.current) {folderInputRef.current.value = '';}
   };
   const triggerFileUpload = () => fileInputRef.current?.click();
   const triggerFolderUpload = () => folderInputRef.current?.click();
-  const triggerZipUpload = () => {
-    zipInputRef.current?.click();
+  const triggerZipUpload = () => zipInputRef.current?.click();
+
+  const handleUploadModalConfirm = () => {
+    const type = uploadRulesModal.type;
+    setUploadRulesModal(prev => ({ ...prev, isOpen: false }));
+    if (type === 'file') {
+      triggerFileUpload();
+    } else if (type === 'folder') {
+      triggerFolderUpload();
+    } else if (type === 'zip') {
+      triggerZipUpload();
+    }
   };
 
   const handleZipUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     // Placeholder for future zip logic
     const selectedFiles = e.target.files;
     if (!selectedFiles || selectedFiles.length === 0) {return;}
-    alert("ZIP upload coming soon!");
+    showAlert({ title: 'Feature Coming Soon', message: 'Zip upload functionality is currently under development.', variant: 'default' });
+    // Clear input
     if (zipInputRef.current) {zipInputRef.current.value = '';}
   };
 
@@ -358,7 +413,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
             <div className="space-y-4 w-full relative z-10">
               <Button 
-                onClick={triggerFileUpload}
+                onClick={(e) => { e.stopPropagation(); setUploadRulesModal({ isOpen: true, type: 'file' }); }}
                 className="w-full h-16 bg-slate-900/40 border border-white/10 hover:border-amber-500/50 hover:bg-amber-500/10 rounded-2xl flex items-center justify-start px-6 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
               >
                 <div className="w-11 h-11 bg-amber-500/5 rounded-xl flex items-center justify-center text-amber-500/60 group-hover/btn:bg-amber-500/20 group-hover/btn:text-amber-400 group-hover/btn:scale-110 transition-all">
@@ -370,10 +425,10 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
               </Button>
 
               <Button 
-                onClick={triggerFolderUpload}
-                className="w-full h-16 bg-slate-900/40 border border-white/10 hover:border-indigo-400/50 hover:bg-indigo-400/10 rounded-2xl flex items-center justify-start px-6 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
+                onClick={(e) => { e.stopPropagation(); setUploadRulesModal({ isOpen: true, type: 'folder' }); }}
+                className="w-full h-16 bg-slate-900/40 border border-white/10 hover:border-indigo-500/50 hover:bg-indigo-500/10 rounded-2xl flex items-center justify-start px-6 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
               >
-                <div className="w-11 h-11 bg-indigo-400/5 rounded-xl flex items-center justify-center text-indigo-400/60 group-hover/btn:bg-indigo-400/20 group-hover/btn:text-indigo-400 group-hover/btn:scale-110 transition-all">
+                <div className="w-11 h-11 bg-indigo-500/5 rounded-xl flex items-center justify-center text-indigo-400/60 group-hover/btn:bg-indigo-500/20 group-hover/btn:text-indigo-400 group-hover/btn:scale-110 transition-all">
                   <FolderOpen className="w-6 h-6" />
                 </div>
                 <div className="text-left flex-grow">
@@ -382,10 +437,10 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
               </Button>
 
               <Button 
-                onClick={triggerZipUpload}
-                className="w-full h-16 bg-slate-900/40 border border-white/10 hover:border-cyan-400/50 hover:bg-cyan-400/10 rounded-2xl flex items-center justify-start px-6 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
+                onClick={(e) => { e.stopPropagation(); setUploadRulesModal({ isOpen: true, type: 'zip' }); }}
+                className="w-full h-16 bg-slate-900/40 border border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/10 rounded-2xl flex items-center justify-start px-6 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
               >
-                <div className="w-11 h-11 bg-cyan-400/5 rounded-xl flex items-center justify-center text-cyan-400/60 group-hover/btn:bg-cyan-400/20 group-hover/btn:text-cyan-400 group-hover/btn:scale-110 transition-all">
+                <div className="w-11 h-11 bg-cyan-500/5 rounded-xl flex items-center justify-center text-cyan-400/60 group-hover/btn:bg-cyan-500/20 group-hover/btn:text-cyan-400 group-hover/btn:scale-110 transition-all">
                   <FileDown className="w-6 h-6" />
                 </div>
                 <div className="text-left flex-grow">
@@ -549,6 +604,13 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       
 
     </main>
+
+    <UploadRulesModal 
+      isOpen={uploadRulesModal.isOpen}
+      type={uploadRulesModal.type}
+      onClose={() => setUploadRulesModal(prev => ({ ...prev, isOpen: false }))}
+      onConfirm={handleUploadModalConfirm}
+    />
     </TooltipProvider>
   );
 }
