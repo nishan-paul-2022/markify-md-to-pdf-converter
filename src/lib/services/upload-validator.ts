@@ -56,12 +56,31 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
 
   // Determine if it's a folder upload
   const isFolderUpload = files.some(f => f.webkitRelativePath && f.webkitRelativePath.includes('/'));
+  
+  // Apply Smart Filtering for folder uploads: Ignore hidden files/folders and system directories
+  let processedFiles = files;
+  if (isFolderUpload) {
+    processedFiles = files.filter(file => {
+      const path = file.webkitRelativePath || file.name;
+      const parts = path.split('/');
+      // Skip if any part of the path is hidden or a system folder
+      return !parts.some(part => part.startsWith('.') || part === '__MACOSX');
+    });
+  } else {
+    // For single file uploads, just ignore hidden files
+    processedFiles = files.filter(file => !file.name.startsWith('.'));
+  }
+
   const filteredFiles: File[] = [];
   const violations: string[] = [];
 
+  if (processedFiles.length === 0) {
+    return { case: 0, valid: false, error: "No valid files found in selection (hidden/system files ignored).", filteredFiles: [] };
+  }
+
   // --- Independent File Uploads (Strict) ---
   if (!isFolderUpload) {
-    if (files.length > 1) {
+    if (processedFiles.length > 1) {
       return {
         case: 2,
         valid: false,
@@ -70,8 +89,7 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
       };
     }
 
-    for (const file of files) {
-      if (file.name.startsWith('.')) {continue;}
+    for (const file of processedFiles) {
       if (file.name.toLowerCase().endsWith('.md')) {
         filteredFiles.push(file);
       } else {
@@ -101,25 +119,23 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
 
   // --- Folder Uploads (Strict) ---
   const firstParts = new Set<string>();
-  files.forEach(f => {
+  processedFiles.forEach(f => {
     const path = normalizePath(f.webkitRelativePath || "");
     if (path.includes('/')) {
       firstParts.add(path.split('/')[0]);
     }
   });
 
-  const isSingleFolderDrop = firstParts.size === 1 && !files.some(f => !(f.webkitRelativePath || "").includes('/'));
+  const isSingleFolderDrop = firstParts.size === 1 && !processedFiles.some(f => !(f.webkitRelativePath || "").includes('/'));
   
   const subdirectories = new Set<string>();
   const foundImageRefs = new Set<string>();
   let mdFilesInRootCount = 0;
 
-  for (const file of files) {
+  for (const file of processedFiles) {
     const fullPath = normalizePath(file.webkitRelativePath || file.name);
     const pathParts = fullPath.split('/');
     const fileName = file.name;
-    
-    if (fileName.startsWith('.')) {continue;}
 
     const subParts = isSingleFolderDrop ? pathParts.slice(1) : pathParts;
     const internalPath = subParts.join('/');

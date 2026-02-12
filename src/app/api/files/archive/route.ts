@@ -63,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // 4. Recursively find all files
-    const allFiles: { name: string; relativePath: string; fullPath: string; size: number }[] = []
+    const RAW_FILES: { name: string; relativePath: string; fullPath: string; size: number }[] = []
     
     async function walk(dir: string, base: string) {
       const entries = await readdir(dir, { withFileTypes: true })
@@ -71,10 +71,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const fullPath = join(dir, entry.name)
         const relPath = relative(base, fullPath).replace(/\\/g, '/')
         if (entry.isDirectory()) {
+          // Skip system directories like __MACOSX
+          if (entry.name === '__MACOSX' || entry.name.startsWith('.')) { continue; }
           await walk(fullPath, base)
         } else {
+          // Skip system files like .DS_Store or files starting with .
+          if (entry.name.startsWith('.')) { continue; }
+          
           const stats = await stat(fullPath)
-          allFiles.push({
+          RAW_FILES.push({
             name: entry.name,
             relativePath: relPath,
             fullPath,
@@ -85,8 +90,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
     await walk(extractDir, extractDir)
 
+    // Filtered list of files for logic processing
+    const allFiles = RAW_FILES;
+
     if (allFiles.length === 0) {
-      return NextResponse.json({ error: "Archive is empty." }, { status: 400 })
+      return NextResponse.json({ error: "Archive is empty or only contains invalid files." }, { status: 400 })
     }
 
     // 5. Apply the same validation rules as single file/folder uploads
@@ -112,7 +120,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const actualParts = file.relativePath.split('/')
       const effectiveParts = hasWrapper ? actualParts.slice(1) : actualParts
       
-      if (effectiveParts.length === 0) { continue; } // Skip the wrapper folder entry itself if it exists
+      if (effectiveParts.length === 0) { continue; }
 
       const fileName = file.name.toLowerCase()
       const isMd = fileName.endsWith('.md')
@@ -125,19 +133,36 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
         validFiles.push(file)
       }
-      // Rule 2: Subfolder files (effective) MUST be in 'images/' and MUST be images
+      // Rule 2: Subfolder level
       else if (effectiveParts.length === 2) {
-        if (effectiveParts[0].toLowerCase() !== 'images') {
-          return NextResponse.json({ error: `Upload failed — ensure it follows the required .md + images/ layout. Invalid folder: ${effectiveParts[0]}` }, { status: 400 })
+        // Option A: Root-level images/ folder
+        if (effectiveParts[0].toLowerCase() === 'images') {
+          if (!isImage) {
+            return NextResponse.json({ error: `Upload failed — only images are allowed in the images/ folder. Found: ${file.relativePath}` }, { status: 400 })
+          }
+          validFiles.push(file)
+        } 
+        // Option B: A project's root file (e.g., FolderA/note.md)
+        else {
+          if (!isMd) {
+            return NextResponse.json({ error: `Upload failed — ensure it follows the required .md + images/ layout. Invalid file in folder: ${file.relativePath}` }, { status: 400 })
+          }
+          validFiles.push(file)
+        }
+      }
+      // Rule 3: Depth 3 level (e.g., Project/images/file.png)
+      else if (effectiveParts.length === 3) {
+        if (effectiveParts[1].toLowerCase() !== 'images') {
+          return NextResponse.json({ error: `Upload failed — nested folders are only allowed for 'images/'. Invalid path: ${file.relativePath}` }, { status: 400 })
         }
         if (!isImage) {
-          return NextResponse.json({ error: `Upload failed — only images are allowed in the images/ folder. Found: ${file.relativePath}` }, { status: 400 })
+          return NextResponse.json({ error: `Upload failed — only images are allowed in 'images/' folders. Found: ${file.relativePath}` }, { status: 400 })
         }
         validFiles.push(file)
       }
-      // Rule 3: No nested folders or depth > 2 (effective)
+      // Rule 4: Too deep
       else {
-        return NextResponse.json({ error: `Upload failed — directory structure too deep or invalid: ${file.relativePath}` }, { status: 400 })
+        return NextResponse.json({ error: `Upload failed — directory structure too deep (max 1 subfolder level allowed): ${file.relativePath}` }, { status: 400 })
       }
     }
 
