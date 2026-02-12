@@ -81,60 +81,39 @@ export function UploadRulesModal({
               </div>
             ) : type === "zip" ? (
               <>
-                <div className="space-y-4">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] px-1">Archive</div>
-                  <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
-                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
-                      <CheckCircle2 className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-200">Archive Formats</h4>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                        Supports <span className="text-emerald-400 font-mono font-bold">.zip</span>, <span className="text-emerald-400 font-mono font-bold">.7z</span>, <span className="text-emerald-400 font-mono font-bold">.rar</span>, and <span className="text-emerald-400 font-mono font-bold">.tar</span> formats.
-                      </p>
-                    </div>
+                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                    <CheckCircle2 className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-200">Archive Support</h4>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
+                      Upload one or more archive files at a time (<span className="text-emerald-400 font-mono font-bold">.zip</span>, <span className="text-emerald-400 font-mono font-bold">.7z</span>, <span className="text-emerald-400 font-mono font-bold">.rar</span>, and <span className="text-emerald-400 font-mono font-bold">.tar</span>).
+                    </p>
                   </div>
                 </div>
 
-                <div className="space-y-4 pt-2">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] px-1">File</div>
-                  <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
-                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
-                      <CheckCircle2 className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-200">Markdown Files</h4>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                        Upload one or more <span className="text-emerald-400 font-mono font-bold">.md</span> files at a time.
-                      </p>
-                    </div>
+                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                    <CheckCircle2 className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-200">Markdown Requirements</h4>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
+                      Archive must contain at least one <span className="text-emerald-400 font-mono font-bold">.md</span> file (at the root or inside folders).
+                    </p>
                   </div>
                 </div>
 
-                <div className="space-y-4 pt-2">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] px-1">Folder</div>
-                  <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
-                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
-                      <CheckCircle2 className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-200">Markdown Files</h4>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                        Folder must contain one or more <span className="text-emerald-400 font-mono font-bold">.md</span> files.
-                      </p>
-                    </div>
+                <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
+                    <ImageIcon className="h-4 w-4" />
                   </div>
-
-                  <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
-                    <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
-                      <ImageIcon className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-200">Assets Hierarchy</h4>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
-                        Store referenced images in an <span className="text-blue-400 font-mono font-bold">images/</span> subfolder.
-                      </p>
-                    </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-200">Image Hierarchy</h4>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-nowrap">
+                      If using folders, all referenced images must be stored in <span className="text-blue-400 font-mono font-bold">images/</span> subfolder.
+                    </p>
                   </div>
                 </div>
 
