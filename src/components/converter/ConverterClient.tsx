@@ -11,8 +11,6 @@ import {
   Loader2,
   ChevronRight,
   FileDown,
-  ArrowRight,
-  Sparkles,
   Zap,
   CheckCircle2,
   FileCode
@@ -360,18 +358,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
           <div className="flex-grow bg-amber-400/[0.03] border border-amber-400/10 rounded-[2.5rem] p-6 backdrop-blur-xl flex flex-col gap-6 shadow-2xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-400/[0.05] to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
             
-            <div className="flex-grow flex flex-col items-center justify-center text-center gap-6 py-8 relative z-10">
-              <div className="w-20 h-20 bg-slate-950 rounded-[2rem] flex items-center justify-center border border-white/5 shadow-2xl relative group/icon">
-                <div className="absolute inset-0 bg-amber-400/10 blur-2xl animate-pulse" />
-                <Sparkles className="w-8 h-8 text-amber-400 group-hover/icon:scale-110 transition-transform duration-500" />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">Ingestion Hub</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed px-4">
-                  Drop files or folders to begin the automated conversion pipeline
-                </p>
-              </div>
-            </div>
+
 
             <div className="space-y-3 mt-auto relative z-10">
               <Button 
@@ -539,14 +526,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                   </div>
                 ))
               ) : (
-                <div className="flex-grow flex flex-col items-center justify-center text-center opacity-30 gap-4">
-                  <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center">
-                    <ArrowRight className="w-6 h-6" />
-                  </div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] px-12 leading-relaxed">
-                    Output will materialize here following processing
-                  </p>
-                </div>
+                <div className="flex-grow flex flex-col items-center justify-center text-center opacity-30 gap-4" />
               )}
             </div>
 
