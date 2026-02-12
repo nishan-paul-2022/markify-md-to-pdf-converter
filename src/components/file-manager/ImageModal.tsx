@@ -117,9 +117,10 @@ export function ImageModal({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="text-white/70 hover:text-white hover:bg-white/10 rounded-full h-10 w-10 transition-all cursor-pointer"
+            className="text-white/70 hover:text-white hover:bg-white/10 rounded-full h-12 w-12 transition-all cursor-pointer group"
+            aria-label="Close"
           >
-            <X className="h-6 w-6" />
+            <X className="h-6 w-6 group-hover:scale-110 transition-transform" />
           </Button>
         </div>
       </div>

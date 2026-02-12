@@ -477,14 +477,15 @@ export function EditorView({
                   placeholder="Search files"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-950/50 border border-white/5 rounded-md py-1.5 pl-8 pr-8 text-xs focus:outline-none focus:border-white/10 focus:bg-slate-950 transition-all placeholder:text-slate-600"
+                  className="w-full bg-slate-950/50 border border-white/5 rounded-md py-1.5 pl-8 pr-10 text-xs focus:outline-none focus:border-white/10 focus:bg-slate-950 transition-all placeholder:text-slate-600"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-200 p-0.5 rounded-full hover:bg-white/10 transition-all"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-200 p-2 rounded-full hover:bg-white/10 transition-all cursor-pointer group"
+                    aria-label="Clear search"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-3.5 w-3.5 group-hover:scale-110 transition-transform" />
                   </button>
                 )}
               </div>
@@ -519,9 +520,10 @@ export function EditorView({
                         setIsSelectionMode(false);
                         setSelectedIds(new Set());
                       }}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:text-slate-200 transition-colors flex items-center justify-center cursor-pointer"
+                      className="h-9 w-9 rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-all flex items-center justify-center cursor-pointer group"
+                      aria-label="Exit selection mode"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-4 w-4 group-hover:scale-110 transition-transform" />
                     </button>
                   </div>
                 </div>

@@ -44,9 +44,10 @@ export function UploadRulesModal({
           
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-full transition-all z-10 cursor-pointer"
+            className="absolute top-2 right-2 p-4 text-slate-500 hover:text-white hover:bg-white/5 rounded-full transition-all z-10 cursor-pointer group"
+            aria-label="Close modal"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4 group-hover:scale-110 transition-transform" />
           </button>
 
           <AlertDialogHeader className="relative z-10">
