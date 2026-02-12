@@ -598,7 +598,10 @@ export function EditorView({
                     accept=".md,image/png,image/jpeg,image/jpg,image/gif,image/webp"
                     multiple
                     ref={fileInputRef}
-                    onChange={handleFileUpload}
+                    onChange={async (e) => {
+                      await handleFileUpload(e);
+                      await refreshFiles();
+                    }}
                     className="hidden"
                   />
                   <input
@@ -606,13 +609,19 @@ export function EditorView({
                     ref={folderInputRef}
                     className="hidden"
                     {...({ webkitdirectory: "", directory: "" } as unknown as React.InputHTMLAttributes<HTMLInputElement>)}
-                    onChange={handleFolderUpload}
+                    onChange={async (e) => {
+                      await handleFolderUpload(e);
+                      await refreshFiles();
+                    }}
                   />
                   <input
                     type="file"
                     accept=".zip,.7z,.rar,.tar,.tar.gz,.tgz"
                     ref={zipInputRef}
-                    onChange={handleZipUpload}
+                    onChange={async (e) => {
+                      await handleZipUpload(e);
+                      await refreshFiles();
+                    }}
                     className="hidden"
                   />
                   
