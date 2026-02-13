@@ -3,19 +3,19 @@
 import React from 'react';
 
 import { useAlert } from '@/components/alert-provider';
+// Components
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
 import { ConverterHeader } from '@/features/converter/components/converter-header';
 import { FileRow } from '@/features/converter/components/file-row';
 import { PipelineHeader } from '@/features/converter/components/pipeline-header';
 import { SourceSegment } from '@/features/converter/components/source-segment';
 import { UploadRulesModal } from '@/features/converter/components/upload-rules-modal';
-// Components
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
 import { useConverterFiles } from '@/features/converter/hooks/use-converter-files';
+import { useSelection } from '@/features/converter/hooks/use-selection';
 // Hooks
 import type { AppFile } from '@/features/file-management/hooks/use-files';
 import { useFiles } from '@/features/file-management/hooks/use-files';
-import { useSelection } from '@/features/converter/hooks/use-selection';
 import { formatConverterDate, formatFileSize } from '@/utils/formatters';
 // Utilities
 import { addTimestampToName, generateStandardName } from '@/utils/naming';

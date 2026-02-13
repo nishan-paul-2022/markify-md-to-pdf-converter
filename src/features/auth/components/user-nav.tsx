@@ -1,9 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 
 import {
@@ -39,8 +36,6 @@ interface UserNavProps {
 }
 
 export default function UserNav({ user }: UserNavProps): React.JSX.Element {
-  const pathname = usePathname();
-  const isEditor = pathname.startsWith('/editor');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -104,23 +99,7 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
             </div>
           </DropdownMenuLabel>
 
-          {isEditor && (
-            <>
-              <DropdownMenuSeparator className="mx-1 bg-white/5" />
-              <div className="py-1">
-                <Link href="/">
-                  <DropdownMenuItem className="group/item cursor-pointer rounded-lg px-3 py-3 transition-all focus:bg-blue-500/10">
-                    <div className="mr-3 flex h-5 w-5 items-center justify-center transition-transform group-hover/item:scale-110">
-                      <Image src="/brand-logo.svg" alt="Markify" width={20} height={20} />
-                    </div>
-                    <span className="text-xs font-black tracking-[0.15em] text-slate-400 uppercase transition-colors group-hover/item:text-blue-400">
-                      Markify
-                    </span>
-                  </DropdownMenuItem>
-                </Link>
-              </div>
-            </>
-          )}
+
 
           <DropdownMenuSeparator className="mx-1 bg-white/5" />
           <div className="py-1">

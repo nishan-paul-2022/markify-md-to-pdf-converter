@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import UserNav from '@/features/auth/components/user-nav';
 import { Button } from '@/components/ui/button';
+import UserNav from '@/features/auth/components/user-nav';
 import { auth, signIn } from '@/lib/auth';
 
 import { ArrowRight, FileText, Layout, Share2, Sparkles } from 'lucide-react';

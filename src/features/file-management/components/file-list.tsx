@@ -2,9 +2,6 @@
 
 import React, { useCallback, useState } from 'react';
 
-import { FileGridView } from '@/features/file-management/components/file-grid-view';
-import { FileListView } from '@/features/file-management/components/file-list-view';
-import { ImageModal } from '@/features/file-management/components/image-modal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +13,9 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { FileGridView } from '@/features/file-management/components/file-grid-view';
+import { FileListView } from '@/features/file-management/components/file-list-view';
+import { ImageModal } from '@/features/file-management/components/image-modal';
 import type { AppFile } from '@/features/file-management/hooks/use-files';
 import { useFiles } from '@/features/file-management/hooks/use-files';
 import { cn } from '@/utils/cn';

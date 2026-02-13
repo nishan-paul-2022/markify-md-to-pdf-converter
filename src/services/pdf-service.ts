@@ -1,6 +1,6 @@
+import prisma from '@/lib/prisma';
 import type { Metadata } from '@/services/pdf-generator';
 import { generatePdf } from '@/services/pdf-generator';
-import prisma from '@/lib/prisma';
 
 import { randomUUID } from 'crypto';
 import fs from 'fs';

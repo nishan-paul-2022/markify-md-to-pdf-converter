@@ -1,23 +1,24 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 
+import { TooltipProvider } from '@/components/ui/tooltip';
 import UserNav from '@/features/auth/components/user-nav';
+import { UploadRulesModal } from '@/features/converter/components/upload-rules-modal';
 import Editor from '@/features/editor/components/editor';
 import { EditorSidebar } from '@/features/editor/components/editor-sidebar';
 import { EditorStats } from '@/features/editor/components/editor-stats';
 import { EditorToolbar } from '@/features/editor/components/editor-toolbar';
 import MdPreview from '@/features/editor/components/md-preview';
-import { UploadRulesModal } from '@/features/converter/components/upload-rules-modal';
-import { ImageModal } from '@/features/file-management/components/image-modal';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { useConverter } from '@/features/editor/hooks/use-converter';
+import { ImageModal } from '@/features/file-management/components/image-modal';
 import type { AppFile } from '@/features/file-management/hooks/use-files';
 import { buildFileTree, type FileTreeNode } from '@/features/file-management/utils/file-tree';
 import { cn } from '@/utils/cn';
 
-import { Eye, Layers } from 'lucide-react';
+import { Eye, Layers, Search } from 'lucide-react';
 
 interface EditorViewProps {
   user: {
@@ -48,7 +49,7 @@ export default function EditorView({
   refreshFiles,
   onFileSelect,
 }: EditorViewProps) {
-  const router = useRouter();
+
 
   const {
     // State
@@ -118,50 +119,46 @@ export default function EditorView({
         {/* Navigation Bar */}
         <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between border-b border-white/5 bg-slate-950/80 px-4 backdrop-blur-md">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/converter')}
-              className="group flex items-center gap-2.5 rounded-full bg-white/[0.03] py-1.5 pr-4 pl-1.5 transition-all hover:bg-white/[0.08]"
+            <Link
+              href="/"
+              className="group flex items-center gap-3"
             >
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/20 text-primary transition-transform group-hover:scale-105">
-                <Layers className="h-4 w-4" />
+              <div className="flex h-10 w-10 items-center justify-center transition-transform group-hover:scale-110">
+                <Image
+                  src="/brand-logo.svg"
+                  alt="Markify"
+                  width={32}
+                  height={32}
+                  priority
+                  className="drop-shadow-xl"
+                />
               </div>
-              <span className="text-xs font-black tracking-widest text-white uppercase opacity-90">
-                Markify
-              </span>
-            </button>
+              <div className="hidden sm:block">
+                <h1 className="text-sm font-bold tracking-[0.05em] tracking-tight text-white transition-colors group-hover:text-blue-400">
+                  Markify
+                </h1>
+              </div>
+            </Link>
           </div>
 
-          <div className="absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:flex">
-            <div className="relative flex w-64 items-center rounded-xl bg-slate-900/80 p-1.5 shadow-2xl backdrop-blur-xl">
-              <button
-                onClick={() => setActiveTab('editor')}
-                className={`relative z-10 flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold tracking-[0.15em] uppercase transition-all duration-300 ${
-                  activeTab === 'editor' ? 'text-white' : 'text-slate-500 hover:text-slate-200'
-                }`}
-              >
-                <span>Editor</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('preview')}
-                className={`relative z-10 flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold tracking-[0.15em] uppercase transition-all duration-300 ${
-                  activeTab === 'preview' ? 'text-white' : 'text-slate-500 hover:text-slate-200'
-                }`}
-              >
-                <Eye className={cn('h-3.5 w-3.5', activeTab === 'preview' && 'scale-110')} />
-                <span>Preview</span>
-              </button>
-
-              <div
-                className="absolute top-1.5 bottom-1.5 rounded-lg bg-white/10 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-                style={{
-                  width: 'calc(50% - 6px)',
-                  left: activeTab === 'editor' ? '6px' : 'calc(50% + 0px)',
-                }}
+          <div className="flex items-center gap-4">
+            <div className="group relative hidden lg:block">
+              <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-blue-400" />
+              <input
+                type="text"
+                placeholder="SEARCH"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 w-56 rounded-full border border-white/5 bg-white/5 pr-4 pl-9 text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase transition-all placeholder:text-slate-600 focus:border-blue-500/30 focus:bg-blue-500/5 focus:text-blue-100 focus:outline-none"
               />
             </div>
-          </div>
 
-          <div className="flex items-center gap-3">
+            <Link href="/converter">
+              <button className="group flex h-9 items-center gap-2 rounded-full border border-white/5 bg-white/5 px-4 text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase transition-all hover:border-blue-500/30 hover:bg-blue-500/5 hover:text-white">
+                <Layers className="h-3.5 w-3.5 transition-colors group-hover:text-blue-400" />
+                <span>Converter</span>
+              </button>
+            </Link>
             <UserNav user={user} />
           </div>
         </header>

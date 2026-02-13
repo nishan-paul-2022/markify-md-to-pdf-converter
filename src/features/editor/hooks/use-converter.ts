@@ -5,11 +5,11 @@ import {
   parseMetadataFromMarkdown,
   removeLandingPageSection,
 } from '@/constants/default-content';
+import { logger } from '@/lib/logger';
 import { FilesService } from '@/services/api/files-service';
 import { PdfApiService } from '@/services/api/pdf-service';
-import { logger } from '@/lib/logger';
-import { generateStandardName } from '@/utils/naming';
 import { useEditorStore } from '@/store/use-editor-store';
+import { generateStandardName } from '@/utils/naming';
 
 const getBaseName = (name: string): string => {
   return generateStandardName(name);
