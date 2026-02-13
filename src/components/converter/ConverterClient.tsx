@@ -564,106 +564,121 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             <div className="flex items-center gap-4 flex-nowrap">
               <div className="flex items-center gap-2 whitespace-nowrap">
                 <Layers className="w-3.5 h-3.5" />
-                <span>FILES</span>
-                {filteredMdFiles.length > 0 && (
-                  <span className="ml-2 text-[9px] bg-indigo-400/10 border border-indigo-400/20 px-2 py-0.5 rounded-full text-indigo-300/80 leading-none">{filteredMdFiles.length}</span>
-                )}
+                <div className="flex items-baseline gap-2">
+                  <span>FILES</span>
+                  {filteredMdFiles.length > 0 && (
+                    <span className="text-[10px] text-indigo-400/60 font-medium">({filteredMdFiles.length})</span>
+                  )}
+                </div>
               </div>
               
               {!loading && filteredMdFiles.length > 0 && (
-                <div className="flex items-center gap-2 flex-nowrap">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:border-indigo-500/30 hover:bg-indigo-500/5 hover:text-slate-300 transition-all cursor-pointer h-8 group">
-                        <SortAsc className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
-                        <span className="text-[9px] font-black uppercase tracking-wider">
-                          {sortBy === 'name' ? 'BY NAME' : sortBy === 'size' ? 'BY SIZE' : 'BY TIME'}
-                        </span>
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 bg-slate-900/95 border-white/10 backdrop-blur-xl">
-                      <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 py-2">Sort Files</DropdownMenuLabel>
-                      <DropdownMenuSeparator className="bg-white/5" />
-                      <DropdownMenuItem 
-                        onClick={() => setSortBy('time')}
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
-                          sortBy === 'time' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
-                        )}
-                      >
-                        <Clock className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider">Most Recent</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => setSortBy('name')}
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
-                          sortBy === 'name' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
-                        )}
-                      >
-                        <SortAsc className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider">Alphabetical</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => setSortBy('size')}
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
-                          sortBy === 'size' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
-                        )}
-                      >
-                        <HardDrive className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider">File Size</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                <div className="flex items-center gap-3">
+                  {/* Group 1: Sorting */}
+                  <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 p-1 rounded-lg">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition-all cursor-pointer h-8 group">
+                          {sortBy === 'name' ? (
+                            <SortAsc className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+                          ) : sortBy === 'size' ? (
+                            <HardDrive className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+                          ) : (
+                            <Clock className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+                          )}
+                          <span className="text-[10px] font-black uppercase tracking-wider">
+                            {sortBy === 'name' ? 'NAME' : sortBy === 'size' ? 'SIZE' : 'DATE'}
+                          </span>
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48 bg-slate-900/95 border-white/10 backdrop-blur-xl">
+                        <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 py-2">Sort Files</DropdownMenuLabel>
+                        <DropdownMenuSeparator className="bg-white/5" />
+                        <DropdownMenuItem 
+                          onClick={() => setSortBy('time')}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
+                            sortBy === 'time' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          <Clock className="w-4 h-4" />
+                          <span className="text-xs font-bold uppercase tracking-wider">Most Recent</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => setSortBy('name')}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
+                            sortBy === 'name' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          <SortAsc className="w-4 h-4" />
+                          <span className="text-xs font-bold uppercase tracking-wider">Alphabetical</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => setSortBy('size')}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
+                            sortBy === 'size' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          <HardDrive className="w-4 h-4" />
+                          <span className="text-xs font-bold uppercase tracking-wider">File Size</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
 
-                  <button 
-                    onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                    className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:border-indigo-500/30 hover:bg-indigo-500/5 hover:text-slate-300 transition-all cursor-pointer group"
-                  >
-                    {sortOrder === 'asc' ? (
-                      <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
-                    ) : (
-                      <ArrowDown className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5" />
-                    )}
-                  </button>
-
-                  <button 
-                    onClick={toggleSelectionMode}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all group cursor-pointer h-8 whitespace-nowrap",
-                      isSelectionMode 
-                        ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20" 
-                        : "bg-white/5 border-white/5 text-slate-400 hover:border-indigo-500/30 hover:bg-indigo-500/5 hover:text-slate-300"
-                    )}
-                  >
-                    {isSelectionMode ? (
-                      <X className="w-3.5 h-3.5" />
-                    ) : (
-                      <MousePointer2 className="w-3.5 h-3.5" />
-                    )}
-                    <span className="text-[9px] font-black uppercase tracking-wider">
-                      {isSelectionMode ? 'CANCEL' : 'SELECT'}
-                    </span>
-                  </button>
-
-                  {isSelectionMode && (
                     <button 
-                      onClick={toggleSelectAll}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 hover:bg-indigo-500/20 transition-all group animate-in fade-in slide-in-from-left-2 cursor-pointer h-8 whitespace-nowrap"
+                      onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                      className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition-all cursor-pointer group"
+                      title={sortOrder === 'asc' ? "Ascending" : "Descending"}
                     >
-                      {selectedFileIds.size === filteredMdFiles.length ? (
-                        <CheckSquare className="w-3.5 h-3.5 text-indigo-400" />
-                      ) : selectedFileIds.size > 0 ? (
-                        <MinusSquare className="w-3.5 h-3.5 text-indigo-400" />
+                      {sortOrder === 'asc' ? (
+                        <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
                       ) : (
-                        <Square className="w-3.5 h-3.5" />
+                        <ArrowDown className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5" />
                       )}
-                      <span className="text-[9px] font-black uppercase tracking-wider">
-                        {selectedFileIds.size === filteredMdFiles.length ? 'DESELECT ALL' : 'SELECT ALL'}
+                    </button>
+                  </div>
+
+                  {/* Group 2: Selection */}
+                  <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 p-1 rounded-lg">
+                    <button 
+                      onClick={toggleSelectionMode}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-1.5 rounded-md transition-all group cursor-pointer h-8 whitespace-nowrap",
+                        isSelectionMode 
+                          ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold" 
+                          : "text-slate-300 hover:bg-white/10 hover:text-white"
+                      )}
+                    >
+                      {isSelectionMode ? (
+                        <X className="w-3.5 h-3.5" />
+                      ) : (
+                        <MousePointer2 className="w-3.5 h-3.5" />
+                      )}
+                      <span className="text-[10px] font-black uppercase tracking-wider">
+                        {isSelectionMode ? 'CANCEL' : 'SELECT'}
                       </span>
                     </button>
-                  )}
+
+                    {isSelectionMode && (
+                      <button 
+                        onClick={toggleSelectAll}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 transition-all group animate-in fade-in slide-in-from-left-2 cursor-pointer h-8 whitespace-nowrap font-bold"
+                      >
+                        {selectedFileIds.size === filteredMdFiles.length ? (
+                          <CheckSquare className="w-3.5 h-3.5 text-indigo-400" />
+                        ) : selectedFileIds.size > 0 ? (
+                          <MinusSquare className="w-3.5 h-3.5 text-indigo-400" />
+                        ) : (
+                          <Square className="w-3.5 h-3.5 text-slate-400" />
+                        )}
+                        <span className="text-[10px] font-black uppercase tracking-wider">
+                          {selectedFileIds.size === filteredMdFiles.length ? 'NONE' : 'ALL'}
+                        </span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
