@@ -14,7 +14,6 @@ import {
   CheckCircle2,
   FileCode,
   Trash2,
-  ExternalLink,
   CheckSquare,
   Square,
   MinusSquare,
@@ -33,7 +32,10 @@ import { cn } from '@/lib/utils';
 import { generateStandardName, addTimestampToName } from '@/lib/utils/naming';
 import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
 import {
+  Tooltip,
+  TooltipContent,
   TooltipProvider,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAlert } from "@/components/AlertProvider";
 import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
@@ -647,56 +649,76 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                       </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <button 
-                      onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                      className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition-all cursor-pointer group"
-                      title={sortOrder === 'asc' ? "Ascending" : "Descending"}
-                    >
-                      {sortOrder === 'asc' ? (
-                        <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
-                      ) : (
-                        <ArrowDown className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5" />
-                      )}
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button 
+                          onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                          className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition-all cursor-pointer group"
+                        >
+                          {sortOrder === 'asc' ? (
+                            <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
+                          ) : (
+                            <ArrowDown className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5" />
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
+                        {sortOrder === 'asc' ? 'Sort Ascending' : 'Sort Descending'}
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
 
                   {/* Group 2: Selection */}
                   <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 p-1 rounded-lg">
-                    <button 
-                      onClick={toggleSelectionMode}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-md transition-all group cursor-pointer h-8 whitespace-nowrap",
-                        isSelectionMode 
-                          ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold" 
-                          : "text-slate-300 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      {isSelectionMode ? (
-                        <X className="w-3.5 h-3.5" />
-                      ) : (
-                        <MousePointer2 className="w-3.5 h-3.5" />
-                      )}
-                      <span className="text-[10px] font-black uppercase tracking-wider">
-                        {isSelectionMode ? 'CANCEL' : 'SELECT'}
-                      </span>
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button 
+                          onClick={toggleSelectionMode}
+                          className={cn(
+                            "flex items-center gap-2 px-3 py-1.5 rounded-md transition-all group cursor-pointer h-8 whitespace-nowrap",
+                            isSelectionMode 
+                              ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold" 
+                              : "text-slate-300 hover:bg-white/10 hover:text-white"
+                          )}
+                        >
+                          {isSelectionMode ? (
+                            <X className="w-3.5 h-3.5" />
+                          ) : (
+                            <MousePointer2 className="w-3.5 h-3.5" />
+                          )}
+                          <span className="text-[10px] font-black uppercase tracking-wider">
+                            {isSelectionMode ? 'CANCEL' : 'SELECT'}
+                          </span>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
+                        {isSelectionMode ? 'Cancel Selection Mode' : 'Enable Selection Mode'}
+                      </TooltipContent>
+                    </Tooltip>
 
                     {isSelectionMode && (
-                      <button 
-                        onClick={toggleSelectAll}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 transition-all group animate-in fade-in slide-in-from-left-2 cursor-pointer h-8 whitespace-nowrap font-bold"
-                      >
-                        {selectedFileIds.size === filteredMdFiles.length ? (
-                          <CheckSquare className="w-3.5 h-3.5 text-indigo-400" />
-                        ) : selectedFileIds.size > 0 ? (
-                          <MinusSquare className="w-3.5 h-3.5 text-indigo-400" />
-                        ) : (
-                          <Square className="w-3.5 h-3.5 text-slate-400" />
-                        )}
-                        <span className="text-[10px] font-black uppercase tracking-wider">
-                          {selectedFileIds.size === filteredMdFiles.length ? 'NONE' : 'ALL'}
-                        </span>
-                      </button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button 
+                            onClick={toggleSelectAll}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 transition-all group animate-in fade-in slide-in-from-left-2 cursor-pointer h-8 whitespace-nowrap font-bold"
+                          >
+                            {selectedFileIds.size === filteredMdFiles.length ? (
+                              <CheckSquare className="w-3.5 h-3.5 text-indigo-400" />
+                            ) : selectedFileIds.size > 0 ? (
+                              <MinusSquare className="w-3.5 h-3.5 text-indigo-400" />
+                            ) : (
+                              <Square className="w-3.5 h-3.5 text-slate-400" />
+                            )}
+                            <span className="text-[10px] font-black uppercase tracking-wider">
+                              {selectedFileIds.size === filteredMdFiles.length ? 'NONE' : 'ALL'}
+                            </span>
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
+                          {selectedFileIds.size === filteredMdFiles.length ? 'Deselect All' : 'Select All Files'}
+                        </TooltipContent>
+                      </Tooltip>
                     )}
                   </div>
                 </div>
@@ -705,34 +727,44 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
             {isSelectionMode && selectedFileIds.size > 0 && (
               <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
-                <Button 
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleBatchDelete}
-                  disabled={isBatchProcessing || deleting}
-                  className="h-8 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 gap-2 transition-all"
-                >
-                  {deleting ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Trash2 className="w-3.5 h-3.5" />
-                  )}
-                  <span>Delete ({selectedFileIds.size})</span>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleBatchDelete}
+                      disabled={isBatchProcessing || deleting}
+                      className="h-8 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 gap-2 transition-all"
+                    >
+                      {deleting ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-3.5 h-3.5" />
+                      )}
+                      <span>Delete ({selectedFileIds.size})</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Permanently delete selected files</TooltipContent>
+                </Tooltip>
 
-                <Button 
-                  size="sm"
-                  onClick={handleBatchConvert}
-                  disabled={isBatchProcessing || deleting}
-                  className="h-8 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 gap-2 transition-all"
-                >
-                  {isBatchProcessing ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Zap className="w-3.5 h-3.5 fill-current" />
-                  )}
-                  <span>Deploy ({selectedFileIds.size})</span>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      size="sm"
+                      onClick={handleBatchConvert}
+                      disabled={isBatchProcessing || deleting}
+                      className="h-8 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 gap-2 transition-all"
+                    >
+                      {isBatchProcessing ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Zap className="w-3.5 h-3.5 fill-current" />
+                      )}
+                      <span>Convert ({selectedFileIds.size})</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Bulk convert selected files to PDF</TooltipContent>
+                </Tooltip>
               </div>
             )}
           </div>
@@ -770,9 +802,14 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                         <FileCode className="w-7 h-7" />
                       </div>
                       <div className="min-w-0 flex-grow py-1">
-                        <h3 className="text-[15px] font-black text-white group-hover/card:text-blue-400 transition-colors truncate leading-tight">
-                          {file.originalName}
-                        </h3>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <h3 className="text-[15px] font-black text-white group-hover/card:text-blue-400 transition-colors truncate leading-tight">
+                              {file.originalName}
+                            </h3>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="bg-slate-900 border-slate-800 text-xs max-w-xs break-all">{file.originalName}</TooltipContent>
+                        </Tooltip>
                         <div className="flex items-center gap-2 mt-1.5 overflow-hidden">
                           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.15em] truncate leading-relaxed">
                             {formatDate(file.createdAt)}
@@ -787,50 +824,50 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                     
                     <div className="flex items-center gap-3 shrink-0 animate-in fade-in zoom-in-95 duration-300">
                       {/* Delete Button */}
-                      <Button 
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleDelete(file.id)}
-                        className="h-11 w-11 rounded-2xl border border-white/5 bg-white/5 text-slate-500 hover:text-red-400 hover:bg-red-400/10 hover:border-red-400/20 transition-all shrink-0"
-                        title="Delete source file"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-
-                      {/* Open in Editor */}
-                      <Button 
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => router.push(`/editor?fileId=${file.id}`)}
-                        className="h-11 w-11 rounded-2xl border border-white/5 bg-white/5 text-slate-500 hover:text-blue-400 hover:bg-blue-400/10 hover:border-blue-400/20 transition-all shrink-0 shadow-sm"
-                        title="Open in editor"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDelete(file.id)}
+                            className="h-11 w-11 rounded-2xl border border-white/5 bg-white/5 text-slate-500 hover:text-red-400 hover:bg-red-400/10 hover:border-red-400/20 transition-all shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Delete source file</TooltipContent>
+                      </Tooltip>
 
                       {/* Convert Button */}
-                      <Button 
-                        size="sm"
-                        onClick={() => handleConvertFile(file)}
-                        disabled={processingStates[file.id] === 'converting'}
-                        className={cn(
-                          "h-11 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-4 gap-2 active:scale-95 transition-all outline-none border-none shrink-0",
-                          processingStates[file.id] === 'done' 
-                            ? "bg-emerald-500 text-white" 
-                            : processingStates[file.id] === 'converting'
-                              ? "bg-blue-600 text-white cursor-wait"
-                              : "bg-white text-slate-950 hover:bg-blue-500 hover:text-white"
-                        )}
-                      >
-                        {processingStates[file.id] === 'converting' ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Zap className="w-3.5 h-3.5 fill-current" />
-                        )}
-                        <span className="relative top-[0.5px]">
-                          {processingStates[file.id] === 'converting' ? 'Syncing...' : processingStates[file.id] === 'done' ? 'Converted' : 'Deploy'}
-                        </span>
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            size="sm"
+                            onClick={() => handleConvertFile(file)}
+                            disabled={processingStates[file.id] === 'converting'}
+                            className={cn(
+                              "h-11 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-4 gap-2 active:scale-95 transition-all outline-none border-none shrink-0",
+                              processingStates[file.id] === 'done' 
+                                ? "bg-emerald-500 text-white" 
+                                : processingStates[file.id] === 'converting'
+                                  ? "bg-blue-600 text-white cursor-wait"
+                                  : "bg-white text-slate-950 hover:bg-blue-500 hover:text-white"
+                            )}
+                          >
+                            {processingStates[file.id] === 'converting' ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Zap className="w-3.5 h-3.5 fill-current" />
+                            )}
+                            <span className="relative top-[0.5px]">
+                              {processingStates[file.id] === 'converting' ? 'Converting...' : processingStates[file.id] === 'done' ? 'Converted' : 'Convert'}
+                            </span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
+                          {processingStates[file.id] === 'done' ? 'File already converted' : 'Start PDF conversion'}
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                   </div>
 
@@ -883,20 +920,32 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                         <FileDown className="w-5 h-5" />
                       </div>
                       <div className="max-w-[160px]">
-                        <p className="text-[11px] font-bold text-slate-200 truncate group-hover/result:text-white transition-colors">
-                          {generateStandardName(file.originalName)}.pdf
-                        </p>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <p className="text-[11px] font-bold text-slate-200 truncate group-hover/result:text-white transition-colors">
+                              {generateStandardName(file.originalName)}.pdf
+                            </p>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="bg-slate-900 border-slate-800 text-xs max-w-xs break-all">
+                            {generateStandardName(file.originalName)}.pdf
+                          </TooltipContent>
+                        </Tooltip>
                         <p className="text-[9px] text-slate-600 font-bold uppercase tracking-tight mt-0.5">Ready for Transfer</p>
                       </div>
                     </div>
                     
-                    <Button 
-                      size="icon"
-                      onClick={() => handleDownloadFile(file, 'pdf')}
-                      className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-lg shadow-emerald-950/20"
-                    >
-                      <Download className="w-4 h-4" />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          size="icon"
+                          onClick={() => handleDownloadFile(file, 'pdf')}
+                          className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-lg shadow-emerald-950/20"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Download PDF</TooltipContent>
+                    </Tooltip>
                   </div>
                 ))
               ) : (
