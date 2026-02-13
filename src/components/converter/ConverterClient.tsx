@@ -58,6 +58,26 @@ interface ConverterClientProps {
   user: User;
 }
 
+const formatDate = (date: string | Date) => {
+  return new Date(date).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  }).toUpperCase();
+};
+
+const formatSize = (bytes: number) => {
+  if (bytes === 0) {
+    return '0 B';
+  }
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
+
 export default function ConverterClient({ user }: ConverterClientProps): React.JSX.Element {
   const router = useRouter();
   const { files, loading, refreshFiles, handleDelete, handleBulkDelete, deleting } = useFiles('converter');
@@ -753,9 +773,15 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                         <h3 className="text-[15px] font-black text-white group-hover/card:text-blue-400 transition-colors truncate leading-tight">
                           {file.originalName}
                         </h3>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.15em] mt-1.5 truncate leading-relaxed">
-                          {file.relativePath || 'Root Directory'}
-                        </p>
+                        <div className="flex items-center gap-2 mt-1.5 overflow-hidden">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.15em] truncate leading-relaxed">
+                            {formatDate(file.createdAt)}
+                          </p>
+                          <span className="w-1 h-1 rounded-full bg-slate-700 shrink-0" />
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.15em] shrink-0 leading-relaxed">
+                            {formatSize(file.size)}
+                          </p>
+                        </div>
                       </div>
                     </div>
                     
