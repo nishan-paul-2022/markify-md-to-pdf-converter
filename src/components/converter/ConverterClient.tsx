@@ -690,7 +690,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                 </div>
               </div>
 
-              <div className="h-4 w-px bg-white/10 hidden md:block" />
+
 
               <div className="flex items-center gap-2 text-emerald-400/80 whitespace-nowrap">
                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -702,189 +702,189 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             </div>
             
               <div className="flex items-center gap-4">
-                {/* Global Actions: Download Library */}
-                {completedResults.length > 0 && (
-                  <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 p-1 rounded-lg animate-in fade-in slide-in-from-right-4">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all cursor-pointer h-8 group active:scale-95">
-                          <Download className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-                          <span className="text-[10px] font-black uppercase tracking-wider">Download</span>
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-64 bg-slate-900/95 border-white/10 backdrop-blur-xl">
-                        <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 py-2">Archive Format</DropdownMenuLabel>
-                        <DropdownMenuSeparator className="bg-white/5" />
-                        
-                        <DropdownMenuItem 
-                          onClick={() => handleDownloadArchive('zip')}
-                          className="flex items-center gap-3 px-3 py-2 cursor-pointer text-slate-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
-                        >
-                          <div className="w-8 h-8 rounded bg-emerald-500/10 flex items-center justify-center text-[10px] font-black uppercase text-emerald-400 border border-emerald-500/20">ZIP</div>
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-xs font-bold uppercase tracking-wider">Standard Zip</span>
-                            <span className="text-[10px] text-slate-500 font-medium">Recommended for all devices</span>
-                          </div>
-                        </DropdownMenuItem>
-
-                        <DropdownMenuItem 
-                          onClick={() => handleDownloadArchive('tar')}
-                          className="flex items-center gap-3 px-3 py-2 cursor-pointer text-slate-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
-                        >
-                          <div className="w-8 h-8 rounded bg-blue-500/10 flex items-center justify-center text-[10px] font-black uppercase text-blue-400 border border-blue-500/20">TAR</div>
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-xs font-bold uppercase tracking-wider">Tape Archive</span>
-                            <span className="text-[10px] text-slate-500 font-medium">Uncompressed, good for linux</span>
-                          </div>
-                        </DropdownMenuItem>
-
-
-                        
-                        <DropdownMenuSeparator className="bg-white/5" />
-                        <DropdownMenuItem 
-                          onClick={handleDownloadAll}
-                          className="flex items-center gap-3 px-3 py-2 cursor-pointer text-slate-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
-                        >
-                          <Layers className="w-4 h-4 text-indigo-400 ml-2 mr-2" />
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-xs font-bold uppercase tracking-wider">Individual Files</span>
-                            <span className="text-[10px] text-slate-500 font-medium">Download PDFs separately</span>
-                          </div>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                )}
 
                 {!loading && filteredMdFiles.length > 0 && (
                   <div className="flex items-center gap-3">
-                  {/* Group 1: Sorting */}
-                  <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 p-1 rounded-lg">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition-all cursor-pointer h-8 group">
-                          {sortBy === 'name' ? (
-                            <SortAsc className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
-                          ) : sortBy === 'size' ? (
-                            <HardDrive className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
-                          ) : (
-                            <Clock className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
-                          )}
-                          <span className="text-[10px] font-black uppercase tracking-wider">
-                            {sortBy === 'name' ? 'NAME' : sortBy === 'size' ? 'SIZE' : 'DATE'}
-                          </span>
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 bg-slate-900/95 border-white/10 backdrop-blur-xl">
-                        <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 py-2">Sort Files</DropdownMenuLabel>
-                        <DropdownMenuSeparator className="bg-white/5" />
-                        <DropdownMenuItem 
-                          onClick={() => setSortBy('time')}
-                          className={cn(
-                            "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
-                            sortBy === 'time' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
-                          )}
-                        >
-                          <Clock className="w-4 h-4" />
-                          <span className="text-xs font-bold uppercase tracking-wider">Most Recent</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => setSortBy('name')}
-                          className={cn(
-                            "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
-                            sortBy === 'name' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
-                          )}
-                        >
-                          <SortAsc className="w-4 h-4" />
-                          <span className="text-xs font-bold uppercase tracking-wider">Alphabetical</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => setSortBy('size')}
-                          className={cn(
-                            "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
-                            sortBy === 'size' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
-                          )}
-                        >
-                          <HardDrive className="w-4 h-4" />
-                          <span className="text-xs font-bold uppercase tracking-wider">File Size</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button 
-                          onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                          className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition-all cursor-pointer group"
-                        >
-                          {sortOrder === 'asc' ? (
-                            <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
-                          ) : (
-                            <ArrowDown className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5" />
-                          )}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
-                        {sortOrder === 'asc' ? 'Sort Ascending' : 'Sort Descending'}
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-
-                  {/* Group 2: Selection */}
-                  <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 p-1 rounded-lg">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button 
-                          onClick={toggleSelectionMode}
-                          className={cn(
-                            "flex items-center gap-2 px-3 py-1.5 rounded-md transition-all group cursor-pointer h-8 whitespace-nowrap",
-                            isSelectionMode 
-                              ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold" 
-                              : "text-slate-300 hover:bg-white/10 hover:text-white"
-                          )}
-                        >
-                          {isSelectionMode ? (
-                            <X className="w-3.5 h-3.5" />
-                          ) : (
-                            <MousePointer2 className="w-3.5 h-3.5" />
-                          )}
-                          <span className="text-[10px] font-black uppercase tracking-wider">
-                            {isSelectionMode ? 'CANCEL' : 'SELECT'}
-                          </span>
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
-                        {isSelectionMode ? 'Cancel Selection Mode' : 'Enable Selection Mode'}
-                      </TooltipContent>
-                    </Tooltip>
-
-                    {isSelectionMode && (
+                    
+                    {/* 1. Selection Actions */}
+                    <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 p-1 rounded-lg">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button 
-                            onClick={toggleSelectAll}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 transition-all group animate-in fade-in slide-in-from-left-2 cursor-pointer h-8 whitespace-nowrap font-bold"
+                            onClick={toggleSelectionMode}
+                            className={cn(
+                              "flex items-center gap-2 px-3 py-1.5 rounded-md transition-all group cursor-pointer h-8 whitespace-nowrap",
+                              isSelectionMode 
+                                ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold" 
+                                : "text-slate-300 hover:bg-white/10 hover:text-white"
+                            )}
                           >
-                            {selectedFileIds.size === filteredMdFiles.length ? (
-                              <CheckSquare className="w-3.5 h-3.5 text-indigo-400" />
-                            ) : selectedFileIds.size > 0 ? (
-                              <MinusSquare className="w-3.5 h-3.5 text-indigo-400" />
+                            {isSelectionMode ? (
+                              <X className="w-3.5 h-3.5" />
                             ) : (
-                              <Square className="w-3.5 h-3.5 text-slate-400" />
+                              <MousePointer2 className="w-3.5 h-3.5" />
                             )}
                             <span className="text-[10px] font-black uppercase tracking-wider">
-                              {selectedFileIds.size === filteredMdFiles.length ? 'NONE' : 'ALL'}
+                              {isSelectionMode ? 'CANCEL' : 'SELECT'}
                             </span>
                           </button>
                         </TooltipTrigger>
                         <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
-                          {selectedFileIds.size === filteredMdFiles.length ? 'Deselect All' : 'Select All Files'}
+                          {isSelectionMode ? 'Cancel Selection Mode' : 'Enable Selection Mode'}
                         </TooltipContent>
                       </Tooltip>
+
+                      {isSelectionMode && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button 
+                              onClick={toggleSelectAll}
+                              className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 transition-all group animate-in fade-in slide-in-from-left-2 cursor-pointer h-8 whitespace-nowrap font-bold"
+                            >
+                              {selectedFileIds.size === filteredMdFiles.length ? (
+                                <CheckSquare className="w-3.5 h-3.5 text-indigo-400" />
+                              ) : selectedFileIds.size > 0 ? (
+                                <MinusSquare className="w-3.5 h-3.5 text-indigo-400" />
+                              ) : (
+                                <Square className="w-3.5 h-3.5 text-slate-400" />
+                              )}
+                              <span className="text-[10px] font-black uppercase tracking-wider">
+                                {selectedFileIds.size === filteredMdFiles.length ? 'NONE' : 'SELECT ALL'}
+                              </span>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
+                            {selectedFileIds.size === filteredMdFiles.length ? 'Deselect All' : 'Select All Files'}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
+
+                    {/* 2. Sorting Actions */}
+                    <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 p-1 rounded-lg">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition-all cursor-pointer h-8 group">
+                            {sortBy === 'name' ? (
+                              <SortAsc className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+                            ) : sortBy === 'size' ? (
+                              <HardDrive className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+                            ) : (
+                              <Clock className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+                            )}
+                            <span className="text-[10px] font-black uppercase tracking-wider">
+                              {sortBy === 'name' ? 'NAME' : sortBy === 'size' ? 'SIZE' : 'DATE'}
+                            </span>
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48 bg-slate-900/95 border-white/10 backdrop-blur-xl">
+                          <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 py-2">Sort Files</DropdownMenuLabel>
+                          <DropdownMenuSeparator className="bg-white/5" />
+                          <DropdownMenuItem 
+                            onClick={() => setSortBy('time')}
+                            className={cn(
+                              "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
+                              sortBy === 'time' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
+                            )}
+                          >
+                            <Clock className="w-4 h-4" />
+                            <span className="text-xs font-bold uppercase tracking-wider">Most Recent</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => setSortBy('name')}
+                            className={cn(
+                              "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
+                              sortBy === 'name' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
+                            )}
+                          >
+                            <SortAsc className="w-4 h-4" />
+                            <span className="text-xs font-bold uppercase tracking-wider">Alphabetical</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => setSortBy('size')}
+                            className={cn(
+                              "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
+                              sortBy === 'size' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
+                            )}
+                          >
+                            <HardDrive className="w-4 h-4" />
+                            <span className="text-xs font-bold uppercase tracking-wider">File Size</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button 
+                            onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                            className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition-all cursor-pointer group"
+                          >
+                            {sortOrder === 'asc' ? (
+                              <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
+                            ) : (
+                              <ArrowDown className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5" />
+                            )}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
+                          {sortOrder === 'asc' ? 'Sort Ascending' : 'Sort Descending'}
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+
+                    {/* 3. Download Actions (If available) */}
+                    {completedResults.length > 0 && (
+                      <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 p-1 rounded-lg animate-in fade-in slide-in-from-right-4">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all cursor-pointer h-8 group active:scale-95">
+                              <Download className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                              <span className="text-[10px] font-black uppercase tracking-wider">Download</span>
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-64 bg-slate-900/95 border-white/10 backdrop-blur-xl">
+                            <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 py-2">Archive Format</DropdownMenuLabel>
+                            <DropdownMenuSeparator className="bg-white/5" />
+                            
+                            <DropdownMenuItem 
+                              onClick={() => handleDownloadArchive('zip')}
+                              className="flex items-center gap-3 px-3 py-2 cursor-pointer text-slate-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
+                            >
+                              <div className="w-8 h-8 rounded bg-emerald-500/10 flex items-center justify-center text-[10px] font-black uppercase text-emerald-400 border border-emerald-500/20">ZIP</div>
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-xs font-bold uppercase tracking-wider">Standard Zip</span>
+                                <span className="text-[10px] text-slate-500 font-medium">Recommended for all devices</span>
+                              </div>
+                            </DropdownMenuItem>
+    
+                            <DropdownMenuItem 
+                              onClick={() => handleDownloadArchive('tar')}
+                              className="flex items-center gap-3 px-3 py-2 cursor-pointer text-slate-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
+                            >
+                              <div className="w-8 h-8 rounded bg-blue-500/10 flex items-center justify-center text-[10px] font-black uppercase text-blue-400 border border-blue-500/20">TAR</div>
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-xs font-bold uppercase tracking-wider">Tape Archive</span>
+                                <span className="text-[10px] text-slate-500 font-medium">Uncompressed, good for linux</span>
+                              </div>
+                            </DropdownMenuItem>
+    
+                            <DropdownMenuSeparator className="bg-white/5" />
+                            <DropdownMenuItem 
+                              onClick={handleDownloadAll}
+                              className="flex items-center gap-3 px-3 py-2 cursor-pointer text-slate-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
+                            >
+                              <Layers className="w-4 h-4 text-indigo-400 ml-2 mr-2" />
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-xs font-bold uppercase tracking-wider">Individual Files</span>
+                                <span className="text-[10px] text-slate-500 font-medium">Download PDFs separately</span>
+                              </div>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     )}
                   </div>
-                </div>
-              )}
+                )}
 
               {isSelectionMode && selectedFileIds.size > 0 && (
                 <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
@@ -1065,10 +1065,8 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                           )}
                         </div>
 
-                        {/* Spacing for Harmony */}
-                        <div className="w-8 shrink-0 flex items-center justify-center opacity-20">
-                          <div className={cn("h-px w-full bg-gradient-to-r from-transparent via-white to-transparent", hasOutput && "via-emerald-500")} />
-                        </div>
+                        {/* Spacing */}
+                        <div className="w-4 shrink-0" />
 
 
                         {/* THE EFFECT: Output Result Card */}
