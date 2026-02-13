@@ -47,8 +47,8 @@ interface ConverterClientProps {
 
 export default function ConverterClient({ user }: ConverterClientProps): React.JSX.Element {
   const router = useRouter();
-  const { files, loading, refreshFiles, handleDelete } = useFiles('converter');
-  const { show: showAlert } = useAlert();
+  const { files, loading, refreshFiles, handleDelete, handleBulkDelete, deleting } = useFiles('converter');
+  const { show: showAlert, confirm: confirmAlert } = useAlert();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [uploadRulesModal, setUploadRulesModal] = React.useState<{ isOpen: boolean, type: 'file' | 'folder' | 'zip' }>({ isOpen: false, type: 'file' });
   
@@ -161,6 +161,23 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     }
     
     setIsBatchProcessing(false);
+    setSelectedFileIds(new Set());
+    setIsSelectionMode(false);
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedFileIds.size === 0) { return; }
+
+    const confirmed = await confirmAlert({
+      title: 'Delete Multiple Files',
+      message: `Are you sure you want to delete ${selectedFileIds.size} selected files? This action cannot be undone.`,
+      confirmText: 'Delete Files',
+      variant: 'destructive'
+    });
+
+    if (!confirmed) { return; }
+
+    await handleBulkDelete(Array.from(selectedFileIds));
     setSelectedFileIds(new Set());
     setIsSelectionMode(false);
   };
@@ -571,19 +588,36 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             </div>
 
             {isSelectionMode && selectedFileIds.size > 0 && (
-              <Button 
-                size="sm"
-                onClick={handleBatchConvert}
-                disabled={isBatchProcessing}
-                className="h-8 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 gap-2 shadow-lg shadow-indigo-500/20 animate-in fade-in slide-in-from-right-4"
-              >
-                {isBatchProcessing ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Zap className="w-3.5 h-3.5 fill-current" />
-                )}
-                <span>Deploy ({selectedFileIds.size})</span>
-              </Button>
+              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
+                <Button 
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleBatchDelete}
+                  disabled={isBatchProcessing || deleting}
+                  className="h-8 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 gap-2 transition-all"
+                >
+                  {deleting ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5" />
+                  )}
+                  <span>Delete ({selectedFileIds.size})</span>
+                </Button>
+
+                <Button 
+                  size="sm"
+                  onClick={handleBatchConvert}
+                  disabled={isBatchProcessing || deleting}
+                  className="h-8 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 gap-2 transition-all"
+                >
+                  {isBatchProcessing ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Zap className="w-3.5 h-3.5 fill-current" />
+                  )}
+                  <span>Deploy ({selectedFileIds.size})</span>
+                </Button>
+              </div>
             )}
           </div>
 
@@ -635,7 +669,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                         size="icon"
                         variant="ghost"
                         onClick={() => handleDelete(file.id)}
-                        className="h-11 w-11 rounded-2xl border border-white/5 bg-white/5 text-slate-500 hover:text-red-400 hover:bg-red-400/10 hover:border-red-400/20 transition-all shrink-0 shadow-sm"
+                        className="h-11 w-11 rounded-2xl border border-white/5 bg-white/5 text-slate-500 hover:text-red-400 hover:bg-red-400/10 hover:border-red-400/20 transition-all shrink-0"
                         title="Delete source file"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -658,7 +692,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                         onClick={() => handleConvertFile(file)}
                         disabled={processingStates[file.id] === 'converting'}
                         className={cn(
-                          "h-11 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-4 gap-2 shadow-xl active:scale-95 transition-all outline-none border-none shrink-0",
+                          "h-11 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-4 gap-2 active:scale-95 transition-all outline-none border-none shrink-0",
                           processingStates[file.id] === 'done' 
                             ? "bg-emerald-500 text-white" 
                             : processingStates[file.id] === 'converting'
