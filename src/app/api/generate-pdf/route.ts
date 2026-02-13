@@ -116,6 +116,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         // 3. Write PDF to Disk
         await writeFile(systemFilePath, pdfBuffer);
 
+        // -- Extract Page Count --
+        const pdfContent = pdfBuffer.toString('binary');
+        const pageCountMatch = pdfContent.match(/\/Type\s*\/Pages\s*\/Count\s*(\d+)/);
+        const pageCount = pageCountMatch ? parseInt(pageCountMatch[1]) : (pdfContent.match(/\/Type\s*\/Page\b/g)?.length || 1);
+
         // 4. Create PDF File Record
         const pdfFile = await prisma.file.create({
           data: {
@@ -131,7 +136,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             metadata: {
               sourceFileId: sourceFile.id,
               isGenerated: true,
-              generatedFrom: 'converter'
+              generatedFrom: 'converter',
+              pageCount: pageCount
             }
           }
         });
@@ -146,6 +152,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
               ...currentMetadata,
               generatedPdfId: pdfFile.id,
               generatedPdfUrl: pdfFile.url,
+              generatedPdfSize: pdfBuffer.length,
+              generatedPdfPageCount: pageCount,
               lastConvertedAt: new Date().toISOString()
             }
           }

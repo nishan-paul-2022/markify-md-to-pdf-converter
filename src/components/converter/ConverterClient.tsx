@@ -1083,8 +1083,8 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                             )}>
                               <FileDown className="w-6 h-6" />
                             </div>
-                            <div className="min-w-0 flex-col gap-1 flex">
-                                <div className="h-[20px] flex items-center">
+                            <div className="min-w-0 flex-col gap-0.5 flex">
+                                <div className="h-[22px] flex items-center">
                                   {hasOutput ? (
                                     <Tooltip>
                                       <TooltipTrigger asChild>
@@ -1100,12 +1100,24 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                                     <p className="text-[11px] font-black uppercase tracking-widest text-slate-700">Pending</p>
                                   )}
                                 </div>
-                              <p className={cn(
-                                "text-[9px] font-black uppercase tracking-tight transition-colors h-[12px]",
-                                hasOutput ? "text-emerald-500/60" : "text-slate-800"
+                              <div className={cn(
+                                "text-[10px] font-bold uppercase tracking-[0.1em] transition-colors flex items-center gap-2",
+                                hasOutput ? "text-slate-400" : "text-slate-800"
                               )}>
-                                {hasOutput ? 'Ready to Export' : 'Awaiting Input'}
-                              </p>
+                                {hasOutput ? (
+                                  <>
+                                    <span className="bg-white/5 px-2 py-0.5 rounded border border-white/5 text-[9px]">
+                                      {formatSize((file.metadata?.generatedPdfSize as number) || 0)}
+                                    </span>
+                                    <span className="w-1 h-1 rounded-full bg-slate-700" />
+                                    <span>
+                                      {(file.metadata?.generatedPdfPageCount as number) || 1} {((file.metadata?.generatedPdfPageCount as number) || 1) === 1 ? 'Page' : 'Pages'}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span>Awaiting Input</span>
+                                )}
+                              </div>
                             </div>
                           </div>
                           
