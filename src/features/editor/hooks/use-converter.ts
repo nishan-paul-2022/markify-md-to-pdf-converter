@@ -5,8 +5,8 @@ import {
   parseMetadataFromMarkdown,
   removeLandingPageSection,
 } from '@/constants/default-content';
-import { FilesService } from '@/lib/api/files-service';
-import { PdfApiService } from '@/lib/api/pdf-service';
+import { FilesService } from '@/services/api/files-service';
+import { PdfApiService } from '@/services/api/pdf-service';
 import { logger } from '@/lib/logger';
 import { generateStandardName } from '@/utils/naming';
 import { useEditorStore } from '@/store/use-editor-store';

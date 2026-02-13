@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 
-import UserNav from '@/components/auth/user-nav';
-import FileList from '@/components/file-manager/file-list';
-import FileUpload from '@/components/file-manager/file-upload';
+import UserNav from '@/features/auth/components/user-nav';
+import FileList from '@/features/file-management/components/file-list';
+import FileUpload from '@/features/file-management/components/file-upload';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';

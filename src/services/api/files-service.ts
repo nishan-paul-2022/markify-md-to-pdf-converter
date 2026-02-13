@@ -1,5 +1,5 @@
 import type { AppFile } from '@/features/file-management/hooks/use-files';
-import { fetchApi, fetchApiFormData } from '@/lib/api/client';
+import { fetchApi, fetchApiFormData } from '@/services/api/client';
 
 export interface FileListResponse {
   files: AppFile[];

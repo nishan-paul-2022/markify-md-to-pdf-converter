@@ -2,9 +2,9 @@
 
 import React, { useCallback, useState } from 'react';
 
-import { FileGridView } from '@/components/file-manager/file-grid-view';
-import { FileListView } from '@/components/file-manager/file-list-view';
-import { ImageModal } from '@/components/file-manager/image-modal';
+import { FileGridView } from '@/features/file-management/components/file-grid-view';
+import { FileListView } from '@/features/file-management/components/file-list-view';
+import { ImageModal } from '@/features/file-management/components/image-modal';
 import {
   AlertDialog,
   AlertDialogAction,

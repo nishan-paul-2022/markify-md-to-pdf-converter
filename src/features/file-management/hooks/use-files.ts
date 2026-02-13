@@ -17,7 +17,7 @@ export interface AppFile {
   createdAt: string;
 }
 
-import { FilesService } from '@/lib/api/files-service';
+import { FilesService } from '@/services/api/files-service';
 
 export function useFiles(source?: string) {
   const router = useRouter();

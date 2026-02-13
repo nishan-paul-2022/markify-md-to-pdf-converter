@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import UserNav from '@/components/auth/user-nav';
+import UserNav from '@/features/auth/components/user-nav';
 import { Button } from '@/components/ui/button';
 import { auth, signIn } from '@/lib/auth';
 
