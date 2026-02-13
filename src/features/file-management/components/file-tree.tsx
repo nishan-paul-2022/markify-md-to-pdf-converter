@@ -99,7 +99,7 @@ export function FileTree({
       
       // Exclude image files (by mimeType or extension)
       if (node.type === 'file') {
-        if (node.file?.mimeType?.startsWith('image/')) return false;
+        if (node.file?.mimeType.startsWith('image/')) return false;
         if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(node.name)) return false;
       }
 
@@ -296,13 +296,39 @@ export function FileTree({
   React.useEffect(() => {
     if (selectedFileId && nodes.length > 0) {
       const foldersToExpand = new Set<string>();
+      
+      // First, find the selected file and get its batchId
+      const findSelectedFile = (items: FileTreeNode[]): FileTreeNode | null => {
+        for (const item of items) {
+          if (item.id === selectedFileId) {
+            return item;
+          }
+          if (item.children) {
+            const found = findSelectedFile(item.children);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+      
+      const selectedFile = findSelectedFile(nodes);
+      const selectedFileBatchId = selectedFile?.batchId;
+      
+      // Only expand folders if they're in the same batch as the selected file
       const findAndExpand = (items: FileTreeNode[]): boolean => {
         let found = false;
         for (const item of items) {
           if (item.id === selectedFileId) {
             found = true;
           } else if (item.children) {
-            if (findAndExpand(item.children)) {
+            // Only expand this folder if it's in the same batch as the selected file
+            // or if it's a default folder (no batch) and the selected file is also default
+            const shouldConsiderFolder = 
+              !selectedFileBatchId || 
+              item.batchId === selectedFileBatchId ||
+              (item.id.startsWith('folder-no-batch') && !selectedFileBatchId);
+            
+            if (shouldConsiderFolder && findAndExpand(item.children)) {
               foldersToExpand.add(item.id);
               found = true;
             }
