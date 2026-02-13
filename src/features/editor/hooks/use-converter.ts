@@ -243,17 +243,99 @@ export function useConverter() {
   );
 
   const handleFolderUpload = useCallback(
-    async (_event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-      // Logic from route.ts refactor...
+    async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      setIsLoading(true);
+      const batchId = self.crypto.randomUUID();
+
+      try {
+        const uploadPromises = Array.from(files).map((file) => {
+          // Preserve folder structure in the file path
+          const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
+          return FilesService.upload(file, batchId, relativePath, 'editor');
+        });
+
+        const results = await Promise.all(uploadPromises);
+        
+        // Find the first markdown file to display
+        const mdResult = results.find((r) => r.originalName.endsWith('.md'));
+        if (mdResult) {
+          const text = await FilesService.getContent(mdResult.url);
+          handleContentChange(text);
+          setFilename(mdResult.originalName);
+          setSelectedFileId(mdResult.id);
+        }
+
+        setIsUploaded(true);
+        setTimeout(() => setIsUploaded(false), 2000);
+      } catch (error: unknown) {
+        logger.error('Folder upload failed:', error);
+      } finally {
+        setIsLoading(false);
+        event.target.value = '';
+      }
     },
-    [],
+    [handleContentChange, setFilename, setIsLoading, setSelectedFileId, setIsUploaded],
   );
 
   const handleZipUpload = useCallback(
-    async (_event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-      // Logic from route.ts refactor...
+    async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      const zipFile = files[0];
+      if (!zipFile.name.endsWith('.zip')) {
+        logger.error('Invalid file type. Only .zip files are allowed.');
+        return;
+      }
+
+      setIsLoading(true);
+      const batchId = self.crypto.randomUUID();
+
+      try {
+        // Dynamically import JSZip
+        const JSZip = (await import('jszip')).default;
+        const zip = new JSZip();
+        const zipContent = await zip.loadAsync(zipFile);
+
+        const uploadPromises: Promise<{ id: string; url: string; originalName: string }>[] = [];
+
+        // Extract and upload each file from the zip
+        zipContent.forEach((relativePath, file) => {
+          if (!file.dir) {
+            uploadPromises.push(
+              (async () => {
+                const blob = await file.async('blob');
+                const extractedFile = new File([blob], relativePath, { type: blob.type });
+                return FilesService.upload(extractedFile, batchId, relativePath, 'editor');
+              })(),
+            );
+          }
+        });
+
+        const results = await Promise.all(uploadPromises);
+
+        // Find the first markdown file to display
+        const mdResult = results.find((r) => r.originalName.endsWith('.md'));
+        if (mdResult) {
+          const text = await FilesService.getContent(mdResult.url);
+          handleContentChange(text);
+          setFilename(mdResult.originalName);
+          setSelectedFileId(mdResult.id);
+        }
+
+        setIsUploaded(true);
+        setTimeout(() => setIsUploaded(false), 2000);
+      } catch (error: unknown) {
+        logger.error('Zip upload failed:', error);
+      } finally {
+        setIsLoading(false);
+        event.target.value = '';
+      }
     },
-    [],
+    [handleContentChange, setFilename, setIsLoading, setSelectedFileId, setIsUploaded],
   );
 
   const toggleSelection = useCallback((id: string | string[]) => {
