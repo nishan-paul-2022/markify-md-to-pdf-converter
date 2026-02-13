@@ -17,10 +17,10 @@ async function processHtmlImages(html: string, basePath?: string): Promise<strin
     const src = match[1];
     
     // Skip remote images and already embedded ones
-    if (src.startsWith('http') || src.startsWith('data:')) continue;
+    if (src.startsWith('http') || src.startsWith('data:')) {continue;}
 
     const filename = src.split('/').pop();
-    if (!filename) continue;
+    if (!filename) {continue;}
 
     // Resolve path: if src is ./images/foo.png and basePath is /content-2
     // we want public/content-2/images/foo.png

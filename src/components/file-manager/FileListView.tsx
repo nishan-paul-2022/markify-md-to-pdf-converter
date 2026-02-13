@@ -2,7 +2,8 @@
 
 import React from "react"
 import { Button } from "@/components/ui/button"
-import { Trash2, Download, FileText, Image as ImageIcon, Loader2 } from "lucide-react"
+import { Trash2, Download, FileText, Image as ImageIcon, Loader2, PencilLine, Lock } from "lucide-react"
+import { cn } from "@/lib/utils"
 import {
   Table,
   TableBody,
@@ -11,37 +12,73 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { File } from "@/hooks/use-files"
 
 interface FileListViewProps {
   files: File[];
   loading: boolean;
-  deleteId: string | null;
-  deleting: boolean;
   setDeleteId: (id: string | null) => void;
-  handleDelete: (id: string) => void;
+  handleRename: (id: string, newName: string, type: "file" | "folder") => Promise<void>;
+  onImageClick?: (file: File) => void;
 }
 
 export function FileListView({
   files,
   loading,
-  deleteId,
-  deleting,
   setDeleteId,
-  handleDelete,
+  handleRename,
+  onImageClick,
 }: FileListViewProps) {
+  const [renamingId, setRenamingId] = React.useState<string | null>(null)
+  const [renameValue, setRenameValue] = React.useState("")
+  const [isRenaming, setIsRenaming] = React.useState(false)
+
+  const handleRenameStart = (file: File) => {
+    setRenamingId(file.id)
+    const parts = file.originalName.split(".");
+    if (parts.length > 1) {
+      setRenameValue(parts.slice(0, -1).join("."));
+    } else {
+      setRenameValue(file.originalName);
+    }
+  }
+
+  const handleRenameCancel = () => {
+    setRenamingId(null)
+    setRenameValue("")
+  }
+
+  const handleRenameSubmit = async (file: File) => {
+    let finalName = renameValue.trim();
+    if (!finalName) {
+      handleRenameCancel();
+      return;
+    }
+
+    const parts = file.originalName.split(".");
+    if (parts.length > 1) {
+      const extension = parts[parts.length - 1];
+      finalName = `${finalName}.${extension}`;
+    }
+
+    if (finalName === file.originalName) {
+      handleRenameCancel()
+      return
+    }
+
+    setIsRenaming(true)
+    try {
+      await handleRename(file.id, finalName, "file")
+      handleRenameCancel()
+    } catch (error) {
+      console.error("Rename failed:", error)
+    } finally {
+      setIsRenaming(false)
+    }
+  }
+
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes"
+    if (bytes === 0) {return "0 Bytes"}
     const k = 1024
     const sizes = ["Bytes", "KB", "MB", "GB"]
     const i = Math.floor(Math.log(bytes) / Math.log(k))
@@ -87,25 +124,62 @@ export function FileListView({
   }
 
   return (
-    <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12"></TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Size</TableHead>
-              <TableHead>Uploaded</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {files.map((file) => (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-12"></TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Size</TableHead>
+            <TableHead>Uploaded</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {files.map((file) => {
+            const isDefault = file.id.startsWith("default-");
+            const isCurrentlyRenaming = renamingId === file.id;
+
+            return (
               <TableRow key={file.id}>
-                <TableCell>{getFileIcon(file.mimeType)}</TableCell>
+                <TableCell>
+                  {file.mimeType.startsWith("image/") && onImageClick ? (
+                    <button 
+                      onClick={() => onImageClick(file)}
+                      className="hover:scale-110 transition-transform active:scale-95 cursor-pointer bg-transparent border-none p-0 flex items-center justify-center outline-none"
+                    >
+                      {getFileIcon(file.mimeType)}
+                    </button>
+                  ) : (
+                    getFileIcon(file.mimeType)
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">
                   <div className="flex flex-col">
-                    <span className="truncate max-w-xs">{file.originalName}</span>
+                    {isCurrentlyRenaming ? (
+                      <div className="flex items-center gap-2 max-w-xs">
+                        <input
+                          autoFocus
+                          className="flex-1 bg-background border border-primary rounded px-2 py-1 text-sm outline-none font-medium"
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {handleRenameSubmit(file);}
+                            if (e.key === "Escape") {handleRenameCancel();}
+                          }}
+                          onBlur={() => {
+                            if (!isRenaming) {handleRenameSubmit(file);}
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className={cn("truncate max-w-xs", isDefault && "opacity-80 italic")}>
+                          {file.originalName}
+                        </span>
+                        {isDefault && <Lock className="h-3 w-3 opacity-40" />}
+                      </div>
+                    )}
                     <span className="text-xs text-muted-foreground">
                       {file.mimeType}
                     </span>
@@ -126,42 +200,32 @@ export function FileListView({
                         <Download className="h-4 w-4" />
                       </a>
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setDeleteId(file.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
+                    {!isDefault && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRenameStart(file)}
+                        disabled={isCurrentlyRenaming}
+                      >
+                        <PencilLine className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {!isDefault && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteId(file.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the file
-              from our servers.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteId && handleDelete(deleteId)}
-              disabled={deleting}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {deleting ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
   )
 }

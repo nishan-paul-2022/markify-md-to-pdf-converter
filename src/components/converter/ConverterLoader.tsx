@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 
 const ConverterClient = dynamic(
-  () => import('./ConverterClient'),
+  () => import('@/components/converter/EditorClient'),
   { ssr: false }
 );
 

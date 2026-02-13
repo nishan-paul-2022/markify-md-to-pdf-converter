@@ -8,7 +8,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
   const session = await auth();
 
   if (session?.user) {
-    redirect("/converter");
+    redirect("/editor");
   }
 
   return (
