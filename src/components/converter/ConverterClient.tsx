@@ -2,7 +2,9 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 import JSZip from 'jszip';
+
 import { 
   Layers, 
   Upload, 
@@ -554,13 +556,16 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
       {/* Header */}
       <header className="relative z-10 h-16 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl flex items-center justify-between px-6 shrink-0">
-        <div className="flex items-center gap-4 w-[280px]">
+        <div 
+          className="flex items-center gap-4 w-[280px] cursor-pointer group/logo"
+          onClick={() => router.push('/')}
+        >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center shadow-inner">
-              <Layers className="w-5 h-5 text-blue-400" />
+            <div className="w-10 h-10 flex items-center justify-center transition-transform group-hover/logo:scale-110">
+              <Image src="/brand-logo.svg" alt="Markify" width={32} height={32} priority className="drop-shadow-xl" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-sm font-bold tracking-tight text-white uppercase tracking-[0.1em]">Converter</h1>
+              <h1 className="text-sm font-bold tracking-tight text-white tracking-[0.05em] group-hover/logo:text-blue-400 transition-colors">Markify</h1>
             </div>
           </div>
         </div>

@@ -23,11 +23,20 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
 
       {/* Navigation */}
       <header className="relative z-50 flex items-center justify-between px-6 lg:px-12 h-20 border-b border-white/5 backdrop-blur-md bg-slate-950/50">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-            <Image src="/brand-logo.svg" alt="Markify" width={24} height={24} />
+        <div 
+          className="flex items-center gap-3 cursor-pointer group/logo"
+          onClick={() => {
+            if (window.location.hash) {
+              window.location.hash = '';
+            } else {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
+        >
+          <div className="w-10 h-10 flex items-center justify-center transition-transform group-hover/logo:scale-110">
+            <Image src="/brand-logo.svg" alt="Markify" width={32} height={32} priority className="drop-shadow-xl" />
           </div>
-          <span className="text-xl font-bold tracking-tight">Markify</span>
+          <span className="text-xl font-bold tracking-tight group-hover:text-blue-400 transition-colors">Markify</span>
         </div>
         <div className="hidden md:flex items-center gap-8">
           <a href="#features" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Features</a>
