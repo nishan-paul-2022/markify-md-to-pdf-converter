@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { getAlert } from '@/components/AlertProvider';
+import { getAlert } from '@/components/alert-provider';
 import { logger } from '@/lib/logger';
 import { extractImageReferences, validateUploadStructure } from '@/lib/services/upload-validator';
 

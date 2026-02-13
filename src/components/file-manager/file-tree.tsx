@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import { useAlert } from '@/components/AlertProvider';
+import { useAlert } from '@/components/alert-provider';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

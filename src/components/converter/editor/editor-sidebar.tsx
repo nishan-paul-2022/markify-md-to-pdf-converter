@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { FileTree } from '@/components/file-manager/FileTree';
+import { FileTree } from '@/components/file-manager/file-tree';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { FileTreeNode } from '@/lib/file-tree';

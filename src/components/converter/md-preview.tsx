@@ -4,9 +4,9 @@ import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import dynamic from 'next/dynamic';
 
-import { createMarkdownComponents } from '@/components/converter/MarkdownComponents';
-import { MdPreviewToolbar } from '@/components/converter/MdPreviewToolbar';
-import { CoverPage, PageWrapper } from '@/components/converter/PageTemplates';
+import { createMarkdownComponents } from '@/components/converter/markdown-components';
+import { MdPreviewToolbar } from '@/components/converter/md-preview-toolbar';
+import { CoverPage, PageWrapper } from '@/components/converter/page-templates';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { A4_HEIGHT_PX, A4_WIDTH_PX, usePreview } from '@/hooks/use-preview';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import remarkGfm from 'remark-gfm';
 
-const PdfViewer = dynamic(() => import('@/components/converter/PdfViewer'), {
+const PdfViewer = dynamic(() => import('@/components/converter/pdf-viewer'), {
   ssr: false,
   loading: () => <div className="h-[800px] w-[600px] animate-pulse rounded-lg bg-slate-800/20" />,
 });

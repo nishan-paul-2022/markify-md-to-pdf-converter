@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Inter, Lora } from 'next/font/google';
 
-import Providers from '@/components/Providers';
+import Providers from '@/components/providers';
 
 import '@/app/globals.css';
 

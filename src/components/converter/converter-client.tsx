@@ -2,12 +2,12 @@
 
 import React from 'react';
 
-import { useAlert } from '@/components/AlertProvider';
-import { ConverterHeader } from '@/components/converter/ConverterHeader';
-import { FileRow } from '@/components/converter/FileRow';
-import { PipelineHeader } from '@/components/converter/PipelineHeader';
-import { SourceSegment } from '@/components/converter/SourceSegment';
-import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
+import { useAlert } from '@/components/alert-provider';
+import { ConverterHeader } from '@/components/converter/converter-header';
+import { FileRow } from '@/components/converter/file-row';
+import { PipelineHeader } from '@/components/converter/pipeline-header';
+import { SourceSegment } from '@/components/converter/source-segment';
+import { UploadRulesModal } from '@/components/converter/upload-rules-modal';
 // Components
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';

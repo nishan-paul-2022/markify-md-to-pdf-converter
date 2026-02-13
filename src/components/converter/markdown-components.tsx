@@ -1,6 +1,6 @@
 import React from 'react';
 
-import MermaidDiagram from '@/components/converter/MermaidDiagram';
+import MermaidDiagram from '@/components/converter/mermaid-diagram';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 

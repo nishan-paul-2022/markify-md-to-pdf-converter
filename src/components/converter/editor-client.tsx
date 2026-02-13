@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import EditorView from '@/components/converter/EditorView';
+import EditorView from '@/components/converter/editor-view';
 import { DEFAULT_MARKDOWN_PATH } from '@/constants/default-content';
 import { useConverter } from '@/hooks/use-converter';
 import { useFiles } from '@/hooks/use-files';

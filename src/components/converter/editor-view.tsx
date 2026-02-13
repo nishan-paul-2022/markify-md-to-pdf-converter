@@ -3,14 +3,14 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 
-import UserNav from '@/components/auth/UserNav';
-import Editor from '@/components/converter/Editor';
-import { EditorSidebar } from '@/components/converter/editor/EditorSidebar';
-import { EditorStats } from '@/components/converter/editor/EditorStats';
-import { EditorToolbar } from '@/components/converter/editor/EditorToolbar';
-import MdPreview from '@/components/converter/MdPreview';
-import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
-import { ImageModal } from '@/components/file-manager/ImageModal';
+import UserNav from '@/components/auth/user-nav';
+import Editor from '@/components/converter/editor';
+import { EditorSidebar } from '@/components/converter/editor/editor-sidebar';
+import { EditorStats } from '@/components/converter/editor/editor-stats';
+import { EditorToolbar } from '@/components/converter/editor/editor-toolbar';
+import MdPreview from '@/components/converter/md-preview';
+import { UploadRulesModal } from '@/components/converter/upload-rules-modal';
+import { ImageModal } from '@/components/file-manager/image-modal';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useConverter } from '@/hooks/use-converter';
 import type { AppFile } from '@/hooks/use-files';

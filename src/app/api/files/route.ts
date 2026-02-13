@@ -8,7 +8,7 @@ import {
   FileRenameSchema, 
   FileUploadSchema 
 } from '@/lib/schemas/file.schema';
-import { ServerFilesService } from '@/lib/services/server/files.service';
+import { ServerFilesService } from '@/lib/services/server/files-service';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {

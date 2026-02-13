@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { getAlert } from '@/components/AlertProvider';
+import { getAlert } from '@/components/alert-provider';
 import { logger } from '@/lib/logger';
 
 export interface AppFile {
@@ -17,7 +17,7 @@ export interface AppFile {
   createdAt: string;
 }
 
-import { FilesService } from '@/lib/api/files.service';
+import { FilesService } from '@/lib/api/files-service';
 
 export function useFiles(source?: string) {
   const router = useRouter();

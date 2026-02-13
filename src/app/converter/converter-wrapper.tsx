@@ -10,7 +10,7 @@ interface User {
 }
 
 const ConverterClient = dynamic<{ user: User }>(
-  () => import('@/components/converter/ConverterClient'),
+  () => import('@/components/converter/converter-client'),
   { ssr: false },
 );
 

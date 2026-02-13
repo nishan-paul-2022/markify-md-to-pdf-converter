@@ -2,7 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import UserNav from '@/components/auth/UserNav';
+import UserNav from '@/components/auth/user-nav';
 import { Button } from '@/components/ui/button';
 
 import { FileCode, Search } from 'lucide-react';

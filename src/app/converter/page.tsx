@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
-import ConverterWrapper from '@/app/converter/ConverterWrapper';
+import ConverterWrapper from '@/app/converter/converter-wrapper';
 import { auth } from '@/lib/auth';
 
 export const metadata: Metadata = {

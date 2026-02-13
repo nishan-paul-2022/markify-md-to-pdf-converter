@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
-import ConverterLoader from '@/components/converter/ConverterLoader';
+import ConverterLoader from '@/components/converter/converter-loader';
 import { auth } from '@/lib/auth';
 
 export const metadata: Metadata = {

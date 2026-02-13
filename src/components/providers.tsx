@@ -2,7 +2,7 @@
 
 import { SessionProvider } from 'next-auth/react';
 
-import { AlertProvider } from '@/components/AlertProvider';
+import { AlertProvider } from '@/components/alert-provider';
 
 export default function Providers({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
