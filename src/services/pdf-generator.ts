@@ -616,7 +616,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
         </div>
     `
       : `
-        <div class="cover-page" style="background-color: white;">
+        <div class="cover-page" style="background-color: #020617;">
           <div class="cover-bg-image" style="mix-blend-mode: normal; opacity: 1;"></div>
           
           <div class="cover-content" style="padding: 0;">

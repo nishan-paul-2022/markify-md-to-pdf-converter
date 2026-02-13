@@ -15,7 +15,7 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
   // Find the Landing Page section
   // It starts with # Landing Page and ends at the next main heading (#) or horizontal rule (---)
   const landingPageMatch = markdown.match(
-    /^#\s+Landing\s+Page\s*\n([\s\S]*?)(?=\n#\s+|(?:\r?\n){2}---|$)/im,
+    /(?:^|\r?\n)#\s+Landing\s+Page\s*\r?\n([\s\S]*?)(?=\r?\n#\s+|(?:\r?\n){2}---|(?![^]))/i,
   );
 
   if (!landingPageMatch) {
@@ -98,7 +98,7 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
  */
 export function removeLandingPageSection(markdown: string): string {
   // More robust removal that handles different termination markers
-  return markdown.replace(/^#\s+Landing\s+Page\s*\n[\s\S]*?(?=\n#\s+[^#]|\n---|$)/im, '').trim();
+  return markdown.replace(/(?:^|\r?\n)#\s+Landing\s+Page\s*\r?\n[\s\S]*?(?=\r?\n#\s+|(?:\r?\n){2}---|(?![^]))/i, '').trim();
 }
 
 export const DEFAULT_METADATA: Metadata = {};
