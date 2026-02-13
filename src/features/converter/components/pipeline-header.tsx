@@ -74,8 +74,8 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
 }) => {
   return (
     <div className="flex h-11 flex-none items-center justify-between px-4 text-xs font-black tracking-[0.2em] uppercase">
-      <div className="flex flex-nowrap items-center gap-10">
-        <div className="flex items-center gap-2 whitespace-nowrap text-indigo-400/80">
+      <div className="flex flex-1 flex-nowrap items-center">
+        <div className="flex flex-1 items-center gap-2 whitespace-nowrap text-indigo-400/80">
           <Layers className="h-3.5 w-3.5" />
           <div className="flex items-baseline gap-2">
             <span>FILES</span>
@@ -87,7 +87,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 whitespace-nowrap text-emerald-400/80">
+        <div className="flex w-[480px] items-center gap-2 ml-4 whitespace-nowrap text-emerald-400/80">
           <CheckCircle2 className="h-3.5 w-3.5" />
           <span>OUTPUT</span>
           {completedResultsCount > 0 && (

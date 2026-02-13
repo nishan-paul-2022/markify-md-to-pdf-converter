@@ -192,7 +192,7 @@ export const FileRow: React.FC<FileRowProps> = ({
       {/* Output File Card (Always visible for every file) */}
       <div
         className={cn(
-          'group/output animate-in slide-in-from-right-8 relative flex w-[340px] items-center justify-between overflow-hidden rounded-3xl border transition-all duration-500 shadow-xl',
+          'group/output animate-in slide-in-from-right-8 relative flex w-[480px] items-center justify-between overflow-hidden rounded-3xl border transition-all duration-500 shadow-xl',
           isProcessing
             ? 'border-amber-500/20 bg-amber-500/[0.02] hover:bg-amber-500/[0.04]'
             : isError
@@ -202,7 +202,7 @@ export const FileRow: React.FC<FileRowProps> = ({
                 : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.04] opacity-40 hover:opacity-60',
         )}
       >
-        <div className="relative z-10 flex min-w-0 items-center gap-4">
+        <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4 pl-5">
           <div
             className={cn(
               'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
@@ -223,40 +223,56 @@ export const FileRow: React.FC<FileRowProps> = ({
               <FileDown className="h-5 w-5" />
             )}
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span
-                className={cn(
-                  'text-[9px] font-black tracking-widest uppercase',
-                  isProcessing
-                    ? 'text-amber-500'
-                    : isError
-                      ? 'text-red-500'
-                      : isDone || hasOutput
-                        ? 'text-emerald-500'
-                        : 'text-slate-500',
-                )}
-              >
-                {isProcessing
-                  ? 'Processing'
-                  : isError
-                    ? 'Failed'
-                    : isDone || hasOutput
-                      ? 'Ready'
-                      : 'Silent'}
-              </span>
-              {(isDone || hasOutput) && !isProcessing && (
-                <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-              )}
-            </div>
-            <p className="mt-0.5 truncate text-xs font-bold text-slate-300">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-slate-200">
               {file.originalName.replace(/\.md$/i, '')}.pdf
             </p>
+            <div className="mt-1.5 flex items-center gap-3">
+              <span className="text-[10px] font-black tracking-wider text-slate-400 uppercase">
+                {isDone || hasOutput
+                  ? formatSize((file.metadata?.generatedPdfSize as number) || 0)
+                  : '--- KB'}
+              </span>
+              <span className="h-1 w-1 rounded-full bg-slate-700" />
+              <span className="text-[10px] font-black tracking-wider text-slate-400 uppercase">
+                {isDone || hasOutput
+                  ? `${(file.metadata?.generatedPdfPageCount as number) || 0} Pages`
+                  : '--- Pages'}
+              </span>
+
+              <div className="flex-1" />
+
+              <div className="flex items-center gap-1.5">
+                {(isDone || hasOutput) && !isProcessing && (
+                  <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                )}
+                <span
+                  className={cn(
+                    'text-[10px] font-black tracking-[0.15em] uppercase',
+                    isProcessing
+                      ? 'text-amber-500'
+                      : isError
+                        ? 'text-red-500'
+                        : isDone || hasOutput
+                          ? 'text-emerald-500 font-black'
+                          : 'text-slate-500',
+                  )}
+                >
+                  {isProcessing
+                    ? 'Processing'
+                    : isError
+                      ? 'Failed'
+                      : isDone || hasOutput
+                        ? 'Ready'
+                        : 'Silent'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
         {!isProcessing && (isDone || hasOutput) && (
-          <div className="relative z-10 shrink-0">
+          <div className="relative z-10 shrink-0 pr-5">
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
