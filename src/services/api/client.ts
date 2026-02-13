@@ -6,10 +6,7 @@ export interface ApiError {
   code?: string;
 }
 
-export async function fetchApi<T>(
-  url: string,
-  options: RequestInit = {},
-): Promise<T> {
+export async function fetchApi<T>(url: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -25,7 +22,7 @@ export async function fetchApi<T>(
     } catch {
       errorDetail = { error: `HTTP ${response.status}: ${response.statusText}` };
     }
-    
+
     logger.error(`API Error [${url}]:`, errorDetail);
     throw new Error(errorDetail.details || errorDetail.error || 'Unknown API Error');
   }
@@ -60,7 +57,7 @@ export async function fetchApiFormData<T>(
     } catch {
       errorDetail = { error: `HTTP ${response.status}: ${response.statusText}` };
     }
-    
+
     logger.error(`API Error [${url}]:`, errorDetail);
     throw new Error(errorDetail.details || errorDetail.error || 'Unknown API Error');
   }

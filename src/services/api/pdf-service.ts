@@ -20,5 +20,5 @@ export const PdfApiService = {
     }
 
     return response.blob();
-  }
+  },
 };

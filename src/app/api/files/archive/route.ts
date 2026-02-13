@@ -29,10 +29,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Validate that it's a .zip file
     if (!archiveFile.name.toLowerCase().endsWith('.zip')) {
-      return NextResponse.json(
-        { error: 'Only .zip files are supported' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Only .zip files are supported' }, { status: 400 });
     }
 
     // 1. Create a unique temp directory for extraction

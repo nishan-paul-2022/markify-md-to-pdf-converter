@@ -45,9 +45,7 @@ export const EditorStats: React.FC<EditorStatsProps> = ({
             <span className="text-[9px] font-bold tracking-widest text-blue-400/50 uppercase">
               Uploaded
             </span>
-            <span className="text-slate-300 tabular-nums">
-              {formatDateTime(uploadTime)}
-            </span>
+            <span className="text-slate-300 tabular-nums">{formatDateTime(uploadTime)}</span>
           </div>
         )}
         {lastModifiedTime && (
@@ -55,9 +53,7 @@ export const EditorStats: React.FC<EditorStatsProps> = ({
             <span className="text-[9px] font-bold tracking-widest text-emerald-400/50 uppercase">
               Modified
             </span>
-            <span className="text-slate-300 tabular-nums">
-              {formatDateTime(lastModifiedTime)}
-            </span>
+            <span className="text-slate-300 tabular-nums">{formatDateTime(lastModifiedTime)}</span>
           </div>
         )}
       </div>

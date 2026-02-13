@@ -60,12 +60,10 @@ export const FilesService = {
   },
 
   getContent: async (url: string) => {
-    const fetchUrl = url.startsWith('/uploads/') && !url.startsWith('/api/')
-      ? `/api${url}`
-      : url;
-    
+    const fetchUrl = url.startsWith('/uploads/') && !url.startsWith('/api/') ? `/api${url}` : url;
+
     const response = await fetch(fetchUrl);
     if (!response.ok) throw new Error('Failed to fetch file content');
     return response.text();
-  }
+  },
 };

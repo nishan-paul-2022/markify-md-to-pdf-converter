@@ -3,11 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
-import { 
-  BulkDeleteSchema, 
-  FileRenameSchema, 
-  FileUploadSchema 
-} from '@/schemas/file-schema';
+import { BulkDeleteSchema, FileRenameSchema, FileUploadSchema } from '@/schemas/file-schema';
 import { ServerFilesService } from '@/services/files-service';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -20,7 +16,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
-    
+
     const rawData = {
       batchId: formData.get('batchId'),
       relativePath: formData.get('relativePath'),
@@ -47,11 +43,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Strict Path Validation logic remains in the route or moved to service?
     // The codebase review suggested moving logic to services.
     // I'll keep the specialized validation logic here or move to a helper.
-    
+
     // Validate file type
     const isMarkdown = file.name.endsWith('.md') || file.type === 'text/markdown';
     const isImage = file.type.startsWith('image/');
-    
+
     if (!isMarkdown && !isImage) {
       return NextResponse.json(
         { error: 'Upload failed — only .md and images are allowed here.' },
@@ -75,7 +71,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     logger.error('File upload error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Upload failed' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -154,6 +150,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     logger.error('Rename error:', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Rename failed' }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Rename failed' },
+      { status: 500 },
+    );
   }
 }

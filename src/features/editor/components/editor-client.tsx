@@ -146,7 +146,6 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
     }
   }, [converterState.selectedFileId, searchParams, router, user.email]);
 
-
   const handleFileSelect = useCallback(
     async (node: FileTreeNode) => {
       if (node.type === 'file' && node.file) {

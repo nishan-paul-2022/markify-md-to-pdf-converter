@@ -8,14 +8,7 @@ import { FileTree } from '@/features/file-management/components/file-tree';
 import type { FileTreeNode } from '@/features/file-management/utils/file-tree';
 import { cn } from '@/utils/cn';
 
-import { 
-  FolderOpen, 
-  ListChecks, 
-  PanelLeftClose, 
-  RefreshCw, 
-  Trash2, 
-  X 
-} from 'lucide-react';
+import { FolderOpen, ListChecks, PanelLeftClose, RefreshCw, Trash2, X } from 'lucide-react';
 
 interface EditorSidebarProps {
   isSidebarOpen: boolean;
@@ -29,7 +22,13 @@ interface EditorSidebarProps {
   selectedFileId: string | null;
   onFileSelect: (node: FileTreeNode) => Promise<void> | void;
   handleFileDelete: (id: string | string[]) => Promise<void>;
-  handleFileRename: (id: string, newName: string, type: 'file' | 'folder', batchId?: string, oldPath?: string) => Promise<void>;
+  handleFileRename: (
+    id: string,
+    newName: string,
+    type: 'file' | 'folder',
+    batchId?: string,
+    oldPath?: string,
+  ) => Promise<void>;
   selectedIds: Set<string>;
   toggleSelection: (id: string | string[]) => void;
   setSelectedIds: (ids: Set<string>) => void;
@@ -127,8 +126,6 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
           </Tooltip>
         </div>
       </div>
-
-
 
       {/* Selection Toolbar - Replacing Default Items Area */}
       {isSelectionMode && (

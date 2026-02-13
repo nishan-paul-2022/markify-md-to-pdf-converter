@@ -49,8 +49,6 @@ export default function EditorView({
   refreshFiles,
   onFileSelect,
 }: EditorViewProps) {
-
-
   const {
     // State
     rawContent,
@@ -115,14 +113,11 @@ export default function EditorView({
 
   return (
     <TooltipProvider delayDuration={0}>
-      <main className="flex min-h-screen flex-col overflow-hidden bg-slate-900 font-sans text-slate-100 antialiased selection:bg-primary/20">
+      <main className="selection:bg-primary/20 flex min-h-screen flex-col overflow-hidden bg-slate-900 font-sans text-slate-100 antialiased">
         {/* Navigation Bar */}
         <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between border-b border-white/5 bg-slate-950/80 px-4 backdrop-blur-md">
           <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="group flex items-center gap-3"
-            >
+            <Link href="/" className="group flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center transition-transform group-hover:scale-110">
                 <Image
                   src="/brand-logo.svg"

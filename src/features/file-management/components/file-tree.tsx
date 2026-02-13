@@ -96,16 +96,14 @@ export function FileTree({
     if (query) {
       // Exclude 'images' folder and its contents
       if (node.name === 'images' && node.type === 'folder') return false;
-      
+
       // Exclude image files (by mimeType or extension)
       if (node.type === 'file') {
         if (node.file?.mimeType.startsWith('image/')) return false;
         if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(node.name)) return false;
       }
-
-
     } else {
-      // If no query, we generally show everything, 
+      // If no query, we generally show everything,
       // BUT if we wanted to enforce "searching is only for files", matches are irrelevant.
       // However, doesNodeMatch is usually called when query exists.
       return true;
@@ -113,30 +111,30 @@ export function FileTree({
 
     // 2. Match Logic
     const nameMatch = node.name.toLowerCase().includes(query.toLowerCase());
-    
+
     // If it's a file, it must match name
     if (node.type === 'file') {
       return nameMatch;
     }
 
     // If it's a folder, it matches if:
-    // a) The folder name matches (User said "searching is only for files", but usually context helps. 
+    // a) The folder name matches (User said "searching is only for files", but usually context helps.
     //    However, strict filtering "others hidden" implies looking for content.
     //    Let's keep folder name matching effectively "expanding" it, but we need to see if children match.
     //    If we assume "searching is only for files", maybe we ONLY return true if CHILDREN match?
     //    "searching is only for files" -> strongly implies folder names shouldn't trigger a match unless content matches.
-    //    Let's try: Match if children match. OR if name matches? 
+    //    Let's try: Match if children match. OR if name matches?
     //    Let's stick to: Match if children match OR name matches (standard tree search).
-    
+
     // Check children recursively
-    const childrenMatch = node.children?.some(child => doesNodeMatch(child, query)) ?? false;
-    
+    const childrenMatch = node.children?.some((child) => doesNodeMatch(child, query)) ?? false;
+
     return nameMatch || childrenMatch;
   }, []);
 
   const filteredNodes = React.useMemo(() => {
     if (!searchQuery) return nodes;
-    return nodes.filter(node => doesNodeMatch(node, searchQuery));
+    return nodes.filter((node) => doesNodeMatch(node, searchQuery));
   }, [nodes, searchQuery, doesNodeMatch]);
 
   // Optimize expansion: Only calculate when searchQuery really changes
@@ -147,7 +145,7 @@ export function FileTree({
     }
 
     const newExpanded = new Set<string>();
-    
+
     const collectExpanded = (nodes: FileTreeNode[]) => {
       for (const node of nodes) {
         // We only care about folders
@@ -296,7 +294,7 @@ export function FileTree({
   React.useEffect(() => {
     if (selectedFileId && nodes.length > 0) {
       const foldersToExpand = new Set<string>();
-      
+
       // First, find the selected file and get its batchId
       const findSelectedFile = (items: FileTreeNode[]): FileTreeNode | null => {
         for (const item of items) {
@@ -310,10 +308,10 @@ export function FileTree({
         }
         return null;
       };
-      
+
       const selectedFile = findSelectedFile(nodes);
       const selectedFileBatchId = selectedFile?.batchId;
-      
+
       // Only expand folders if they're in the same batch as the selected file
       const findAndExpand = (items: FileTreeNode[]): boolean => {
         let found = false;
@@ -323,11 +321,11 @@ export function FileTree({
           } else if (item.children) {
             // Only expand this folder if it's in the same batch as the selected file
             // or if it's a default folder (no batch) and the selected file is also default
-            const shouldConsiderFolder = 
-              !selectedFileBatchId || 
+            const shouldConsiderFolder =
+              !selectedFileBatchId ||
               item.batchId === selectedFileBatchId ||
               (item.id.startsWith('folder-no-batch') && !selectedFileBatchId);
-            
+
             if (shouldConsiderFolder && findAndExpand(item.children)) {
               foldersToExpand.add(item.id);
               found = true;
@@ -380,9 +378,9 @@ export function FileTree({
         const isFolderActive = containsSelectedFile(node, selectedFileId);
         const isCurrentlyRenaming = renamingId === node.id;
         const isGridMode = node.name === 'images' && folderGridModes.has(node.id);
-        
+
         // Pass strict searchQuery down to children to enforce hidden state
-        const childSearchQuery = searchQuery; 
+        const childSearchQuery = searchQuery;
 
         if (node.type === 'folder') {
           const folderFileIds = collectFileIds(node);
@@ -544,8 +542,8 @@ export function FileTree({
                       const isChildSelected = selectedFileId === child.id;
 
                       // During search, images are hidden via logic, but we must check if this map needs filter
-                      // If we are in grid mode and searching, doesNodeMatch handles it in parent filter, 
-                      // but 'nodes.map' inside here is iterating raw children? 
+                      // If we are in grid mode and searching, doesNodeMatch handles it in parent filter,
+                      // but 'nodes.map' inside here is iterating raw children?
                       // NO, 'node' comes from 'filteredNodes', but 'node.children' is raw.
                       // We must filter children here too if we want strict grid view filtering.
                       if (searchQuery && !doesNodeMatch(child, searchQuery)) return null;

@@ -99,8 +99,6 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
             </div>
           </DropdownMenuLabel>
 
-
-
           <DropdownMenuSeparator className="mx-1 bg-white/5" />
           <div className="py-1">
             <DropdownMenuItem

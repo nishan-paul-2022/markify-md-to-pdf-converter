@@ -1,5 +1,5 @@
-import type { GroupMember,Metadata } from '@/schemas/file-schema';
-export type { GroupMember,Metadata };
+import type { GroupMember, Metadata } from '@/schemas/file-schema';
+export type { GroupMember, Metadata };
 
 /**
  * Parses metadata from markdown content.

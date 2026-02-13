@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma';
 import { getDefaultFiles } from '@/services/defaults';
 
 import { randomUUID } from 'crypto';
-import { mkdir, stat,unlink, writeFile } from 'fs/promises';
+import { mkdir, stat, unlink, writeFile } from 'fs/promises';
 import { join } from 'path';
 
 export const ServerFilesService = {
@@ -133,13 +133,16 @@ export const ServerFilesService = {
     });
   },
 
-  rename: async (userId: string, params: {
-    id: string;
-    newName: string;
-    type: 'file' | 'folder';
-    batchId?: string;
-    oldPath?: string;
-  }) => {
+  rename: async (
+    userId: string,
+    params: {
+      id: string;
+      newName: string;
+      type: 'file' | 'folder';
+      batchId?: string;
+      oldPath?: string;
+    },
+  ) => {
     const { id, type, newName, batchId, oldPath } = params;
 
     if (type === 'folder') {
@@ -153,30 +156,32 @@ export const ServerFilesService = {
         },
       });
 
-      const updates = files.map((file) => {
-        const relativePath = file.relativePath || '';
-        const pathParts = relativePath.split('/');
-        const oldPathParts = oldPath.split('/');
+      const updates = files
+        .map((file) => {
+          const relativePath = file.relativePath || '';
+          const pathParts = relativePath.split('/');
+          const oldPathParts = oldPath.split('/');
 
-        let matches = true;
-        for (let i = 0; i < oldPathParts.length; i++) {
-          if (pathParts[i] !== oldPathParts[i]) {
-            matches = false;
-            break;
+          let matches = true;
+          for (let i = 0; i < oldPathParts.length; i++) {
+            if (pathParts[i] !== oldPathParts[i]) {
+              matches = false;
+              break;
+            }
           }
-        }
 
-        if (!matches) return null;
+          if (!matches) return null;
 
-        const newPathParts = [...pathParts];
-        newPathParts[oldPathParts.length - 1] = newName;
-        const newPath = newPathParts.join('/');
+          const newPathParts = [...pathParts];
+          newPathParts[oldPathParts.length - 1] = newName;
+          const newPath = newPathParts.join('/');
 
-        return prisma.file.update({
-          where: { id: file.id },
-          data: { relativePath: newPath },
-        });
-      }).filter((update): update is Exclude<typeof update, null> => update !== null);
+          return prisma.file.update({
+            where: { id: file.id },
+            data: { relativePath: newPath },
+          });
+        })
+        .filter((update): update is Exclude<typeof update, null> => update !== null);
 
       return Promise.all(updates);
     } else {
@@ -201,5 +206,5 @@ export const ServerFilesService = {
         },
       });
     }
-  }
+  },
 };

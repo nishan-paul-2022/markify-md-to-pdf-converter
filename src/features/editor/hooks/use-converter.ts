@@ -152,12 +152,12 @@ export function useConverter(
       try {
         const text = await FilesService.getContent(DEFAULT_MARKDOWN_PATH);
         setRawContent(text);
-        
+
         const parsedMetadata = parseMetadataFromMarkdown(text);
         const contentWithoutLandingPage = removeLandingPageSection(text);
         setMetadata(parsedMetadata);
         setContent(contentWithoutLandingPage);
-        
+
         const now = new Date();
         lastModifiedTimeRef.current = now;
 
@@ -175,12 +175,9 @@ export function useConverter(
     void fetchDefaultContent();
   }, [setRawContent, setMetadata, setContent, setIsGenerating, setIsLoading, setBasePath]);
 
-  const onFileSelect = useCallback(
-    async (_id: string) => {
-      // Simplified for brevity, usually involves FilesService.getContent
-    },
-    [],
-  );
+  const onFileSelect = useCallback(async (_id: string) => {
+    // Simplified for brevity, usually involves FilesService.getContent
+  }, []);
 
   const generatePdfBlob = useCallback(async () => {
     setIsGenerating(true);
@@ -229,7 +226,7 @@ export function useConverter(
         );
 
         const results = await Promise.all(uploadPromises);
-        
+
         const mdResult = results.find((r) => r.originalName.endsWith('.md'));
         if (mdResult) {
           const text = await FilesService.getContent(mdResult.url);
@@ -261,12 +258,13 @@ export function useConverter(
       try {
         const uploadPromises = Array.from(files).map((file) => {
           // Preserve folder structure in the file path
-          const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
+          const relativePath =
+            (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
           return FilesService.upload(file, batchId, relativePath, 'editor');
         });
 
         const results = await Promise.all(uploadPromises);
-        
+
         // Find the first markdown file to display
         const mdResult = results.find((r) => r.originalName.endsWith('.md'));
         if (mdResult) {

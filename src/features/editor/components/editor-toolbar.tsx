@@ -11,18 +11,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { 
-  Check, 
-  ChevronsDown, 
-  ChevronsUp, 
-  Copy, 
-  Download, 
-  FileArchive, 
-  FolderOpen, 
-  MoreVertical, 
-  PanelLeftOpen, 
-  RotateCcw, 
-  Upload 
+import {
+  Check,
+  ChevronsDown,
+  ChevronsUp,
+  Copy,
+  Download,
+  FileArchive,
+  FolderOpen,
+  MoreVertical,
+  PanelLeftOpen,
+  RotateCcw,
+  Upload,
 } from 'lucide-react';
 
 interface EditorToolbarProps {
