@@ -72,38 +72,47 @@ export const ServerFilesService = {
     const relativeStorageDir = batchId ? join('uploads', userId, batchId) : join('uploads', userId);
     const uploadDir = join(process.cwd(), 'public', relativeStorageDir);
 
-    if (relativePath && relativePath.includes('/')) {
-      const subDir = relativePath.substring(0, relativePath.lastIndexOf('/'));
-      await mkdir(join(uploadDir, subDir), { recursive: true });
-    } else {
-      await mkdir(uploadDir, { recursive: true });
+    try {
+      if (relativePath && relativePath.includes('/')) {
+        const subDir = relativePath.substring(0, relativePath.lastIndexOf('/'));
+        await mkdir(join(uploadDir, subDir), { recursive: true });
+      } else {
+        await mkdir(uploadDir, { recursive: true });
+      }
+
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const filePath = join(process.cwd(), 'public', storageKey);
+
+      await writeFile(filePath, buffer);
+
+      // Verify
+      await stat(filePath);
+
+      const isMarkdown = file.name.endsWith('.md') || file.type === 'text/markdown';
+
+      return await prisma.file.create({
+        data: {
+          userId,
+          batchId,
+          filename: uniqueFilename,
+          originalName: file.name,
+          relativePath,
+          mimeType: file.type || (isMarkdown ? 'text/markdown' : 'application/octet-stream'),
+          size: file.size,
+          storageKey,
+          url: `/api/${storageKey}`,
+          metadata: source ? { source } : undefined,
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof Error && 'code' in error && error.code === 'EACCES') {
+        logger.error(
+          'PERMISSIONS ERROR: The uploads directory is owned by another user (likely root from Docker). Run: sudo chown -R $USER:$USER public/uploads',
+        );
+      }
+      throw error;
     }
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const filePath = join(process.cwd(), 'public', storageKey);
-
-    await writeFile(filePath, buffer);
-
-    // Verify
-    await stat(filePath);
-
-    const isMarkdown = file.name.endsWith('.md') || file.type === 'text/markdown';
-
-    return prisma.file.create({
-      data: {
-        userId,
-        batchId,
-        filename: uniqueFilename,
-        originalName: file.name,
-        relativePath,
-        mimeType: file.type || (isMarkdown ? 'text/markdown' : 'application/octet-stream'),
-        size: file.size,
-        storageKey,
-        url: `/api/${storageKey}`,
-        metadata: source ? { source } : undefined,
-      },
-    });
   },
 
   bulkDelete: async (userId: string, ids: string[]) => {

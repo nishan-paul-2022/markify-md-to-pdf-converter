@@ -18,14 +18,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const file = formData.get('file') as File | null;
 
     const rawData = {
-      batchId: formData.get('batchId'),
-      relativePath: formData.get('relativePath'),
-      source: formData.get('source'),
+      batchId: formData.get('batchId') || undefined,
+      relativePath: formData.get('relativePath') || undefined,
+      source: formData.get('source') || undefined,
     };
+
+    logger.debug('Upload Request Data:', { rawData, hasFile: !!file });
 
     const validation = FileUploadSchema.safeParse(rawData);
     if (!validation.success) {
-      return NextResponse.json({ error: validation.error.message }, { status: 400 });
+      logger.error('Upload validation failed:', validation.error.format());
+      return NextResponse.json(
+        { error: 'Invalid request data', details: validation.error.format() },
+        { status: 400 },
+      );
     }
 
     if (!file) {
@@ -63,12 +69,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       source,
     });
 
-    return NextResponse.json({
-      success: true,
-      file: fileRecord,
-    });
+    return NextResponse.json(fileRecord);
   } catch (error: unknown) {
-    logger.error('File upload error:', error);
+    logger.error('File upload error:', error instanceof Error ? {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    } : error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Upload failed' },
       { status: 500 },
