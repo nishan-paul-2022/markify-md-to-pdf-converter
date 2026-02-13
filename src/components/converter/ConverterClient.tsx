@@ -461,13 +461,15 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       <div className="relative z-10 flex-grow overflow-hidden flex flex-row p-6 gap-6">
         
         {/* SEGMENT 1: SOURCE (Upload Hub) */}
-        <section className="w-[300px] flex flex-col gap-4 shrink-0">
-          <div className="flex items-center gap-2 px-2 text-xs font-black uppercase tracking-[0.2em] text-amber-400/80">
-            <Upload className="w-3.5 h-3.5" />
-            <h2>Source</h2>
+        <section className="w-[300px] h-full flex flex-col gap-4 shrink-0">
+          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-amber-400/80 h-11 flex-none">
+            <div className="flex items-center gap-2">
+              <Upload className="w-3.5 h-3.5" />
+              <span>Source</span>
+            </div>
           </div>
           
-          <div className="flex-grow bg-amber-400/[0.03] border border-amber-400/10 rounded-[2.5rem] p-6 backdrop-blur-xl flex flex-col justify-center gap-6 shadow-2xl relative overflow-hidden group">
+          <div className="flex-grow bg-amber-400/[0.03] border border-amber-400/10 rounded-[1.5rem] p-6 backdrop-blur-xl flex flex-col justify-center gap-6 shadow-2xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-400/[0.05] to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
             
 
@@ -515,23 +517,23 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         </section>
 
         {/* SEGMENT 2: PROCESSING (Management / Batches) */}
-        <section className="flex-grow flex flex-col gap-4 overflow-hidden">
-          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-indigo-400/80 h-10">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
+        <section className="flex-grow h-full flex flex-col gap-4 overflow-hidden">
+          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-indigo-400/80 h-11 flex-none">
+            <div className="flex items-center gap-4 flex-nowrap">
+              <div className="flex items-center gap-2 whitespace-nowrap">
                 <Layers className="w-3.5 h-3.5" />
-                <h2>Processing Engine</h2>
+                <span>Processing Engine</span>
                 {filteredMdFiles.length > 0 && (
-                  <span className="ml-2 text-[9px] bg-indigo-400/10 border border-indigo-400/20 px-2 py-0.5 rounded-full text-indigo-300/80">{filteredMdFiles.length}</span>
+                  <span className="ml-2 text-[9px] bg-indigo-400/10 border border-indigo-400/20 px-2 py-0.5 rounded-full text-indigo-300/80 leading-none">{filteredMdFiles.length}</span>
                 )}
               </div>
               
               {!loading && filteredMdFiles.length > 0 && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-nowrap">
                   <button 
                     onClick={toggleSelectionMode}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all group cursor-pointer",
+                      "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all group cursor-pointer h-8 whitespace-nowrap",
                       isSelectionMode 
                         ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20" 
                         : "bg-white/5 border-white/5 text-slate-400 hover:border-indigo-500/30 hover:bg-indigo-500/5 hover:text-slate-300"
@@ -550,7 +552,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                   {isSelectionMode && (
                     <button 
                       onClick={toggleSelectAll}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20 transition-all group animate-in fade-in slide-in-from-left-2 cursor-pointer"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 hover:bg-indigo-500/20 transition-all group animate-in fade-in slide-in-from-left-2 cursor-pointer h-8 whitespace-nowrap"
                     >
                       {selectedFileIds.size === filteredMdFiles.length ? (
                         <CheckSquare className="w-3.5 h-3.5 text-indigo-400" />
@@ -685,9 +687,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                 </div>
               ))
             ) : (
-              <div className="flex-grow border border-dashed border-white/5 rounded-[1.5rem] flex flex-col items-center justify-center opacity-40 mr-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500/50">Awaiting Ingestion</p>
-              </div>
+              <div className="flex-grow border border-dashed border-white/5 rounded-[1.5rem] flex flex-col items-center justify-center opacity-40 mr-4" />
             )}
             </div>
           </div>
@@ -696,11 +696,11 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
 
         {/* SEGMENT 3: RESULTS (Converted PDFs) */}
-        <section className="w-[380px] flex flex-col gap-4 shrink-0 overflow-hidden">
-          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-emerald-400/80">
+        <section className="w-[380px] h-full flex flex-col gap-4 shrink-0 overflow-hidden">
+          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-emerald-400/80 h-11 flex-none">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400/80 shadow-[0_0_15px_rgba(52,211,153,0.3)]" />
-              <h2>Output</h2>
+              <span>Output</span>
             </div>
             {completedResults.length > 0 && (
               <button 
