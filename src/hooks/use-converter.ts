@@ -3,10 +3,9 @@ import { useCallback, useEffect,useRef, useState } from 'react';
 import { getAlert } from '@/components/AlertProvider';
 import type { Metadata} from '@/constants/default-content';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA,parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
+import type { File as AppFile } from '@/hooks/use-files';
 import { extractImageReferences,validateUploadStructure } from '@/lib/services/upload-validator';
 import { addTimestampToName, generateStandardName } from '@/lib/utils/naming';
-
-import type { File as AppFile } from './use-files';
 
 const MAX_FILENAME_LENGTH = 30;
 

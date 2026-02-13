@@ -3,6 +3,10 @@
 import React from 'react';
 
 import { useAlert } from "@/components/AlertProvider";
+import { ConverterHeader } from '@/components/converter/ConverterHeader';
+import { FileRow } from '@/components/converter/FileRow';
+import { PipelineHeader } from '@/components/converter/PipelineHeader';
+import { SourceSegment } from '@/components/converter/SourceSegment';
 import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
 // Components
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,11 +20,6 @@ import { formatConverterDate, formatFileSize } from '@/lib/formatters';
 // Utilities
 import { addTimestampToName,generateStandardName } from '@/lib/utils/naming';
 import { createTar } from '@/lib/utils/tar';
-
-import { ConverterHeader } from './ConverterHeader';
-import { FileRow } from './FileRow';
-import { PipelineHeader } from './PipelineHeader';
-import { SourceSegment } from './SourceSegment';
 
 import JSZip from 'jszip';
 import { FileCode, Loader2 } from 'lucide-react';

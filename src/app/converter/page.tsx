@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import ConverterWrapper from "@/app/converter/ConverterWrapper";
 import { auth } from "@/lib/auth";
-
-import ConverterWrapper from "./ConverterWrapper";
 
 export const metadata: Metadata = {
   title: "Markify - Converter",

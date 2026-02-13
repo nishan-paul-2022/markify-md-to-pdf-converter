@@ -1,23 +1,26 @@
 import js from "@eslint/js";
+import tsEslint from "typescript-eslint";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 import reactHooks from "eslint-plugin-react-hooks";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import unusedImports from "eslint-plugin-unused-imports";
+import nextPlugin from "@next/eslint-plugin-next";
+import noRelativeImportPaths from "eslint-plugin-no-relative-import-paths";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import tsEslint from "typescript-eslint";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
- * Top-tier industry standard ESLint configuration for Next.js, TypeScript, and React.
- * This configuration focuses on:
- * 1. Strict Type Safety (via typescript-eslint strict/stylistic)
- * 2. Consistent Import Organization (via simple-import-sort)
- * 3. Aggressive Cleanup (via unused-imports)
- * 4. Accessibility Compliance (via jsx-a11y)
- * 5. General Code Quality (no-console, eqeqeq, prefer-const)
+ * ELITE Industry Standard ESLint Configuration (STABLE)
+ * 
+ * Includes:
+ * - TypeScript (Strict & Stylistic)
+ * - Next.js (Core Web Vitals & v15+ support)
+ * - Absolute Path Enforcement (@/ usage everywhere)
+ * - React Hooks & A11y
+ * - Import Strategy (Sorting & Cleanup)
  */
 export default tsEslint.config(
   // Global Ignores
@@ -33,23 +36,41 @@ export default tsEslint.config(
     ],
   },
 
-  // Base JavaScript recommended rules
+  // Base JavaScript & TypeScript recommended rules
   js.configs.recommended,
-
-  // TypeScript recommended, strict, and stylistic
   ...tsEslint.configs.recommended,
   ...tsEslint.configs.strict,
   ...tsEslint.configs.stylistic,
 
-  // Shared Configuration (Plugins & Non-typed rules)
+  // Shared Configuration
   {
     plugins: {
       "simple-import-sort": simpleImportSort,
       "unused-imports": unusedImports,
       "jsx-a11y": jsxA11y,
       "react-hooks": reactHooks,
+      "@next/next": nextPlugin,
+      "no-relative-import-paths": noRelativeImportPaths,
+    },
+    languageOptions: {
+      parserOptions: {
+        project: "./tsconfig.json",
+        tsconfigRootDir: __dirname,
+      },
     },
     rules: {
+      // --- Import Path Enforcement (@/ Only) ---
+      "no-relative-import-paths/no-relative-import-paths": [
+        "error",
+        { "allowSameFolder": false, "rootDir": "src", "prefix": "@" }
+      ],
+
+      // --- Next.js Specific Rules ---
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs["core-web-vitals"].rules,
+      "@next/next/no-img-element": "error",
+      "@next/next/no-html-link-for-pages": "error",
+
       // --- General Code Quality ---
       "no-console": ["error", { allow: ["warn", "error", "info"] }],
       "no-debugger": "error",
@@ -105,7 +126,7 @@ export default tsEslint.config(
     },
   },
 
-  // Typed Linting Configuration (Only for TS files included in tsconfig.json)
+  // Typed Linting Configuration
   {
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
