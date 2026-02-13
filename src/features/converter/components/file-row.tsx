@@ -226,7 +226,7 @@ export const FileRow: React.FC<FileRowProps> = ({
                   : '--- Pages'}
               </span>
 
-              <div className="flex-1" />
+              <span className="h-1 w-1 rounded-full bg-slate-700" />
 
               <div className="flex items-center gap-1.5">
                 {(isDone || hasOutput) && !isProcessing && (
@@ -264,7 +264,7 @@ export const FileRow: React.FC<FileRowProps> = ({
               <TooltipTrigger asChild>
                 <button
                   onClick={() => onDownload(file, 'pdf')}
-                  className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 shadow-lg shadow-emerald-500/10 transition-all hover:bg-emerald-500 hover:text-white active:scale-90"
+                  className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 transition-all hover:bg-emerald-500 hover:text-white active:scale-90"
                 >
                   <Download className="h-4.5 w-4.5" />
                 </button>
