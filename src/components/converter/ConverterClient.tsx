@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import JSZip from 'jszip';
 import { 
   Layers, 
   Upload, 
@@ -38,6 +39,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAlert } from "@/components/AlertProvider";
+import { createTar } from '@/lib/utils/tar';
 import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
 import {
   DropdownMenu,
@@ -292,6 +294,57 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleDownloadAll = () => {
+    completedResults.forEach(f => handleDownloadFile(f, 'pdf'));
+  };
+
+  const handleDownloadArchive = async (format: 'zip' | 'tar') => {
+    if (completedResults.length === 0) {return;}
+    
+    // Prepare files for archiving
+    const filesToArchive = completedResults.map(file => {
+      const blob = convertedFiles[file.id];
+      if (!blob) {return null;}
+      return {
+        name: `${generateStandardName(file.originalName)}.pdf`,
+        blob: blob
+      };
+    }).filter(Boolean) as { name: string, blob: Blob }[];
+
+    if (filesToArchive.length === 0) {return;}
+
+    try {
+      let content: Blob;
+      let filename = `markify_export_${addTimestampToName('archive')}`;
+
+      if (format === 'zip') {
+        const zip = new JSZip();
+        const folder = zip.folder("converted_pdfs");
+        if (folder) {
+          filesToArchive.forEach(f => folder.file(f.name, f.blob));
+        }
+        content = await zip.generateAsync({ type: "blob" });
+        filename += '.zip';
+      } else {
+        // TAR format
+        content = await createTar(filesToArchive);
+        filename += '.tar';
+      }
+
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(`Failed to generate ${format} archive`, error);
+      showAlert({ title: "Archive Failed", message: `Could not create ${format} archive.`, variant: "destructive" });
     }
   };
 
@@ -606,9 +659,63 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              {!loading && filteredMdFiles.length > 0 && (
-                <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
+                {/* Global Actions: Download Library */}
+                {completedResults.length > 0 && (
+                  <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 p-1 rounded-lg animate-in fade-in slide-in-from-right-4">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all cursor-pointer h-8 group active:scale-95">
+                          <Download className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                          <span className="text-[10px] font-black uppercase tracking-wider">Download</span>
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-64 bg-slate-900/95 border-white/10 backdrop-blur-xl">
+                        <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 py-2">Archive Format</DropdownMenuLabel>
+                        <DropdownMenuSeparator className="bg-white/5" />
+                        
+                        <DropdownMenuItem 
+                          onClick={() => handleDownloadArchive('zip')}
+                          className="flex items-center gap-3 px-3 py-2 cursor-pointer text-slate-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
+                        >
+                          <div className="w-8 h-8 rounded bg-emerald-500/10 flex items-center justify-center text-[10px] font-black uppercase text-emerald-400 border border-emerald-500/20">ZIP</div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-xs font-bold uppercase tracking-wider">Standard Zip</span>
+                            <span className="text-[10px] text-slate-500 font-medium">Recommended for all devices</span>
+                          </div>
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem 
+                          onClick={() => handleDownloadArchive('tar')}
+                          className="flex items-center gap-3 px-3 py-2 cursor-pointer text-slate-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
+                        >
+                          <div className="w-8 h-8 rounded bg-blue-500/10 flex items-center justify-center text-[10px] font-black uppercase text-blue-400 border border-blue-500/20">TAR</div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-xs font-bold uppercase tracking-wider">Tape Archive</span>
+                            <span className="text-[10px] text-slate-500 font-medium">Uncompressed, good for linux</span>
+                          </div>
+                        </DropdownMenuItem>
+
+
+                        
+                        <DropdownMenuSeparator className="bg-white/5" />
+                        <DropdownMenuItem 
+                          onClick={handleDownloadAll}
+                          className="flex items-center gap-3 px-3 py-2 cursor-pointer text-slate-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
+                        >
+                          <Layers className="w-4 h-4 text-indigo-400 ml-2 mr-2" />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-xs font-bold uppercase tracking-wider">Individual Files</span>
+                            <span className="text-[10px] text-slate-500 font-medium">Download PDFs separately</span>
+                          </div>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+
+                {!loading && filteredMdFiles.length > 0 && (
+                  <div className="flex items-center gap-3">
                   {/* Group 1: Sorting */}
                   <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 p-1 rounded-lg">
                     <DropdownMenu>
@@ -961,17 +1068,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                     );
                   })}
                   
-                  {completedResults.length > 1 && (
-                    <div className="pt-8 pb-4 px-20 flex justify-center animate-in fade-in slide-in-from-bottom-4">
-                      <Button 
-                        onClick={() => completedResults.forEach(f => handleDownloadFile(f, 'pdf'))}
-                        className="h-14 px-12 bg-emerald-500 text-white hover:bg-emerald-600 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] transition-all shadow-2xl shadow-emerald-500/20 active:scale-95 group"
-                      >
-                        <Download className="w-4 h-4 mr-3 group-hover:translate-y-0.5 transition-transform" />
-                        Download PDF Library
-                      </Button>
-                    </div>
-                  )}
+
                 </>
               ) : (
                 <div className="flex-grow border border-dashed border-white/5 rounded-[2.5rem] flex flex-col items-center justify-center opacity-40 bg-white/[0.01]">
