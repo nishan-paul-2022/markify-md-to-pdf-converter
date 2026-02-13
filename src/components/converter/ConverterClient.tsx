@@ -993,14 +993,14 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                             </div>
                           </div>
                           
-                          <div className="flex items-center gap-3 shrink-0 relative z-10">
+                          <div className="flex items-center gap-3 shrink-0 relative z-10 w-[140px] justify-end">
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button 
                                   size="icon"
                                   variant="ghost"
                                   onClick={() => handleDelete(file.id)}
-                                  className="h-11 w-11 rounded-2xl border border-white/5 bg-white/5 text-slate-500 hover:text-red-400 hover:bg-red-400/10 hover:border-red-400/20 transition-all"
+                                  className="h-11 w-11 rounded-2xl border border-white/5 bg-white/5 text-slate-500 hover:text-red-400 hover:bg-red-400/10 hover:border-red-400/20 transition-all shrink-0"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
@@ -1014,10 +1014,12 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                                   <Button 
                                     size="sm"
                                     disabled
-                                    className="h-11 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-5 gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-default opacity-100"
+                                    className={cn(
+                                      "h-11 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-5 gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-default opacity-100 w-[105px] shrink-0"
+                                    )}
                                   >
                                     <CheckCircle2 className="w-3.5 h-3.5" />
-                                    <span>Converted</span>
+                                    <span>Done</span>
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
@@ -1032,7 +1034,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                                     onClick={() => handleConvertFile(file)}
                                     disabled={isProcessing}
                                     className={cn(
-                                      "h-11 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-5 gap-2 active:scale-95 transition-all outline-none border-none",
+                                      "h-11 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-5 gap-2 active:scale-95 transition-all outline-none border-none w-[105px] shrink-0 justify-center",
                                       isProcessing
                                         ? "bg-indigo-600 text-white cursor-wait"
                                         : "bg-white text-slate-950 hover:bg-indigo-500 hover:text-white shadow-lg"
@@ -1044,7 +1046,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                                       <Zap className="w-3.5 h-3.5 fill-current" />
                                     )}
                                     <span>
-                                      {isProcessing ? 'Processing...' : 'Convert'}
+                                      {isProcessing ? 'Wait...' : 'Convert'}
                                     </span>
                                   </Button>
                                 </TooltipTrigger>
@@ -1057,49 +1059,53 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
                           {/* Individual Progress Bar */}
                           {isProcessing && (
-                            <div className="absolute bottom-0 left-0 h-1 w-full bg-indigo-500/10">
+                            <div className="absolute bottom-0 left-0 h-1 w-full bg-indigo-500/10 rounded-b-3xl overflow-hidden">
                               <div className="h-full bg-indigo-500 animate-pulse-width" />
                             </div>
                           )}
                         </div>
 
                         {/* Spacing for Harmony */}
-                        <div className="w-2 shrink-0" />
+                        <div className="w-8 shrink-0 flex items-center justify-center opacity-20">
+                          <div className={cn("h-px w-full bg-gradient-to-r from-transparent via-white to-transparent", hasOutput && "via-emerald-500")} />
+                        </div>
 
 
                         {/* THE EFFECT: Output Result Card */}
                         <div className={cn(
-                          "w-[340px] flex items-center justify-between border rounded-3xl p-5 transition-all duration-700 relative overflow-hidden group/result shadow-xl shrink-0",
+                          "w-[340px] flex items-center justify-between border rounded-3xl p-5 transition-all duration-700 relative overflow-hidden group/result shadow-xl shrink-0 h-[88px]",
                           hasOutput 
-                            ? "bg-emerald-400/[0.04] border-emerald-400/20 hover:border-emerald-400/40" 
-                            : "bg-slate-950/20 border-white/5 opacity-40 group-hover/row:opacity-60"
+                            ? "bg-emerald-400/[0.04] border-emerald-400/20 hover:border-emerald-400/40 opacity-100" 
+                            : "bg-slate-950/20 border-white/5 opacity-40 group-hover/row:opacity-60 grayscale"
                         )}>
                           <div className="flex items-center gap-4 min-w-0 flex-1">
                             <div className={cn(
-                              "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500",
+                              "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shrink-0",
                               hasOutput 
                                 ? "bg-emerald-500/10 text-emerald-400 group-hover/result:scale-110" 
                                 : "bg-white/5 text-slate-700"
                             )}>
                               <FileDown className="w-6 h-6" />
                             </div>
-                            <div className="min-w-0">
-                              {hasOutput ? (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <p className="text-[13px] font-bold text-slate-200 truncate group-hover/result:text-emerald-300 transition-colors">
-                                      {generateStandardName(file.originalName)}.pdf
-                                    </p>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="bg-slate-900 border-slate-800 text-xs max-w-xs break-all">
-                                    {generateStandardName(file.originalName)}.pdf
-                                  </TooltipContent>
-                                </Tooltip>
-                              ) : (
-                                <p className="text-[11px] font-black uppercase tracking-widest text-slate-600">Pending</p>
-                              )}
+                            <div className="min-w-0 flex-col gap-1 flex">
+                                <div className="h-[20px] flex items-center">
+                                  {hasOutput ? (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <p className="text-[13px] font-bold text-slate-200 truncate group-hover/result:text-emerald-300 transition-colors w-full">
+                                          {generateStandardName(file.originalName)}.pdf
+                                        </p>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top" className="bg-slate-900 border-slate-800 text-xs max-w-xs break-all">
+                                        {generateStandardName(file.originalName)}.pdf
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  ) : (
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-700">Pending</p>
+                                  )}
+                                </div>
                               <p className={cn(
-                                "text-[9px] font-black uppercase tracking-tight mt-1 transition-colors",
+                                "text-[9px] font-black uppercase tracking-tight transition-colors h-[12px]",
                                 hasOutput ? "text-emerald-500/60" : "text-slate-800"
                               )}>
                                 {hasOutput ? 'Ready to Export' : 'Awaiting Input'}
@@ -1107,20 +1113,23 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                             </div>
                           </div>
                           
-                          {hasOutput && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  size="icon"
-                                  onClick={() => handleDownloadFile(file, 'pdf')}
-                                  className="h-11 w-11 rounded-2xl bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-950/40 active:scale-95 shrink-0"
-                                >
-                                  <Download className="w-5 h-5" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Download PDF</TooltipContent>
-                            </Tooltip>
-                          )}
+                          <div className="w-[44px] flex justify-end">
+                            {hasOutput && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    size="icon"
+                                    onClick={() => handleDownloadFile(file, 'pdf')}
+                                    className="h-11 w-11 rounded-2xl bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-950/40 active:scale-95 shrink-0 animate-in zoom-in spin-in-12 duration-300"
+                                  >
+                                    <Download className="w-5 h-5" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Download PDF</TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
+
                         </div>
                       </div>
                     );
