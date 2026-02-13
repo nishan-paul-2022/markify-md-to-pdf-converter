@@ -19,7 +19,6 @@ import { useFiles } from '@/features/file-management/hooks/use-files';
 import { formatConverterDate, formatFileSize } from '@/utils/formatters';
 // Utilities
 import { addTimestampToName, generateStandardName } from '@/utils/naming';
-import { createTar } from '@/utils/tar';
 
 import JSZip from 'jszip';
 import { FileCode, Loader2 } from 'lucide-react';
@@ -222,7 +221,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     completedResults.forEach((f) => handleDownloadFile(f, 'pdf'));
   };
 
-  const handleDownloadArchive = async (format: 'zip' | 'tar') => {
+  const handleDownloadArchive = async () => {
     if (completedResults.length === 0) {
       return;
     }
@@ -260,21 +259,13 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     }
 
     try {
-      let content: Blob;
-      let filename = `markify_export_${addTimestampToName('archive')}`;
-
-      if (format === 'zip') {
-        const zip = new JSZip();
-        const folder = zip.folder('converted_pdfs');
-        if (folder) {
-          validFiles.forEach((f) => folder.file(f.name, f.blob));
-        }
-        content = await zip.generateAsync({ type: 'blob' });
-        filename += '.zip';
-      } else {
-        content = await createTar(validFiles);
-        filename += '.tar';
+      const zip = new JSZip();
+      const folder = zip.folder('converted_pdfs');
+      if (folder) {
+        validFiles.forEach((f) => folder.file(f.name, f.blob));
       }
+      const content = await zip.generateAsync({ type: 'blob' });
+      const filename = `markify_export_${addTimestampToName('archive')}.zip`;
 
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
@@ -285,10 +276,10 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error(`Failed to generate ${format} archive`, error);
+      console.error('Failed to generate zip archive', error);
       showAlert({
         title: 'Archive Failed',
-        message: `Could not create ${format} archive.`,
+        message: 'Could not create zip archive.',
         variant: 'destructive',
       });
     }
@@ -431,7 +422,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         <input
           type="file"
           multiple
-          accept=".zip,.7z,.rar,.tar,.tar.gz,.tgz"
+          accept=".zip"
           ref={zipInputRef}
           onChange={handleZipUpload}
           className="hidden"

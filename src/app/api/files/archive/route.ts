@@ -5,29 +5,12 @@ import { auth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import prisma from '@/lib/prisma';
 
-import path7za from '7zip-bin';
-import { exec } from 'child_process';
 import { randomUUID } from 'crypto';
 import { mkdir, readdir, rm, stat, writeFile } from 'fs/promises';
+import JSZip from 'jszip';
 import { join, relative } from 'path';
-import { promisify } from 'util';
-
-const execPromise = promisify(exec);
-
-// Robust way to find 7za binary:
-// 1. Try system-wide '7za' command
-// 2. Fallback to 7zip-bin package path
-async function get7zaPath() {
-  try {
-    await execPromise('7za --help');
-    return '7za';
-  } catch {
-    return path7za.path7za;
-  }
-}
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const path7zaBinary = await get7zaPath();
   let tempDir = '';
   try {
     const session = await auth();
@@ -44,28 +27,47 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'No archive provided' }, { status: 400 });
     }
 
+    // Validate that it's a .zip file
+    if (!archiveFile.name.toLowerCase().endsWith('.zip')) {
+      return NextResponse.json(
+        { error: 'Only .zip files are supported' },
+        { status: 400 },
+      );
+    }
+
     // 1. Create a unique temp directory for extraction
     const batchId = randomUUID();
     tempDir = join(process.cwd(), 'tmp', batchId);
     await mkdir(tempDir, { recursive: true });
 
-    // 2. Save the archive to temp directory
-    const archivePath = join(tempDir, archiveFile.name);
-    const buffer = Buffer.from(await archiveFile.arrayBuffer());
-    await writeFile(archivePath, buffer);
-
-    // 3. Extract using 7za
-    // -y: assume Yes on all queries
-    // -o: set output directory
+    // 2. Extract using JSZip
     const extractDir = join(tempDir, 'extracted');
     await mkdir(extractDir, { recursive: true });
 
     try {
-      await execPromise(`"${path7zaBinary}" x "${archivePath}" -o"${extractDir}" -y`);
+      const buffer = Buffer.from(await archiveFile.arrayBuffer());
+      const zip = await JSZip.loadAsync(buffer);
+
+      // Extract all files
+      const extractPromises: Promise<void>[] = [];
+      zip.forEach((relativePath, file) => {
+        if (!file.dir) {
+          const promise = (async () => {
+            const content = await file.async('nodebuffer');
+            const filePath = join(extractDir, relativePath);
+            const fileDir = join(filePath, '..');
+            await mkdir(fileDir, { recursive: true });
+            await writeFile(filePath, content);
+          })();
+          extractPromises.push(promise);
+        }
+      });
+
+      await Promise.all(extractPromises);
     } catch (extractError) {
       logger.error('Extraction error:', extractError);
       return NextResponse.json(
-        { error: 'Failed to extract archive. Ensure it is a valid ZIP, 7Z, RAR, or TAR file.' },
+        { error: 'Failed to extract archive. Ensure it is a valid .zip file.' },
         { status: 400 },
       );
     }

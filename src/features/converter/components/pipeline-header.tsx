@@ -44,7 +44,7 @@ interface PipelineHeaderProps {
   onToggleSelectAll: () => void;
   onSortByChange: (val: 'name' | 'time' | 'size') => void;
   onSortOrderChange: () => void;
-  onDownloadArchive: (format: 'zip' | 'tar') => void;
+  onDownloadArchive: () => void;
   onDownloadAll: () => void;
   onBatchDelete: () => void;
   onBatchConvert: () => void;
@@ -259,7 +259,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-white/5" />
                     <DropdownMenuItem
-                      onClick={() => onDownloadArchive('zip')}
+                      onClick={onDownloadArchive}
                       className="flex cursor-pointer items-center gap-3 px-3 py-2 text-slate-300 hover:bg-white/5 hover:text-white focus:bg-white/5 focus:text-white"
                     >
                       <div className="flex h-8 w-8 items-center justify-center rounded border border-emerald-500/20 bg-emerald-500/10 text-[10px] font-black text-emerald-400 uppercase">
@@ -267,20 +267,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                       </div>
                       <div className="flex flex-col gap-0.5">
                         <span className="text-xs font-bold tracking-wider uppercase">
-                          Standard Zip
-                        </span>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onDownloadArchive('tar')}
-                      className="flex cursor-pointer items-center gap-3 px-3 py-2 text-slate-300 hover:bg-white/5 hover:text-white focus:bg-white/5 focus:text-white"
-                    >
-                      <div className="flex h-8 w-8 items-center justify-center rounded border border-blue-500/20 bg-blue-500/10 text-[10px] font-black text-blue-400 uppercase">
-                        TAR
-                      </div>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs font-bold tracking-wider uppercase">
-                          Tape Archive
+                          Download as Zip
                         </span>
                       </div>
                     </DropdownMenuItem>

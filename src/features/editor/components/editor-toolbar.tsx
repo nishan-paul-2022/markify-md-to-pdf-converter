@@ -121,7 +121,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           />
           <input
             type="file"
-            accept=".zip,.7z,.rar,.tar,.tar.gz,.tgz"
+            accept=".zip"
             ref={zipInputRef}
             onChange={(e) => {
               void (async () => {
@@ -132,67 +132,52 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
             className="hidden"
           />
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setUploadRulesModal({ isOpen: true, type: 'file' });
-                }}
-                className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
-              >
-                {isUploaded ? (
-                  <Check className="mr-1.5 h-3 w-3 text-green-400" />
-                ) : (
-                  <Upload className="mr-1.5 h-3 w-3" />
-                )}
-                File
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Upload File</TooltipContent>
-          </Tooltip>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setUploadRulesModal({ isOpen: true, type: 'file' });
+            }}
+            className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
+          >
+            {isUploaded ? (
+              <Check className="mr-1.5 h-3 w-3 text-green-400" />
+            ) : (
+              <Upload className="mr-1.5 h-3 w-3" />
+            )}
+            File
+          </Button>
 
           <div className="h-3 w-[1px] bg-white/10" />
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setUploadRulesModal({ isOpen: true, type: 'folder' });
-                }}
-                className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
-              >
-                <FolderOpen className="mr-1.5 h-3.5 w-3.5 text-amber-500/70" />
-                Folder
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Upload Folder</TooltipContent>
-          </Tooltip>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setUploadRulesModal({ isOpen: true, type: 'folder' });
+            }}
+            className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
+          >
+            <FolderOpen className="mr-1.5 h-3.5 w-3.5 text-amber-500/70" />
+            Folder
+          </Button>
 
           <div className="h-3 w-[1px] bg-white/10" />
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setUploadRulesModal({ isOpen: true, type: 'zip' });
-                }}
-                className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
-              >
-                <FileArchive className="mr-1.5 h-3.5 w-3.5 text-blue-400/70" />
-                Zip
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Upload Zip Archive</TooltipContent>
-          </Tooltip>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setUploadRulesModal({ isOpen: true, type: 'zip' });
+            }}
+            className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
+          >
+            <FileArchive className="mr-1.5 h-3.5 w-3.5 text-blue-400/70" />
+            Zip
+          </Button>
         </div>
 
         {/* Group 2: Navigation */}
