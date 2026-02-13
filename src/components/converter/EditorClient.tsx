@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { EditorView } from '@/components/converter/EditorView';
+import EditorView from '@/components/converter/EditorView';
 import { DEFAULT_MARKDOWN_PATH } from '@/constants/default-content';
 import { useConverter } from '@/hooks/use-converter';
 import { useFiles } from '@/hooks/use-files';
@@ -135,11 +135,11 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
   }, [converterState.selectedFileId, searchParams, router, user.email]);
 
   const handleUnifiedDelete = useCallback(
-    (id: string | string[]) => {
+    async (id: string | string[]) => {
       if (Array.isArray(id)) {
-        void handleBulkDelete(id);
+        await handleBulkDelete(id);
       } else {
-        void handleDelete(id);
+        await handleDelete(id);
       }
     },
     [handleDelete, handleBulkDelete],

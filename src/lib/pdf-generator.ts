@@ -1,27 +1,10 @@
 import { logger } from '@/lib/logger';
+import type { GroupMember, Metadata } from '@/lib/schemas/file.schema';
+export type { GroupMember, Metadata };
 
 import fs from 'fs';
 import path from 'path';
 import { chromium } from 'playwright';
-
-export interface GroupMember {
-  name: string;
-  roll: string;
-}
-
-export interface Metadata {
-  university?: string;
-  program?: string;
-  title?: string;
-  subtitle?: string;
-  course?: string;
-  name?: string;
-  roll?: string;
-  reg?: string;
-  batch?: string;
-  date?: string;
-  groupMembers?: GroupMember[];
-}
 
 export async function generatePdf(markdownHtml: string, metadata: Metadata): Promise<Buffer> {
   let browser;

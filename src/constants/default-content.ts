@@ -1,21 +1,5 @@
-export interface GroupMember {
-  name: string;
-  roll: string;
-}
-
-export interface Metadata {
-  university?: string;
-  program?: string;
-  title?: string;
-  subtitle?: string;
-  course?: string;
-  name?: string;
-  roll?: string;
-  reg?: string;
-  batch?: string;
-  date?: string;
-  groupMembers?: GroupMember[];
-}
+import type { GroupMember,Metadata } from '@/lib/schemas/file.schema';
+export type { GroupMember,Metadata };
 
 /**
  * Parses metadata from markdown content.
