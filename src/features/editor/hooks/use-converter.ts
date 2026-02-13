@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useAlert } from '@/components/alert-provider';
 import {
   DEFAULT_MARKDOWN_PATH,
   parseMetadataFromMarkdown,
   removeLandingPageSection,
 } from '@/constants/default-content';
+import type { AppFile } from '@/features/file-management/hooks/use-files';
 import { logger } from '@/lib/logger';
 import { FilesService } from '@/services/api/files-service';
 import { PdfApiService } from '@/services/api/pdf-service';
@@ -15,7 +17,10 @@ const getBaseName = (name: string): string => {
   return generateStandardName(name);
 };
 
-export function useConverter() {
+export function useConverter(
+  files: AppFile[] = [],
+  onDelete?: (id: string | string[]) => Promise<void>,
+) {
   const {
     rawContent,
     setRawContent,
@@ -55,13 +60,16 @@ export function useConverter() {
     setActiveImage,
     imageGallery,
     setImageGallery,
+    isSelectionMode,
+    setIsSelectionMode,
+    selectedIds,
+    setSelectedIds,
+    toggleSelection,
     getStats,
   } = useEditorStore();
 
   // Local UI State (Not in Global Store)
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [uploadRulesModal, setUploadRulesModal] = useState<{
     isOpen: boolean;
     type: 'file' | 'folder' | 'zip';
@@ -338,31 +346,55 @@ export function useConverter() {
     [handleContentChange, setFilename, setIsLoading, setSelectedFileId, setIsUploaded],
   );
 
-  const toggleSelection = useCallback((id: string | string[]) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      const ids = Array.isArray(id) ? id : [id];
-      const allInPrev = ids.every((i) => prev.has(i));
-
-      if (allInPrev) {
-        ids.forEach((i) => next.delete(i));
-      } else {
-        ids.forEach((i) => next.add(i));
-      }
-      return next;
-    });
-  }, []);
+  const getAllDeletableFileIds = useCallback(() => {
+    return files
+      .filter(
+        (f) =>
+          f.batchId !== 'sample-document' &&
+          f.batchId !== 'sample-project' &&
+          !f.id.startsWith('default-'),
+      )
+      .map((f) => f.id);
+  }, [files]);
 
   const handleSelectAll = useCallback(() => {
-    // Logic to select all deletable files
-  }, []);
+    const deletableIds = getAllDeletableFileIds();
+    const allSelected = deletableIds.length > 0 && deletableIds.every((id) => selectedIds.has(id));
 
-  const handleBulkDeleteClick = useCallback(() => {
-    // Alert then delete
-  }, []);
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(deletableIds));
+    }
+  }, [selectedIds, getAllDeletableFileIds, setSelectedIds]);
 
-  const getSelectedCount = () => selectedIds.size;
-  const getAllDeletableFileIds = () => []; // placeholder
+  const { confirm } = useAlert();
+
+  const handleBulkDeleteClick = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+
+    const confirmed = await confirm({
+      title: 'Delete Selected Items?',
+      message: `Are you sure you want to delete ${selectedIds.size} selected item${selectedIds.size === 1 ? '' : 's'}? This action cannot be undone.`,
+      confirmText: 'Delete',
+      variant: 'destructive',
+    });
+
+    if (confirmed && onDelete) {
+      setIsLoading(true);
+      try {
+        await onDelete(Array.from(selectedIds));
+        setSelectedIds(new Set());
+        setIsSelectionMode(false);
+      } catch (error) {
+        logger.error('Bulk delete failed:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [selectedIds, confirm, onDelete, setSelectedIds, setIsSelectionMode, setIsLoading]);
+
+  const getSelectedCount = useCallback(() => selectedIds.size, [selectedIds]);
 
   const handleReset = useCallback(async (): Promise<void> => {
     try {

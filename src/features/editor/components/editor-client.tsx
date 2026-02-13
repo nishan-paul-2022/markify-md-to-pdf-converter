@@ -17,7 +17,6 @@ interface EditorClientProps {
 }
 
 export default function EditorClient({ user }: EditorClientProps): React.JSX.Element {
-  const converterState = useConverter();
   const {
     files,
     loading: filesLoading,
@@ -26,6 +25,19 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
     handleRename,
     refreshFiles,
   } = useFiles('editor');
+
+  const handleUnifiedDelete = useCallback(
+    async (id: string | string[]) => {
+      if (Array.isArray(id)) {
+        await handleBulkDelete(id);
+      } else {
+        await handleDelete(id);
+      }
+    },
+    [handleDelete, handleBulkDelete],
+  );
+
+  const converterState = useConverter(files, handleUnifiedDelete);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -134,16 +146,6 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
     }
   }, [converterState.selectedFileId, searchParams, router, user.email]);
 
-  const handleUnifiedDelete = useCallback(
-    async (id: string | string[]) => {
-      if (Array.isArray(id)) {
-        await handleBulkDelete(id);
-      } else {
-        await handleDelete(id);
-      }
-    },
-    [handleDelete, handleBulkDelete],
-  );
 
   const handleFileSelect = useCallback(
     async (node: FileTreeNode) => {

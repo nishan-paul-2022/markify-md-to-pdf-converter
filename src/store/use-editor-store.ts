@@ -29,6 +29,8 @@ interface EditorState {
   // --- File System ---
   selectedFileId: string | null;
   basePath: string;
+  isSelectionMode: boolean;
+  selectedIds: Set<string>;
 
   // --- Actions ---
   setRawContent: (content: string) => void;
@@ -50,6 +52,9 @@ interface EditorState {
   setBasePath: (path: string) => void;
   setActiveImage: (image: AppFile | null) => void;
   setImageGallery: (images: AppFile[]) => void;
+  setIsSelectionMode: (mode: boolean) => void;
+  setSelectedIds: (ids: Set<string>) => void;
+  toggleSelection: (id: string | string[]) => void;
 
   // Computed Stats
   getStats: () => { chars: number; words: number };
@@ -76,6 +81,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   basePath: '',
   activeImage: null,
   imageGallery: [],
+  isSelectionMode: false,
+  selectedIds: new Set(),
 
   // Actions
   setRawContent: (rawContent) => set({ rawContent }),
@@ -97,6 +104,21 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setBasePath: (basePath) => set({ basePath }),
   setActiveImage: (activeImage) => set({ activeImage }),
   setImageGallery: (imageGallery) => set({ imageGallery }),
+  setIsSelectionMode: (isSelectionMode) => set({ isSelectionMode }),
+  setSelectedIds: (selectedIds) => set({ selectedIds }),
+  toggleSelection: (id) => {
+    const { selectedIds } = get();
+    const next = new Set(selectedIds);
+    const ids = Array.isArray(id) ? id : [id];
+    const allInPrev = ids.every((i) => selectedIds.has(i));
+
+    if (allInPrev) {
+      ids.forEach((i) => next.delete(i));
+    } else {
+      ids.forEach((i) => next.add(i));
+    }
+    set({ selectedIds: next });
+  },
 
   getStats: () => {
     const { rawContent } = get();

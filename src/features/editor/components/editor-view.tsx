@@ -109,7 +109,7 @@ export default function EditorView({
     setActiveImage,
     setUploadRulesModal,
     handleUploadModalConfirm,
-  } = useConverter();
+  } = useConverter(files, handleFileDelete);
 
   const fileTree = React.useMemo(() => buildFileTree(files), [files]);
 
