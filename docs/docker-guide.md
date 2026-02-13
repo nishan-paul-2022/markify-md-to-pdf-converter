@@ -14,6 +14,7 @@ This guide covers how to run the Markify application and PostgreSQL database usi
 
 2. **Start the Services**
    Run the following command to build the image and start the containers in detached mode:
+
    ```bash
    docker-compose up -d --build
    ```
@@ -23,10 +24,12 @@ This guide covers how to run the Markify application and PostgreSQL database usi
 
 4. **Run Database Migrations**
    You need to push your schema or run migrations on the Docker container's database:
+
    ```bash
    docker exec markify-app npx prisma db push
    ```
-   *Note: Using `db push` is recommended for initial setup. For production, use `npx prisma migrate deploy`.*
+
+   _Note: Using `db push` is recommended for initial setup. For production, use `npx prisma migrate deploy`._
 
 5. **Access the Application**
    Open your browser and navigate to:
@@ -35,37 +38,45 @@ This guide covers how to run the Markify application and PostgreSQL database usi
 ## Useful Commands
 
 ### View Logs
+
 ```bash
 docker-compose logs -f app
 ```
 
 ### Stop Services
+
 ```bash
 docker-compose down
 ```
 
 ### Open Database Studio (Drizzle/Prisma)
+
 If you want to view the database content via Prisma Studio while running in Docker:
+
 ```bash
 docker exec -it markify-app npx prisma studio --port 5555 --browser none
 ```
+
 Then access it at `http://localhost:5555`.
 
 ### Open Database via pgAdmin
+
 You can now also use pgAdmin to browse the database:
+
 1.  Navigate to `http://localhost:5050`
 2.  Login with:
-    *   **Email**: `admin@markify.com` (unless changed in `.env`)
-    *   **Password**: `admin123` (unless changed in `.env`)
+    - **Email**: `admin@markify.com` (unless changed in `.env`)
+    - **Password**: `admin123` (unless changed in `.env`)
 3.  Add a New Server:
-    *   **Name**: `Markify DB`
-    *   **Host**: `db`
-    *   **Port**: `5432`
-    *   **Maintenance database**: `markify`
-    *   **Username**: `markify_user`
-    *   **Password**: `markify123`
+    - **Name**: `Markify DB`
+    - **Host**: `db`
+    - **Port**: `5432`
+    - **Maintenance database**: `markify`
+    - **Username**: `markify_user`
+    - **Password**: `markify123`
 
 ### Reset Everything
+
 ```bash
 docker-compose down -v
 docker-compose up -d --build

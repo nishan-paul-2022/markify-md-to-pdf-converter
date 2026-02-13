@@ -1,11 +1,7 @@
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { File as AppFile } from '@/hooks/use-files';
 import { cn } from '@/lib/utils';
 
@@ -18,7 +14,8 @@ import {
   FileDown,
   Loader2,
   Trash2,
-  Zap} from 'lucide-react';
+  Zap,
+} from 'lucide-react';
 
 interface FileRowProps {
   file: AppFile;
@@ -51,59 +48,68 @@ export const FileRow: React.FC<FileRowProps> = ({
   onDelete,
   onDownload,
   formatDate,
-  formatSize
+  formatSize,
 }) => {
-  const hasOutput = !!(hasLocalBlob || processingState === 'done' || (file.metadata && file.metadata.generatedPdfUrl));
+  const hasOutput = !!(
+    hasLocalBlob ||
+    processingState === 'done' ||
+    (file.metadata && file.metadata.generatedPdfUrl)
+  );
   const isProcessing = processingState === 'converting';
 
   return (
     <div
       style={{ animationDelay: `${index * 0.05}s` }}
-      className={cn(
-        "group/row flex items-stretch gap-4 animate-card-in",
-        isSelected && "z-20"
-      )}
+      className={cn('group/row animate-card-in flex items-stretch gap-4', isSelected && 'z-20')}
     >
       {/* Input File Card */}
-      <div className={cn(
-        "flex-grow flex items-center justify-between bg-slate-900/40 border border-white/5 rounded-3xl p-5 hover:border-indigo-500/30 transition-all shadow-xl relative overflow-hidden",
-        isSelected && "border-indigo-500/50 bg-indigo-500/[0.05]"
-      )}>
-        <div className="flex items-center gap-4 min-w-0 flex-1 relative z-10">
+      <div
+        className={cn(
+          'relative flex flex-grow items-center justify-between overflow-hidden rounded-3xl border border-white/5 bg-slate-900/40 p-5 shadow-xl transition-all hover:border-indigo-500/30',
+          isSelected && 'border-indigo-500/50 bg-indigo-500/[0.05]',
+        )}
+      >
+        <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4">
           {/* Selection Checkbox */}
           {isSelectionMode && (
             <button
               onClick={() => onToggleSelection(file.id)}
               className={cn(
-                "w-6 h-6 rounded-lg flex items-center justify-center transition-all cursor-pointer animate-in zoom-in-50",
+                'animate-in zoom-in-50 flex h-6 w-6 cursor-pointer items-center justify-center rounded-lg transition-all',
                 isSelected
-                  ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
-                  : "bg-white/5 border border-white/10 text-transparent hover:border-indigo-500/30"
+                  ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                  : 'border border-white/10 bg-white/5 text-transparent hover:border-indigo-500/30',
               )}
             >
-              <CheckCircle2 className="w-3.5 h-3.5" />
+              <CheckCircle2 className="h-3.5 w-3.5" />
             </button>
           )}
 
-          <div className={cn(
-            "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover/row:scale-110",
-            isSelected ? "bg-indigo-500/20 text-indigo-400" : "bg-white/5 text-slate-400"
-          )}>
-            <FileCode className="w-6 h-6" />
+          <div
+            className={cn(
+              'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-transform group-hover/row:scale-110',
+              isSelected ? 'bg-indigo-500/20 text-indigo-400' : 'bg-white/5 text-slate-400',
+            )}
+          >
+            <FileCode className="h-6 w-6" />
           </div>
 
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-bold text-slate-200 truncate group-hover/row:text-indigo-300 transition-colors">
+            <h3 className="truncate text-sm font-bold text-slate-200 transition-colors group-hover/row:text-indigo-300">
               {file.originalName}
             </h3>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">{formatSize(file.size)}</span>
-              <span className="w-1 h-1 rounded-full bg-slate-700" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">{formatDate(file.createdAt)}</span>
+            <div className="mt-1 flex items-center gap-3">
+              <span className="text-[10px] font-black tracking-wider text-slate-500 uppercase">
+                {formatSize(file.size)}
+              </span>
+              <span className="h-1 w-1 rounded-full bg-slate-700" />
+              <span className="text-[10px] font-black tracking-wider text-slate-500 uppercase">
+                {formatDate(file.createdAt)}
+              </span>
               {file.relativePath && file.relativePath !== file.originalName && (
                 <>
-                  <span className="w-1 h-1 rounded-full bg-slate-700" />
-                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500/60 truncate max-w-[150px]">
+                  <span className="h-1 w-1 rounded-full bg-slate-700" />
+                  <span className="max-w-[150px] truncate text-[10px] font-black tracking-wider text-indigo-500/60 uppercase">
                     {file.relativePath}
                   </span>
                 </>
@@ -112,17 +118,22 @@ export const FileRow: React.FC<FileRowProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 relative z-10 shrink-0">
+        <div className="relative z-10 flex shrink-0 items-center gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 onClick={() => onDownload(file, 'md')}
-                className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
+                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all hover:bg-white/10 hover:text-white"
               >
-                <Download className="w-4 h-4" />
+                <Download className="h-4 w-4" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="top" className="bg-slate-900 border-slate-800 text-xs text-slate-300">Download Markdown</TooltipContent>
+            <TooltipContent
+              side="top"
+              className="border-slate-800 bg-slate-900 text-xs text-slate-300"
+            >
+              Download Markdown
+            </TooltipContent>
           </Tooltip>
 
           {!isSelectionMode && (
@@ -130,73 +141,99 @@ export const FileRow: React.FC<FileRowProps> = ({
               <TooltipTrigger asChild>
                 <button
                   onClick={() => onDelete(file.id)}
-                  className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-all cursor-pointer"
+                  className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="h-4 w-4" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="top" className="bg-slate-900 border-slate-800 text-xs text-red-400/80">Delete Source</TooltipContent>
+              <TooltipContent
+                side="top"
+                className="border-slate-800 bg-slate-900 text-xs text-red-400/80"
+              >
+                Delete Source
+              </TooltipContent>
             </Tooltip>
           )}
 
-          <div className="w-px h-6 bg-white/5 mx-1" />
+          <div className="mx-1 h-6 w-px bg-white/5" />
 
           <Button
             size="sm"
             onClick={() => onConvert(file)}
             disabled={isProcessing || isSelectionMode}
             className={cn(
-              "h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-2 transition-all active:scale-95",
+              'flex h-9 items-center gap-2 rounded-xl px-4 text-[10px] font-black tracking-wider uppercase transition-all active:scale-95',
               processingState === 'done'
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white"
+                ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white'
                 : processingState === 'error'
-                ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                : "bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+                  ? 'border border-red-500/20 bg-red-500/10 text-red-400'
+                  : 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-600',
             )}
           >
             {isProcessing ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : processingState === 'done' ? (
-              <CheckCircle className="w-3.5 h-3.5" />
+              <CheckCircle className="h-3.5 w-3.5" />
             ) : processingState === 'error' ? (
-              <AlertCircle className="w-3.5 h-3.5" />
+              <AlertCircle className="h-3.5 w-3.5" />
             ) : (
-              <Zap className="w-3.5 h-3.5 fill-current" />
+              <Zap className="h-3.5 w-3.5 fill-current" />
             )}
-            <span>{isProcessing ? 'Converting...' : processingState === 'done' ? 'Update' : 'Convert'}</span>
+            <span>
+              {isProcessing ? 'Converting...' : processingState === 'done' ? 'Update' : 'Convert'}
+            </span>
           </Button>
         </div>
       </div>
 
       {/* Output File Card (Only if output exists or is converting) */}
       {(hasOutput || isProcessing) && (
-        <div className={cn(
-          "w-[340px] flex items-center justify-between bg-emerald-500/[0.03] border rounded-3xl p-5 hover:bg-emerald-500/[0.06] transition-all shadow-xl relative overflow-hidden group/output animate-in slide-in-from-right-8 duration-500",
-          processingState === 'error' ? "border-red-500/20 bg-red-500/[0.02]" : "border-emerald-500/10 hover:border-emerald-500/30"
-        )}>
-          <div className="flex items-center gap-4 min-w-0 relative z-10">
-            <div className={cn(
-              "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-              isProcessing ? "bg-amber-500/10 text-amber-500" :
-              processingState === 'error' ? "bg-red-500/10 text-red-500" :
-              "bg-emerald-500/10 text-emerald-400 group-hover/output:scale-110 transition-transform"
-            )}>
-              {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> :
-               processingState === 'error' ? <AlertCircle className="w-5 h-5" /> :
-               <FileDown className="w-5 h-5" />}
+        <div
+          className={cn(
+            'group/output animate-in slide-in-from-right-8 relative flex w-[340px] items-center justify-between overflow-hidden rounded-3xl border bg-emerald-500/[0.03] p-5 shadow-xl transition-all duration-500 hover:bg-emerald-500/[0.06]',
+            processingState === 'error'
+              ? 'border-red-500/20 bg-red-500/[0.02]'
+              : 'border-emerald-500/10 hover:border-emerald-500/30',
+          )}
+        >
+          <div className="relative z-10 flex min-w-0 items-center gap-4">
+            <div
+              className={cn(
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                isProcessing
+                  ? 'bg-amber-500/10 text-amber-500'
+                  : processingState === 'error'
+                    ? 'bg-red-500/10 text-red-500'
+                    : 'bg-emerald-500/10 text-emerald-400 transition-transform group-hover/output:scale-110',
+              )}
+            >
+              {isProcessing ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : processingState === 'error' ? (
+                <AlertCircle className="h-5 w-5" />
+              ) : (
+                <FileDown className="h-5 w-5" />
+              )}
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className={cn(
-                  "text-[9px] font-black tracking-widest uppercase",
-                  isProcessing ? "text-amber-500" :
-                  processingState === 'error' ? "text-red-500" : "text-emerald-500"
-                )}>
+                <span
+                  className={cn(
+                    'text-[9px] font-black tracking-widest uppercase',
+                    isProcessing
+                      ? 'text-amber-500'
+                      : processingState === 'error'
+                        ? 'text-red-500'
+                        : 'text-emerald-500',
+                  )}
+                >
                   {isProcessing ? 'Processing' : processingState === 'error' ? 'Failed' : 'Ready'}
                 </span>
-                {hasOutput && !isProcessing && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+                {hasOutput && !isProcessing && (
+                  <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                )}
               </div>
-              <p className="text-xs font-bold text-slate-300 truncate mt-0.5">
+              <p className="mt-0.5 truncate text-xs font-bold text-slate-300">
                 {file.originalName.replace(/\.md$/i, '')}.pdf
               </p>
             </div>
@@ -208,12 +245,17 @@ export const FileRow: React.FC<FileRowProps> = ({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onDownload(file, 'pdf')}
-                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all cursor-pointer shadow-lg shadow-emerald-500/10 active:scale-90"
+                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 shadow-lg shadow-emerald-500/10 transition-all hover:bg-emerald-500 hover:text-white active:scale-90"
                   >
-                    <Download className="w-4.5 h-4.5" />
+                    <Download className="h-4.5 w-4.5" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="bg-slate-900 border-slate-800 text-xs text-emerald-400">Download PDF</TooltipContent>
+                <TooltipContent
+                  side="top"
+                  className="border-slate-800 bg-slate-900 text-xs text-emerald-400"
+                >
+                  Download PDF
+                </TooltipContent>
               </Tooltip>
             </div>
           )}

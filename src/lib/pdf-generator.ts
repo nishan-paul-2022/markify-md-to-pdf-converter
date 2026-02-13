@@ -29,15 +29,15 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
     logger.info('🚀 Starting PDF generation...');
     browser = await chromium.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     logger.info('✅ Browser launched successfully');
 
     const page = await browser.newPage();
 
     // Capture browser console logs for debugging
-    page.on('console', msg => logger.debug('Browser console:', msg.text()));
-    page.on('pageerror', error => logger.error('Browser page error:', error));
+    page.on('console', (msg) => logger.debug('Browser console:', msg.text()));
+    page.on('pageerror', (error) => logger.error('Browser page error:', error));
 
     // Load images as base64
     const logoPath = path.join(process.cwd(), 'public', 'university-logo.png');
@@ -59,11 +59,15 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
     const style = `
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lora&display=swap');
       
-      ${hasMetadata ? `
+      ${
+        hasMetadata
+          ? `
       @page :first {
         margin: 0;
       }
-      ` : ''}
+      `
+          : ''
+      }
       
       @page {
         margin: 15mm;
@@ -544,7 +548,8 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
     const isGroupSubmission = groupMembers.length > 0;
     const courseText = metadata.course ? metadata.course.replace(',', ':') : '';
 
-    const coverPageHtml = isGroupSubmission ? `
+    const coverPageHtml = isGroupSubmission
+      ? `
         <div class="cover-page">
           <div class="bg-blur-1"></div>
           <div class="bg-blur-2"></div>
@@ -607,7 +612,9 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
                     <div class="group-count">${groupMembers.length} Members</div>
                   </div>
                   <div class="member-list">
-                    ${groupMembers.map((m: GroupMember, i: number) => `
+                    ${groupMembers
+                      .map(
+                        (m: GroupMember, i: number) => `
                     <div class="member-row">
                       <div class="member-info">
                         <div class="member-index">${i + 1}</div>
@@ -615,14 +622,17 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
                       </div>
                       <span class="member-roll">${m.roll}</span>
                     </div>
-                    `).join('')}
+                    `,
+                      )
+                      .join('')}
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-    ` : `
+    `
+      : `
         <div class="cover-page" style="background-color: white;">
           <div class="cover-bg-image" style="mix-blend-mode: normal; opacity: 1;"></div>
           
@@ -659,7 +669,10 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
                   { label: 'Reg. No', value: metadata.reg },
                   { label: 'Batch', value: metadata.batch },
                   { label: 'Submission Date', value: metadata.date },
-                ].filter(detail => detail.value).map(detail => `
+                ]
+                  .filter((detail) => detail.value)
+                  .map(
+                    (detail) => `
                   <div style="display: flex; text-align: left; font-size: 14px;">
                     <div style="width: 42%; font-weight: 700; color: rgba(255,255,255,0.9); display: flex; justify-content: space-between;">
                       ${detail.label} <span>:</span>
@@ -668,7 +681,9 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
                       ${detail.value}
                     </div>
                   </div>
-                `).join('')}
+                `,
+                  )
+                  .join('')}
               </div>
             </div>
           </div>
@@ -684,13 +699,17 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
       </head>
       <body>
         ${hasMetadata ? coverPageHtml : ''}
-        ${markdownHtml.trim() ? `
+        ${
+          markdownHtml.trim()
+            ? `
         <div class="report-container">
           <div class="content-page">
             ${markdownHtml}
           </div>
         </div>
-        ` : ''}
+        `
+            : ''
+        }
       </body>
       </html>
     `;
@@ -709,7 +728,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
       footerTemplate: `
         <div style="font-family: 'Inter', sans-serif; font-size: 9px; width: 100%; display: flex; justify-content: flex-end; padding-right: 15mm; padding-bottom: 5mm; color: #64748b;">
           <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
-        </div>`
+        </div>`,
     });
 
     logger.info('✅ PDF generated successfully');

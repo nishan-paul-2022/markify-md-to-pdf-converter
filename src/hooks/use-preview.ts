@@ -1,6 +1,6 @@
-import { useCallback, useEffect,useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { logger } from "@/lib/logger";
+import { logger } from '@/lib/logger';
 
 export type ViewMode = 'live' | 'preview';
 export type ZoomMode = 'fit-page' | 'fit-width' | 'custom';
@@ -57,26 +57,32 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     if (viewMode === 'preview' && onGeneratePdf && !pdfBlobUrl) {
       setIsPdfLoading(true);
       onGeneratePdf()
-        .then(blob => {
+        .then((blob) => {
           const url = URL.createObjectURL(blob);
           setPdfBlobUrl(url);
           setLastRenderedSignature(JSON.stringify({ content, metadata }));
         })
-        .catch((err: unknown) => logger.error("PDF generation failed:", err))
+        .catch((err: unknown) => logger.error('PDF generation failed:', err))
         .finally(() => setIsPdfLoading(false));
     }
   }, [viewMode, onGeneratePdf, pdfBlobUrl, content, metadata]);
 
   useEffect(() => {
     return () => {
-      if (pdfBlobUrl) {URL.revokeObjectURL(pdfBlobUrl);}
+      if (pdfBlobUrl) {
+        URL.revokeObjectURL(pdfBlobUrl);
+      }
     };
   }, [pdfBlobUrl]);
 
   useEffect(() => {
-    if (!isAutoRender && viewMode === 'preview') {return;}
+    if (!isAutoRender && viewMode === 'preview') {
+      return;
+    }
     const currentSignature = JSON.stringify({ content, metadata });
-    if (currentSignature === lastRenderedSignature) {return;}
+    if (currentSignature === lastRenderedSignature) {
+      return;
+    }
 
     const timer = setTimeout(() => {
       setPdfBlobUrl(null);
@@ -98,13 +104,18 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     }
 
     const timer = setTimeout(() => {
-      if (!stagingRef.current) {return;}
+      if (!stagingRef.current) {
+        return;
+      }
       const pages: string[] = [];
       let currentPageBucket: string[] = [];
       const children = Array.from(stagingRef.current.children);
 
       for (const child of children as HTMLElement[]) {
-        if (child.classList.contains('page-break-marker') || child.classList.contains('page-break')) {
+        if (
+          child.classList.contains('page-break-marker') ||
+          child.classList.contains('page-break')
+        ) {
           if (currentPageBucket.length > 0) {
             pages.push(currentPageBucket.join(''));
             currentPageBucket = [];
@@ -126,45 +137,60 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
   }, [content, metadata, viewMode, basePath]);
 
   const hasMetadataValues = (meta: Record<string, unknown> | null | undefined): boolean => {
-    if (!meta) {return false;}
-    return Object.values(meta).some(val => typeof val === 'string' && val.trim().length > 0);
+    if (!meta) {
+      return false;
+    }
+    return Object.values(meta).some((val) => typeof val === 'string' && val.trim().length > 0);
   };
 
   const showCoverPage = metadata && hasMetadataValues(metadata);
 
-  const totalPages = viewMode === 'preview'
-    ? numPages
-    : (showCoverPage
-      ? (content.trim() ? paginatedPages.length + 1 : 1)
-      : Math.max(1, paginatedPages.length));
+  const totalPages =
+    viewMode === 'preview'
+      ? numPages
+      : showCoverPage
+        ? content.trim()
+          ? paginatedPages.length + 1
+          : 1
+        : Math.max(1, paginatedPages.length);
 
-  const handleZoomChange = useCallback((delta: number) => {
-    setZoomMode('custom');
-    setCustomZoom(prev => {
-      let currentBase = prev;
-      if (zoomMode === 'fit-page') {currentBase = fitPageScale * 100;}
-      else if (zoomMode === 'fit-width') {currentBase = fitWidthScale * 100;}
-      const newZoom = Math.round((currentBase + delta) / 5) * 5;
-      return Math.max(25, Math.min(400, newZoom));
-    });
-  }, [zoomMode, fitPageScale, fitWidthScale]);
+  const handleZoomChange = useCallback(
+    (delta: number) => {
+      setZoomMode('custom');
+      setCustomZoom((prev) => {
+        let currentBase = prev;
+        if (zoomMode === 'fit-page') {
+          currentBase = fitPageScale * 100;
+        } else if (zoomMode === 'fit-width') {
+          currentBase = fitWidthScale * 100;
+        }
+        const newZoom = Math.round((currentBase + delta) / 5) * 5;
+        return Math.max(25, Math.min(400, newZoom));
+      });
+    },
+    [zoomMode, fitPageScale, fitWidthScale],
+  );
 
   useEffect(() => {
     setPageInput(currentPage.toString());
   }, [currentPage]);
 
-  const scrollToPage = useCallback((pageNum: number, behavior: ScrollBehavior = 'smooth') => {
-    if (pageNum >= 1 && pageNum <= totalPages && containerRef.current) {
-      const selector = (viewMode === 'live' || !isPdfReady)
-        ? `.live-view-page[data-page-index="${pageNum - 1}"]`
-        : `.pdf-view-page[data-page-index="${pageNum - 1}"]`;
+  const scrollToPage = useCallback(
+    (pageNum: number, behavior: ScrollBehavior = 'smooth') => {
+      if (pageNum >= 1 && pageNum <= totalPages && containerRef.current) {
+        const selector =
+          viewMode === 'live' || !isPdfReady
+            ? `.live-view-page[data-page-index="${pageNum - 1}"]`
+            : `.pdf-view-page[data-page-index="${pageNum - 1}"]`;
 
-      const pageEl = containerRef.current.querySelector(selector);
-      if (pageEl) {
-        pageEl.scrollIntoView({ behavior, block: 'start' });
+        const pageEl = containerRef.current.querySelector(selector);
+        if (pageEl) {
+          pageEl.scrollIntoView({ behavior, block: 'start' });
+        }
       }
-    }
-  }, [totalPages, viewMode, isPdfReady]);
+    },
+    [totalPages, viewMode, isPdfReady],
+  );
 
   useEffect(() => {
     const isModeSwitch = lastViewModeRef.current !== viewMode;
@@ -177,9 +203,8 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     lastViewModeRef.current = viewMode;
     lastIsPdfReadyRef.current = isPdfReady;
 
-    const targetPage = transitionTargetPageRef.current !== null
-      ? transitionTargetPageRef.current
-      : currentPage;
+    const targetPage =
+      transitionTargetPageRef.current !== null ? transitionTargetPageRef.current : currentPage;
 
     let needsScroll = isModeSwitch || isPdfJustReady;
 
@@ -205,7 +230,9 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
   }, [totalPages, viewMode, currentPage, scrollToPage, isPdfReady]);
 
   const calculateScale = useCallback(() => {
-    if (!containerRef.current) {return;}
+    if (!containerRef.current) {
+      return;
+    }
     const container = containerRef.current;
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
@@ -222,7 +249,12 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     const newFitPageScale = Math.min(widthScaleWithPadding, heightScaleWithPadding);
     setFitPageScale(newFitPageScale);
 
-    const currentScale = zoomMode === 'fit-page' ? newFitPageScale : (zoomMode === 'fit-width' ? newFitWidthScale : customZoom / 100);
+    const currentScale =
+      zoomMode === 'fit-page'
+        ? newFitPageScale
+        : zoomMode === 'fit-width'
+          ? newFitWidthScale
+          : customZoom / 100;
     setZoomInput(`${Math.round(currentScale * 100)}%`);
 
     setIsScaleCalculated(true);
@@ -231,13 +263,17 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
   useEffect(() => {
     calculateScale();
     const resizeObserver = new ResizeObserver(calculateScale);
-    if (containerRef.current) {resizeObserver.observe(containerRef.current);}
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
     return () => resizeObserver.disconnect();
   }, [calculateScale]);
 
   useEffect(() => {
     const el = contentRef.current;
-    if (!el) {return;}
+    if (!el) {
+      return;
+    }
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         setContentHeight(entry.target.scrollHeight);
@@ -248,16 +284,24 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
   }, []);
 
   useEffect(() => {
-    if (!isScaleCalculated) {return;}
+    if (!isScaleCalculated) {
+      return;
+    }
     let scale = 1;
-    if (zoomMode === 'fit-page') {scale = fitPageScale;}
-    else if (zoomMode === 'fit-width') {scale = fitWidthScale;}
-    else {scale = customZoom / 100;}
+    if (zoomMode === 'fit-page') {
+      scale = fitPageScale;
+    } else if (zoomMode === 'fit-width') {
+      scale = fitWidthScale;
+    } else {
+      scale = customZoom / 100;
+    }
     setZoomInput(`${Math.round(scale * 100)}%`);
   }, [zoomMode, customZoom, fitPageScale, fitWidthScale, isScaleCalculated]);
 
   useEffect(() => {
-    if (!containerRef.current) {return;}
+    if (!containerRef.current) {
+      return;
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         let maxRatio = 0;
@@ -269,15 +313,19 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
           }
         });
         if (maxRatio > 0.3) {
-          if (transitionTargetPageRef.current !== null) {return;}
+          if (transitionTargetPageRef.current !== null) {
+            return;
+          }
           setCurrentPage(visiblePageIndex + 1);
         }
       },
-      { root: containerRef.current, threshold: [0, 0.3, 0.5, 0.7, 1.0] }
+      { root: containerRef.current, threshold: [0, 0.3, 0.5, 0.7, 1.0] },
     );
 
     const timeoutId = setTimeout(() => {
-      if (!containerRef.current) {return;}
+      if (!containerRef.current) {
+        return;
+      }
       const selector = viewMode === 'live' ? '.live-view-page' : '.pdf-view-page';
       const pageElements = containerRef.current.querySelectorAll(selector);
       pageElements.forEach((el) => observer.observe(el));
@@ -371,8 +419,12 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
   };
 
   const getScale = (): number => {
-    if (zoomMode === 'fit-page') {return fitPageScale;}
-    if (zoomMode === 'fit-width') {return fitWidthScale;}
+    if (zoomMode === 'fit-page') {
+      return fitPageScale;
+    }
+    if (zoomMode === 'fit-width') {
+      return fitWidthScale;
+    }
     return customZoom / 100;
   };
 
@@ -416,6 +468,6 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     totalPages,
     setZoomMode,
     isInitializing: !isScaleCalculated,
-    showCoverPage
+    showCoverPage,
   };
 }

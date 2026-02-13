@@ -48,7 +48,8 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
       // Clear previous content
       ref.current.innerHTML = '';
 
-      mermaid.render(id, chart)
+      mermaid
+        .render(id, chart)
         .then(({ svg }) => {
           if (ref.current) {
             ref.current.innerHTML = svg;
@@ -65,7 +66,7 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
             }
           }
         })
-        .catch(err => {
+        .catch((err) => {
           console.error('Mermaid render error:', err);
           setError('Failed to render diagram');
           setIsLoaded(true);
@@ -74,25 +75,21 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
   }, [chart]);
 
   return (
-    <div className="diagram-wrapper my-3 flex flex-col items-center w-full">
+    <div className="diagram-wrapper my-3 flex w-full flex-col items-center">
       {!isLoaded && !error && (
-        <div className="flex flex-col items-center justify-center py-12 gap-3 text-slate-400">
-          <Loader2 className="w-6 h-6 animate-spin" />
+        <div className="flex flex-col items-center justify-center gap-3 py-12 text-slate-400">
+          <Loader2 className="h-6 w-6 animate-spin" />
           <span className="text-sm font-medium">Rendering diagram...</span>
         </div>
       )}
-      {error && (
-        <div className="text-red-500 text-sm font-medium py-4 text-center">
-          {error}
-        </div>
-      )}
+      {error && <div className="py-4 text-center text-sm font-medium text-red-500">{error}</div>}
       <div
         ref={ref}
-        className={`mermaid-container w-full flex justify-center transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`mermaid-container flex w-full justify-center transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
       />
     </div>
   );
-};
+}
 
 interface MermaidProps {
   chart: string;

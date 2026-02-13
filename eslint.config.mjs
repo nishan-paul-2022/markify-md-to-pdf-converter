@@ -6,6 +6,7 @@ import simpleImportSort from "eslint-plugin-simple-import-sort";
 import unusedImports from "eslint-plugin-unused-imports";
 import nextPlugin from "@next/eslint-plugin-next";
 import noRelativeImportPaths from "eslint-plugin-no-relative-import-paths";
+import eslintConfigPrettier from "eslint-config-prettier";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -21,6 +22,7 @@ const __dirname = path.dirname(__filename);
  * - Absolute Path Enforcement (@/ usage everywhere)
  * - React Hooks & A11y
  * - Import Strategy (Sorting & Cleanup)
+ * - Prettier Integration
  */
 export default tsEslint.config(
   // Global Ignores
@@ -79,9 +81,6 @@ export default tsEslint.config(
       "no-var": "error",
       "curly": "error",
       "eqeqeq": ["error", "always"],
-      "no-multiple-empty-lines": ["error", { max: 1, maxEOF: 0 }],
-      "no-trailing-spaces": "error",
-      "semi": ["error", "always"],
 
       // --- Import Hierarchy & Sorting ---
       "simple-import-sort/imports": [
@@ -152,5 +151,6 @@ export default tsEslint.config(
       "@typescript-eslint/no-unnecessary-condition": "warn",
       "@typescript-eslint/restrict-plus-operands": "error",
     },
-  }
+  },
+  eslintConfigPrettier
 );

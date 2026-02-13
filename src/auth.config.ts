@@ -1,19 +1,18 @@
-
-import type { NextAuthConfig } from "next-auth";
-import Google from "next-auth/providers/google";
+import type { NextAuthConfig } from 'next-auth';
+import Google from 'next-auth/providers/google';
 
 export default {
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+      clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
       authorization: {
         params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code"
-        }
-      }
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
+        },
+      },
     }),
   ],
   pages: {
@@ -38,14 +37,15 @@ export default {
       const isLoggedIn = !!auth?.user;
 
       // Define protected routes
-      const isProtectedRoute = nextUrl.pathname.startsWith('/dashboard') ||
-                               nextUrl.pathname.startsWith('/editor') ||
-                               nextUrl.pathname.startsWith('/converter') ||
-                               nextUrl.pathname.startsWith('/api/files');
+      const isProtectedRoute =
+        nextUrl.pathname.startsWith('/dashboard') ||
+        nextUrl.pathname.startsWith('/editor') ||
+        nextUrl.pathname.startsWith('/converter') ||
+        nextUrl.pathname.startsWith('/api/files');
 
       // Define auth routes
-      const isAuthRoute = nextUrl.pathname.startsWith('/auth/signin') ||
-                         nextUrl.pathname.startsWith('/auth/signup');
+      const isAuthRoute =
+        nextUrl.pathname.startsWith('/auth/signin') || nextUrl.pathname.startsWith('/auth/signup');
 
       // Redirect to signin if accessing protected route while not logged in
       if (isProtectedRoute && !isLoggedIn) {

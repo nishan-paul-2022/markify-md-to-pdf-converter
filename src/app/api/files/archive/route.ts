@@ -1,16 +1,16 @@
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-import { auth } from "@/lib/auth";
-import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
+import { auth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import prisma from '@/lib/prisma';
 
-import path7za from "7zip-bin";
-import { exec } from "child_process";
-import { randomUUID } from "crypto";
-import { mkdir, readdir, rm, stat,writeFile } from "fs/promises";
-import { join, relative } from "path";
-import { promisify } from "util";
+import path7za from '7zip-bin';
+import { exec } from 'child_process';
+import { randomUUID } from 'crypto';
+import { mkdir, readdir, rm, stat, writeFile } from 'fs/promises';
+import { join, relative } from 'path';
+import { promisify } from 'util';
 
 const execPromise = promisify(exec);
 
@@ -28,25 +28,25 @@ async function get7zaPath() {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const path7zaBinary = await get7zaPath();
-  let tempDir = "";
+  let tempDir = '';
   try {
     const session = await auth();
     const userId = session?.user.id;
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const formData = await request.formData();
-    const archiveFile = formData.get("file") as File | null;
-    const source = formData.get("source") as string | null; // 'editor' or 'converter'
+    const archiveFile = formData.get('file') as File | null;
+    const source = formData.get('source') as string | null; // 'editor' or 'converter'
 
     if (!archiveFile) {
-      return NextResponse.json({ error: "No archive provided" }, { status: 400 });
+      return NextResponse.json({ error: 'No archive provided' }, { status: 400 });
     }
 
     // 1. Create a unique temp directory for extraction
     const batchId = randomUUID();
-    tempDir = join(process.cwd(), "tmp", batchId);
+    tempDir = join(process.cwd(), 'tmp', batchId);
     await mkdir(tempDir, { recursive: true });
 
     // 2. Save the archive to temp directory
@@ -57,14 +57,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 3. Extract using 7za
     // -y: assume Yes on all queries
     // -o: set output directory
-    const extractDir = join(tempDir, "extracted");
+    const extractDir = join(tempDir, 'extracted');
     await mkdir(extractDir, { recursive: true });
 
     try {
       await execPromise(`"${path7zaBinary}" x "${archivePath}" -o"${extractDir}" -y`);
     } catch (extractError) {
-      logger.error("Extraction error:", extractError);
-      return NextResponse.json({ error: "Failed to extract archive. Ensure it is a valid ZIP, 7Z, RAR, or TAR file." }, { status: 400 });
+      logger.error('Extraction error:', extractError);
+      return NextResponse.json(
+        { error: 'Failed to extract archive. Ensure it is a valid ZIP, 7Z, RAR, or TAR file.' },
+        { status: 400 },
+      );
     }
 
     // 4. Recursively find all files
@@ -77,18 +80,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const relPath = relative(base, fullPath).replace(/\\/g, '/');
         if (entry.isDirectory()) {
           // Skip system directories like __MACOSX
-          if (entry.name === '__MACOSX' || entry.name.startsWith('.')) { continue; }
+          if (entry.name === '__MACOSX' || entry.name.startsWith('.')) {
+            continue;
+          }
           await walk(fullPath, base);
         } else {
           // Skip system files like .DS_Store or files starting with .
-          if (entry.name.startsWith('.')) { continue; }
+          if (entry.name.startsWith('.')) {
+            continue;
+          }
 
           const stats = await stat(fullPath);
           RAW_FILES.push({
             name: entry.name,
             relativePath: relPath,
             fullPath,
-            size: stats.size
+            size: stats.size,
           });
         }
       }
@@ -99,23 +106,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const allFiles = RAW_FILES;
 
     if (allFiles.length === 0) {
-      return NextResponse.json({ error: "Archive is empty or only contains invalid files." }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Archive is empty or only contains invalid files.' },
+        { status: 400 },
+      );
     }
 
     // 5. Apply the same validation rules as single file/folder uploads
     // Rule: Must contain at least one .md file
-    const mdFiles = allFiles.filter(f => f.name.toLowerCase().endsWith('.md'));
+    const mdFiles = allFiles.filter((f) => f.name.toLowerCase().endsWith('.md'));
     if (mdFiles.length === 0) {
-       return NextResponse.json({ error: "Upload failed — only .md files are allowed here." }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Upload failed — only .md files are allowed here.' },
+        { status: 400 },
+      );
     }
 
     // Determine if there's a common wrapper folder to strip
     // A wrapper exists if all files share the same first path segment,
     // and that segment is NOT "images", and no files are at the root level relative to it.
-    const firstSegments = new Set(allFiles.map(f => f.relativePath.split('/')[0]));
-    const hasWrapper = firstSegments.size === 1 &&
-                       ![...firstSegments][0].toLowerCase().endsWith('.md') &&
-                       [...firstSegments][0].toLowerCase() !== 'images';
+    const firstSegments = new Set(allFiles.map((f) => f.relativePath.split('/')[0]));
+    const hasWrapper =
+      firstSegments.size === 1 &&
+      ![...firstSegments][0].toLowerCase().endsWith('.md') &&
+      [...firstSegments][0].toLowerCase() !== 'images';
 
     // Strict Path Validation Logic (Mirrored from single file route)
     const allowedImageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
@@ -125,16 +139,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const actualParts = file.relativePath.split('/');
       const effectiveParts = hasWrapper ? actualParts.slice(1) : actualParts;
 
-      if (effectiveParts.length === 0) { continue; }
+      if (effectiveParts.length === 0) {
+        continue;
+      }
 
       const fileName = file.name.toLowerCase();
       const isMd = fileName.endsWith('.md');
-      const isImage = allowedImageExtensions.some(ext => fileName.endsWith(ext));
+      const isImage = allowedImageExtensions.some((ext) => fileName.endsWith(ext));
 
       // Rule 1: Root level files (effective) MUST be .md
       if (effectiveParts.length === 1) {
         if (!isMd) {
-          return NextResponse.json({ error: `Upload failed — only .md files are allowed at the root. Found: ${file.relativePath}` }, { status: 400 });
+          return NextResponse.json(
+            {
+              error: `Upload failed — only .md files are allowed at the root. Found: ${file.relativePath}`,
+            },
+            { status: 400 },
+          );
         }
         validFiles.push(file);
       }
@@ -143,14 +164,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         // Option A: Root-level images/ folder
         if (effectiveParts[0].toLowerCase() === 'images') {
           if (!isImage) {
-            return NextResponse.json({ error: `Upload failed — only images are allowed in the images/ folder. Found: ${file.relativePath}` }, { status: 400 });
+            return NextResponse.json(
+              {
+                error: `Upload failed — only images are allowed in the images/ folder. Found: ${file.relativePath}`,
+              },
+              { status: 400 },
+            );
           }
           validFiles.push(file);
         }
         // Option B: A project's root file (e.g., FolderA/note.md)
         else {
           if (!isMd) {
-            return NextResponse.json({ error: `Upload failed — ensure it follows the required .md + images/ layout. Invalid file in folder: ${file.relativePath}` }, { status: 400 });
+            return NextResponse.json(
+              {
+                error: `Upload failed — ensure it follows the required .md + images/ layout. Invalid file in folder: ${file.relativePath}`,
+              },
+              { status: 400 },
+            );
           }
           validFiles.push(file);
         }
@@ -158,77 +189,96 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Rule 3: Depth 3 level (e.g., Project/images/file.png)
       else if (effectiveParts.length === 3) {
         if (effectiveParts[1].toLowerCase() !== 'images') {
-          return NextResponse.json({ error: `Upload failed — nested folders are only allowed for 'images/'. Invalid path: ${file.relativePath}` }, { status: 400 });
+          return NextResponse.json(
+            {
+              error: `Upload failed — nested folders are only allowed for 'images/'. Invalid path: ${file.relativePath}`,
+            },
+            { status: 400 },
+          );
         }
         if (!isImage) {
-          return NextResponse.json({ error: `Upload failed — only images are allowed in 'images/' folders. Found: ${file.relativePath}` }, { status: 400 });
+          return NextResponse.json(
+            {
+              error: `Upload failed — only images are allowed in 'images/' folders. Found: ${file.relativePath}`,
+            },
+            { status: 400 },
+          );
         }
         validFiles.push(file);
       }
       // Rule 4: Too deep
       else {
-        return NextResponse.json({ error: `Upload failed — directory structure too deep (max 1 subfolder level allowed): ${file.relativePath}` }, { status: 400 });
+        return NextResponse.json(
+          {
+            error: `Upload failed — directory structure too deep (max 1 subfolder level allowed): ${file.relativePath}`,
+          },
+          { status: 400 },
+        );
       }
     }
 
     // 6. Save valid files
     const uploadResults = [];
-    const userDir = join(process.cwd(), "public", "uploads", userId, batchId);
+    const userDir = join(process.cwd(), 'public', 'uploads', userId, batchId);
     await mkdir(userDir, { recursive: true });
 
     for (const file of validFiles) {
-       // Normalize the relative path for saving (remove wrapper if any)
-       const actualParts = file.relativePath.split('/');
-       const savedRelPath = hasWrapper ? actualParts.slice(1).join('/') : file.relativePath;
+      // Normalize the relative path for saving (remove wrapper if any)
+      const actualParts = file.relativePath.split('/');
+      const savedRelPath = hasWrapper ? actualParts.slice(1).join('/') : file.relativePath;
 
-       const storageKey = `uploads/${userId}/${batchId}/${savedRelPath}`;
-       const destinationPath = join(process.cwd(), "public", storageKey);
+      const storageKey = `uploads/${userId}/${batchId}/${savedRelPath}`;
+      const destinationPath = join(process.cwd(), 'public', storageKey);
 
-       // Ensure subdirectories exist
-       if (savedRelPath.includes('/')) {
-         await mkdir(join(userDir, savedRelPath.substring(0, savedRelPath.lastIndexOf('/'))), { recursive: true });
-       }
+      // Ensure subdirectories exist
+      if (savedRelPath.includes('/')) {
+        await mkdir(join(userDir, savedRelPath.substring(0, savedRelPath.lastIndexOf('/'))), {
+          recursive: true,
+        });
+      }
 
-       // Move file
-       const { readFile } = await import('fs/promises');
-       const fileContent = await readFile(file.fullPath);
-       await writeFile(destinationPath, fileContent);
+      // Move file
+      const { readFile } = await import('fs/promises');
+      const fileContent = await readFile(file.fullPath);
+      await writeFile(destinationPath, fileContent);
 
-       const isMd = file.name.toLowerCase().endsWith('.md');
+      const isMd = file.name.toLowerCase().endsWith('.md');
 
-       const fileRecord = await prisma.file.create({
-         data: {
-           userId,
-           batchId,
-           filename: randomUUID() + '.' + (file.name.split('.').pop() || 'file'),
-           originalName: file.name,
-           relativePath: savedRelPath,
-           mimeType: isMd ? "text/markdown" : "image/octet-stream",
-           size: file.size,
-           storageKey,
-           url: `/api/${storageKey}`,
-           metadata: source ? { source } : undefined,
-         },
-       });
-       uploadResults.push(fileRecord);
+      const fileRecord = await prisma.file.create({
+        data: {
+          userId,
+          batchId,
+          filename: randomUUID() + '.' + (file.name.split('.').pop() || 'file'),
+          originalName: file.name,
+          relativePath: savedRelPath,
+          mimeType: isMd ? 'text/markdown' : 'image/octet-stream',
+          size: file.size,
+          storageKey,
+          url: `/api/${storageKey}`,
+          metadata: source ? { source } : undefined,
+        },
+      });
+      uploadResults.push(fileRecord);
     }
 
     return NextResponse.json({
       success: true,
       batchId,
-      files: uploadResults
+      files: uploadResults,
     });
-
   } catch (error: unknown) {
-    logger.error("Archive upload error:", error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    logger.error('Archive upload error:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : String(error) },
+      { status: 500 },
+    );
   } finally {
     // 7. Cleanup temp directory
     if (tempDir) {
       try {
         await rm(tempDir, { recursive: true, force: true });
       } catch (e) {
-        logger.error("Cleanup error:", e);
+        logger.error('Cleanup error:', e);
       }
     }
   }

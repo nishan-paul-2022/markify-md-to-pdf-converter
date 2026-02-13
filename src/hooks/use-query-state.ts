@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { usePathname,useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 /**
  * Hook to manage UI state via URL query parameters.
@@ -12,20 +12,22 @@ export function useQueryState<T extends string>(key: string, defaultValue: T) {
 
   const value = (searchParams.get(key) as T) || defaultValue;
 
-  const setValue = useCallback((newValue: T | ((prev: T) => T)) => {
-    const params = new URLSearchParams(searchParams.toString());
-    const resolvedValue = typeof newValue === 'function'
-      ? (newValue as (prev: T) => T)(value)
-      : newValue;
+  const setValue = useCallback(
+    (newValue: T | ((prev: T) => T)) => {
+      const params = new URLSearchParams(searchParams.toString());
+      const resolvedValue =
+        typeof newValue === 'function' ? (newValue as (prev: T) => T)(value) : newValue;
 
-    if (resolvedValue === defaultValue) {
-      params.delete(key);
-    } else {
-      params.set(key, resolvedValue);
-    }
+      if (resolvedValue === defaultValue) {
+        params.delete(key);
+      } else {
+        params.set(key, resolvedValue);
+      }
 
-    router.push(`${pathname}?${params.toString()}`);
-  }, [router, pathname, searchParams, key, defaultValue, value]);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [router, pathname, searchParams, key, defaultValue, value],
+  );
 
   return [value, setValue] as const;
 }
@@ -40,16 +42,19 @@ export function useSearchQuery() {
 
   const query = searchParams.get('q') || '';
 
-  const setQuery = useCallback((newQuery: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (!newQuery) {
-      params.delete('q');
-    } else {
-      params.set('q', newQuery);
-    }
-    // For search, we often want 'replace' to keep back button clean
-    router.replace(`${pathname}?${params.toString()}`);
-  }, [router, pathname, searchParams]);
+  const setQuery = useCallback(
+    (newQuery: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (!newQuery) {
+        params.delete('q');
+      } else {
+        params.set('q', newQuery);
+      }
+      // For search, we often want 'replace' to keep back button clean
+      router.replace(`${pathname}?${params.toString()}`);
+    },
+    [router, pathname, searchParams],
+  );
 
   return { query, setQuery };
 }

@@ -1,42 +1,43 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default async function AuthErrorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string }>;
 }): Promise<React.JSX.Element> {
   const { error } = await searchParams;
 
   const errorMessages: Record<string, { title: string; description: string }> = {
     Configuration: {
-      title: "Server Configuration Error",
-      description: "There is a problem with the server configuration. Please contact support.",
+      title: 'Server Configuration Error',
+      description: 'There is a problem with the server configuration. Please contact support.',
     },
     AccessDenied: {
-      title: "Access Denied",
-      description: "You do not have permission to sign in.",
+      title: 'Access Denied',
+      description: 'You do not have permission to sign in.',
     },
     Verification: {
-      title: "Verification Failed",
-      description: "The verification token has expired or has already been used.",
+      title: 'Verification Failed',
+      description: 'The verification token has expired or has already been used.',
     },
     OAuthAccountNotLinked: {
-      title: "Account Already Exists",
-      description: "This email is already associated with another account. Please sign in with your original provider.",
+      title: 'Account Already Exists',
+      description:
+        'This email is already associated with another account. Please sign in with your original provider.',
     },
     Default: {
-      title: "Authentication Error",
-      description: "An unexpected error occurred during authentication. Please try again.",
+      title: 'Authentication Error',
+      description: 'An unexpected error occurred during authentication. Please try again.',
     },
   };
 
   const errorInfo = errorMessages[error as keyof typeof errorMessages] ?? errorMessages.Default;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4 dark:from-gray-900 dark:to-gray-800">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
@@ -54,12 +55,8 @@ export default async function AuthErrorPage({
               />
             </svg>
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            {errorInfo.title}
-          </CardTitle>
-          <CardDescription className="text-base">
-            {errorInfo.description}
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold tracking-tight">{errorInfo.title}</CardTitle>
+          <CardDescription className="text-base">{errorInfo.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -72,9 +69,7 @@ export default async function AuthErrorPage({
           </div>
 
           {error && (
-            <p className="text-center text-xs text-muted-foreground">
-              Error code: {error}
-            </p>
+            <p className="text-muted-foreground text-center text-xs">Error code: {error}</p>
           )}
         </CardContent>
       </Card>

@@ -30,7 +30,9 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
 
   // Find the Landing Page section
   // It starts with # Landing Page and ends at the next main heading (#) or horizontal rule (---)
-  const landingPageMatch = markdown.match(/^#\s+Landing\s+Page\s*\n([\s\S]*?)(?=\n#\s+|(?:\r?\n){2}---|$)/im);
+  const landingPageMatch = markdown.match(
+    /^#\s+Landing\s+Page\s*\n([\s\S]*?)(?=\n#\s+|(?:\r?\n){2}---|$)/im,
+  );
 
   if (!landingPageMatch) {
     return metadata;
@@ -54,16 +56,16 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
 
     // Map the keys to our metadata structure
     const keyMap: Record<string, keyof Metadata> = {
-      'University': 'university',
-      'Program': 'program',
-      'Title': 'title',
-      'Subtitle': 'subtitle',
-      'Course': 'course',
-      'Name': 'name',
+      University: 'university',
+      Program: 'program',
+      Title: 'title',
+      Subtitle: 'subtitle',
+      Course: 'course',
+      Name: 'name',
       'Roll No': 'roll',
       'Reg. No': 'reg',
-      'Batch': 'batch',
-      'Submission Date': 'date'
+      Batch: 'batch',
+      'Submission Date': 'date',
     };
 
     if (key in keyMap) {
@@ -79,18 +81,24 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
     const contentAfterHeader = landingPageContent.substring(tableHeaderIndex);
     const tableRows = contentAfterHeader.match(/\|[^|]+\|[^|]+\|/g);
 
-    if (tableRows && tableRows.length >= 3) { // Header + Separator + At least one member
+    if (tableRows && tableRows.length >= 3) {
+      // Header + Separator + At least one member
       const memberRows = tableRows.slice(2);
-      const members: GroupMember[] = memberRows.map(row => {
-        const cells = row.split('|').map(c => c.trim()).filter(c => c !== '');
-        if (cells.length >= 2) {
-          return {
-            name: cells[0],
-            roll: cells[1]
-          };
-        }
-        return null;
-      }).filter((m): m is GroupMember => m !== null);
+      const members: GroupMember[] = memberRows
+        .map((row) => {
+          const cells = row
+            .split('|')
+            .map((c) => c.trim())
+            .filter((c) => c !== '');
+          if (cells.length >= 2) {
+            return {
+              name: cells[0],
+              roll: cells[1],
+            };
+          }
+          return null;
+        })
+        .filter((m): m is GroupMember => m !== null);
 
       if (members.length > 0) {
         metadata.groupMembers = members;

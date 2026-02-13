@@ -1,4 +1,3 @@
-
 export async function createTar(files: { name: string; blob: Blob }[]): Promise<Blob> {
   const chunks: BlobPart[] = [];
   const encoder = new TextEncoder();
@@ -38,8 +37,8 @@ export async function createTar(files: { name: string; blob: Blob }[]): Promise<
     // Calculate checksum
     let checksum = 0;
     for (let i = 0; i < 512; i++) {
- checksum += header[i];
-}
+      checksum += header[i];
+    }
 
     // Write checksum
     const chksumStr = pad(checksum, 6) + '\0 ';

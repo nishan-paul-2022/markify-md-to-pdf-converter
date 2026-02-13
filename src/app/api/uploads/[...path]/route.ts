@@ -1,26 +1,26 @@
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-import { logger } from "@/lib/logger";
+import { logger } from '@/lib/logger';
 
-import fs from "fs";
-import { lookup } from "mime-types";
-import { join } from "path";
+import fs from 'fs';
+import { lookup } from 'mime-types';
+import { join } from 'path';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
+  { params }: { params: Promise<{ path: string[] }> },
 ): Promise<NextResponse> {
   const { path: routePath } = await params;
 
   if (routePath.length === 0) {
-    return new NextResponse("Not Found", { status: 404 });
+    return new NextResponse('Not Found', { status: 404 });
   }
 
   // Security check: ensure no path traversal
-  const safePath = routePath.join("/");
-  if (safePath.includes("..")) {
-    return new NextResponse("Forbidden", { status: 403 });
+  const safePath = routePath.join('/');
+  if (safePath.includes('..')) {
+    return new NextResponse('Forbidden', { status: 403 });
   }
 
   // Map /api/uploads/xxx to public/uploads/xxx
@@ -30,28 +30,28 @@ export async function GET(
   logger.debug('🔍 Uploads API - Requested path:', routePath);
 
   // Construct absolute path to file
-  const uploadsDir = join(process.cwd(), "public", "uploads");
+  const uploadsDir = join(process.cwd(), 'public', 'uploads');
   const filePath = join(uploadsDir, ...routePath);
 
   logger.debug('📂 Uploads API - Looking for file at:', filePath);
 
   if (!fs.existsSync(filePath)) {
     logger.error(`❌ File not found: ${filePath}`);
-    return new NextResponse("File not found", { status: 404 });
+    return new NextResponse('File not found', { status: 404 });
   }
 
   try {
     const fileBuffer = fs.readFileSync(filePath);
-    const mimeType = lookup(filePath) || "application/octet-stream";
+    const mimeType = lookup(filePath) || 'application/octet-stream';
 
     return new NextResponse(fileBuffer, {
       headers: {
-        "Content-Type": mimeType,
-        "Cache-Control": "public, max-age=31536000, immutable",
+        'Content-Type': mimeType,
+        'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });
   } catch (error) {
-    logger.error("Error serving file:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    logger.error('Error serving file:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
   }
 }

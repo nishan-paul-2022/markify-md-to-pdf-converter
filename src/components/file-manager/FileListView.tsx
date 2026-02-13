@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -10,18 +10,26 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import type { File } from "@/hooks/use-files";
-import { logger } from "@/lib/logger";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/table';
+import type { File } from '@/hooks/use-files';
+import { logger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
 
-import { Download, FileText, Image as ImageIcon, Loader2, Lock,PencilLine, Trash2 } from "lucide-react";
+import {
+  Download,
+  FileText,
+  Image as ImageIcon,
+  Loader2,
+  Lock,
+  PencilLine,
+  Trash2,
+} from 'lucide-react';
 
 interface FileListViewProps {
   files: File[];
   loading: boolean;
   setDeleteId: (id: string | null) => void;
-  handleRename: (id: string, newName: string, type: "file" | "folder") => Promise<void>;
+  handleRename: (id: string, newName: string, type: 'file' | 'folder') => Promise<void>;
   onImageClick?: (file: File) => void;
 }
 
@@ -33,14 +41,14 @@ export function FileListView({
   onImageClick,
 }: FileListViewProps) {
   const [renamingId, setRenamingId] = React.useState<string | null>(null);
-  const [renameValue, setRenameValue] = React.useState("");
+  const [renameValue, setRenameValue] = React.useState('');
   const [isRenaming, setIsRenaming] = React.useState(false);
 
   const handleRenameStart = (file: File) => {
     setRenamingId(file.id);
-    const parts = file.originalName.split(".");
+    const parts = file.originalName.split('.');
     if (parts.length > 1) {
-      setRenameValue(parts.slice(0, -1).join("."));
+      setRenameValue(parts.slice(0, -1).join('.'));
     } else {
       setRenameValue(file.originalName);
     }
@@ -48,7 +56,7 @@ export function FileListView({
 
   const handleRenameCancel = () => {
     setRenamingId(null);
-    setRenameValue("");
+    setRenameValue('');
   };
 
   const handleRenameSubmit = async (file: File) => {
@@ -58,7 +66,7 @@ export function FileListView({
       return;
     }
 
-    const parts = file.originalName.split(".");
+    const parts = file.originalName.split('.');
     if (parts.length > 1) {
       const extension = parts[parts.length - 1];
       finalName = `${finalName}.${extension}`;
@@ -71,36 +79,38 @@ export function FileListView({
 
     setIsRenaming(true);
     try {
-      await handleRename(file.id, finalName, "file");
+      await handleRename(file.id, finalName, 'file');
       handleRenameCancel();
     } catch (error) {
-      logger.error("Rename failed:", error);
+      logger.error('Rename failed:', error);
     } finally {
       setIsRenaming(false);
     }
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) {return "0 Bytes";}
+    if (bytes === 0) {
+      return '0 Bytes';
+    }
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     }).format(date);
   };
 
   const getFileIcon = (type: string): React.JSX.Element => {
-    if (type.startsWith("image/")) {
+    if (type.startsWith('image/')) {
       return <ImageIcon className="h-5 w-5 text-blue-500" />;
     }
     return <FileText className="h-5 w-5 text-green-500" />;
@@ -109,19 +119,17 @@ export function FileListView({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   if (files.length === 0) {
     return (
-      <div className="text-center py-12">
-        <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium mb-2">No files yet</h3>
-        <p className="text-sm text-muted-foreground">
-          Upload your first file to get started
-        </p>
+      <div className="py-12 text-center">
+        <FileText className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+        <h3 className="mb-2 text-lg font-medium">No files yet</h3>
+        <p className="text-muted-foreground text-sm">Upload your first file to get started</p>
       </div>
     );
   }
@@ -140,16 +148,16 @@ export function FileListView({
         </TableHeader>
         <TableBody>
           {files.map((file) => {
-            const isDefault = file.id.startsWith("default-");
+            const isDefault = file.id.startsWith('default-');
             const isCurrentlyRenaming = renamingId === file.id;
 
             return (
               <TableRow key={file.id}>
                 <TableCell>
-                  {file.mimeType.startsWith("image/") && onImageClick ? (
+                  {file.mimeType.startsWith('image/') && onImageClick ? (
                     <button
                       onClick={() => onImageClick(file)}
-                      className="hover:scale-110 transition-transform active:scale-95 cursor-pointer bg-transparent border-none p-0 flex items-center justify-center outline-none"
+                      className="flex cursor-pointer items-center justify-center border-none bg-transparent p-0 transition-transform outline-none hover:scale-110 active:scale-95"
                     >
                       {getFileIcon(file.mimeType)}
                     </button>
@@ -160,32 +168,36 @@ export function FileListView({
                 <TableCell className="font-medium">
                   <div className="flex flex-col">
                     {isCurrentlyRenaming ? (
-                      <div className="flex items-center gap-2 max-w-xs">
+                      <div className="flex max-w-xs items-center gap-2">
                         <input
                           autoFocus
-                          className="flex-1 bg-background border border-primary rounded px-2 py-1 text-sm outline-none font-medium"
+                          className="bg-background border-primary flex-1 rounded border px-2 py-1 text-sm font-medium outline-none"
                           value={renameValue}
                           onChange={(e) => setRenameValue(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === "Enter") { void handleRenameSubmit(file); }
-                            if (e.key === "Escape") { handleRenameCancel(); }
+                            if (e.key === 'Enter') {
+                              void handleRenameSubmit(file);
+                            }
+                            if (e.key === 'Escape') {
+                              handleRenameCancel();
+                            }
                           }}
                           onBlur={() => {
-                            if (!isRenaming) { void handleRenameSubmit(file); }
+                            if (!isRenaming) {
+                              void handleRenameSubmit(file);
+                            }
                           }}
                         />
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <span className={cn("truncate max-w-xs", isDefault && "opacity-80 italic")}>
+                        <span className={cn('max-w-xs truncate', isDefault && 'italic opacity-80')}>
                           {file.originalName}
                         </span>
                         {isDefault && <Lock className="h-3 w-3 opacity-40" />}
                       </div>
                     )}
-                    <span className="text-xs text-muted-foreground">
-                      {file.mimeType}
-                    </span>
+                    <span className="text-muted-foreground text-xs">{file.mimeType}</span>
                   </div>
                 </TableCell>
                 <TableCell>{formatFileSize(file.size)}</TableCell>
@@ -194,11 +206,7 @@ export function FileListView({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      asChild
-                    >
+                    <Button variant="ghost" size="sm" asChild>
                       <a href={file.url} download={file.originalName}>
                         <Download className="h-4 w-4" />
                       </a>
@@ -214,11 +222,7 @@ export function FileListView({
                       </Button>
                     )}
                     {!isDefault && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteId(file.id)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(file.id)}>
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     )}

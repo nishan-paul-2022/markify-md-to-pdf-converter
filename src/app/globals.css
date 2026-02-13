@@ -1,7 +1,7 @@
-@import "tailwindcss";
-@plugin "@tailwindcss/typography";
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 
-@import "tw-animate-css";
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -151,7 +151,7 @@
   textarea.custom-scrollbar {
     cursor: auto;
   }
-  
+
   @keyframes card-in {
     from {
       opacity: 0;
@@ -177,13 +177,19 @@
   }
 
   .animate-shimmer {
-    background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    );
     background-size: 1000px 100%;
     animation: shimmer 2s infinite linear;
   }
 
   @keyframes pulse-subtle {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 1;
       transform: scale(1);
     }
@@ -209,7 +215,7 @@
     overflow-wrap: break-word !important;
     overflow-x: hidden !important;
   }
-  
+
   .prose code {
     white-space: pre-wrap !important;
     word-break: break-all !important;
@@ -223,7 +229,8 @@
     border-collapse: collapse !important;
   }
 
-  .prose td, .prose th {
+  .prose td,
+  .prose th {
     word-break: break-all !important;
     overflow-wrap: break-word !important;
   }
@@ -246,4 +253,3 @@
     }
   }
 }
-

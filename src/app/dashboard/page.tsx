@@ -1,17 +1,17 @@
-import { redirect } from "next/navigation";
+import { redirect } from 'next/navigation';
 
-import UserNav from "@/components/auth/UserNav";
-import FileList from "@/components/file-manager/FileList";
-import FileUpload from "@/components/file-manager/FileUpload";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { auth } from "@/lib/auth";
-import prisma from "@/lib/prisma";
+import UserNav from '@/components/auth/UserNav';
+import FileList from '@/components/file-manager/FileList';
+import FileUpload from '@/components/file-manager/FileUpload';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { auth } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
 export default async function DashboardPage(): Promise<React.JSX.Element> {
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect('/auth/signin');
   }
 
   // Fetch user's file statistics
@@ -26,23 +26,23 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
   ]);
 
   const formatBytes = (bytes: number): string => {
-    if (bytes === 0) {return "0 Bytes";}
+    if (bytes === 0) {
+      return '0 Bytes';
+    }
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <header className="border-b bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 border-b bg-white/50 backdrop-blur-sm dark:bg-gray-900/50">
+        <div className="container mx-auto flex items-center justify-between px-4 py-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Markify</h1>
-            <p className="text-sm text-muted-foreground">
-              Markdown to PDF Converter
-            </p>
+            <p className="text-muted-foreground text-sm">Markdown to PDF Converter</p>
           </div>
           <UserNav user={session.user} />
         </div>
@@ -52,8 +52,8 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold tracking-tight mb-2">
-            Welcome back, {session.user.name?.split(" ")[0] || "User"}!
+          <h2 className="mb-2 text-3xl font-bold tracking-tight">
+            Welcome back, {session.user.name?.split(' ')[0] || 'User'}!
           </h2>
           <p className="text-muted-foreground">
             Manage your markdown files and convert them to beautiful PDFs
@@ -61,7 +61,7 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
+        <div className="mb-8 grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Files</CardTitle>
@@ -73,7 +73,7 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="2"
-                className="h-4 w-4 text-muted-foreground"
+                className="text-muted-foreground h-4 w-4"
               >
                 <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
                 <polyline points="13 2 13 9 20 9" />
@@ -81,9 +81,7 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalFiles}</div>
-              <p className="text-xs text-muted-foreground">
-                Files in your library
-              </p>
+              <p className="text-muted-foreground text-xs">Files in your library</p>
             </CardContent>
           </Card>
 
@@ -98,19 +96,15 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="2"
-                className="h-4 w-4 text-muted-foreground"
+                className="text-muted-foreground h-4 w-4"
               >
                 <rect width="20" height="14" x="2" y="5" rx="2" />
                 <path d="M2 10h20" />
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {formatBytes(totalSize._sum.size || 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Total storage used
-              </p>
+              <div className="text-2xl font-bold">{formatBytes(totalSize._sum.size || 0)}</div>
+              <p className="text-muted-foreground text-xs">Total storage used</p>
             </CardContent>
           </Card>
 
@@ -125,7 +119,7 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="2"
-                className="h-4 w-4 text-muted-foreground"
+                className="text-muted-foreground h-4 w-4"
               >
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />
@@ -134,9 +128,7 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">Free</div>
-              <p className="text-xs text-muted-foreground">
-                {session.user.email}
-              </p>
+              <p className="text-muted-foreground text-xs">{session.user.email}</p>
             </CardContent>
           </Card>
         </div>
@@ -145,9 +137,7 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>Upload Files</CardTitle>
-            <CardDescription>
-              Upload markdown files or images to convert to PDF
-            </CardDescription>
+            <CardDescription>Upload markdown files or images to convert to PDF</CardDescription>
           </CardHeader>
           <CardContent>
             <FileUpload />
@@ -158,9 +148,7 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
         <Card>
           <CardHeader>
             <CardTitle>Your Files</CardTitle>
-            <CardDescription>
-              Manage and convert your uploaded files
-            </CardDescription>
+            <CardDescription>Manage and convert your uploaded files</CardDescription>
           </CardHeader>
           <CardContent>
             <FileList />

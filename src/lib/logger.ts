@@ -11,7 +11,12 @@ export const logger = {
    */
   info: (message: string, context?: unknown) => {
     if (!IS_PROD) {
-      console.info(`%c[INFO] %c${message}`, 'color: #3b82f6; font-weight: bold;', 'color: inherit;', context ?? '');
+      console.info(
+        `%c[INFO] %c${message}`,
+        'color: #3b82f6; font-weight: bold;',
+        'color: inherit;',
+        context ?? '',
+      );
     }
   },
 
@@ -19,7 +24,12 @@ export const logger = {
    * Used for potential issues that aren't breaking the app.
    */
   warn: (message: string, context?: unknown) => {
-    console.warn(`%c[WARN] %c${message}`, 'color: #f59e0b; font-weight: bold;', 'color: inherit;', context ?? '');
+    console.warn(
+      `%c[WARN] %c${message}`,
+      'color: #f59e0b; font-weight: bold;',
+      'color: inherit;',
+      context ?? '',
+    );
   },
 
   /**
@@ -27,7 +37,12 @@ export const logger = {
    * could be piped to error tracking services like Sentry.
    */
   error: (message: string, error?: unknown) => {
-    console.error(`%c[ERROR] %c${message}`, 'color: #ef4444; font-weight: bold;', 'color: inherit;', error ?? '');
+    console.error(
+      `%c[ERROR] %c${message}`,
+      'color: #ef4444; font-weight: bold;',
+      'color: inherit;',
+      error ?? '',
+    );
     // FUTURE: Integrate Sentry.captureException(error) here
   },
 
@@ -36,7 +51,12 @@ export const logger = {
    */
   debug: (message: string, context?: unknown) => {
     if (!IS_PROD) {
-      console.debug(`%c[DEBUG] %c${message}`, 'color: #8b5cf6; font-weight: bold;', 'color: inherit;', context ?? '');
+      console.debug(
+        `%c[DEBUG] %c${message}`,
+        'color: #8b5cf6; font-weight: bold;',
+        'color: inherit;',
+        context ?? '',
+      );
     }
-  }
+  },
 };

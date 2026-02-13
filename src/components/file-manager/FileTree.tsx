@@ -1,27 +1,48 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
-import { useAlert } from "@/components/AlertProvider";
-import { Button } from "@/components/ui/button";
+import { useAlert } from '@/components/AlertProvider';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import type { FileTreeNode } from "@/lib/file-tree";
-import { logger } from "@/lib/logger";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dropdown-menu';
+import type { FileTreeNode } from '@/lib/file-tree';
+import { logger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
 
-import { Check,ChevronDown, ChevronRight, ChevronUp, ExternalLink, FileText, Folder, ImageIcon, LayoutGrid, List, Lock, MoreVertical, PencilLine, Trash2 } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  ExternalLink,
+  FileText,
+  Folder,
+  ImageIcon,
+  LayoutGrid,
+  List,
+  Lock,
+  MoreVertical,
+  PencilLine,
+  Trash2,
+} from 'lucide-react';
 
 interface FileTreeProps {
   nodes: FileTreeNode[];
   level?: number;
   onFileSelect: (node: FileTreeNode) => void;
   onDelete: (id: string | string[]) => void;
-  onRename: (id: string, newName: string, type: "file" | "folder", batchId?: string, oldPath?: string) => Promise<void>;
+  onRename: (
+    id: string,
+    newName: string,
+    type: 'file' | 'folder',
+    batchId?: string,
+    oldPath?: string,
+  ) => Promise<void>;
   selectedFileId?: string;
   isSelectionMode?: boolean;
   selectedIds?: Set<string>;
@@ -39,12 +60,12 @@ export function FileTree({
   isSelectionMode = false,
   selectedIds = new Set(),
   onToggleSelection,
-  searchQuery = "",
+  searchQuery = '',
 }: FileTreeProps) {
   const { confirm } = useAlert();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [renamingId, setRenamingId] = useState<string | null>(null);
-  const [renameValue, setRenameValue] = useState("");
+  const [renameValue, setRenameValue] = useState('');
   const [isRenaming, setIsRenaming] = useState(false);
 
   // Track grid mode for individual folders. Persist in localStorage.
@@ -58,7 +79,7 @@ export function FileTree({
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed)) {
-            parsed.forEach(p => initial.add(p));
+            parsed.forEach((p) => initial.add(p));
           }
         }
       } catch (error) {
@@ -103,12 +124,12 @@ export function FileTree({
       nodes.forEach(checkNode);
       setExpandedFolders(foldersToExpand);
     } else {
-        setExpandedFolders(new Set());
+      setExpandedFolders(new Set());
     }
   }, [searchQuery, nodes]);
 
   const toggleFolderGridMode = (id: string) => {
-    setFolderGridModes(prev => {
+    setFolderGridModes((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -126,12 +147,14 @@ export function FileTree({
   };
 
   const handleRenameStart = (node: FileTreeNode) => {
-    if (node.type === "folder" && node.name === "images") { return; }
+    if (node.type === 'folder' && node.name === 'images') {
+      return;
+    }
     setRenamingId(node.id);
-    if (node.type === "file") {
-      const parts = node.name.split(".");
+    if (node.type === 'file') {
+      const parts = node.name.split('.');
       if (parts.length > 1) {
-        setRenameValue(parts.slice(0, -1).join("."));
+        setRenameValue(parts.slice(0, -1).join('.'));
       } else {
         setRenameValue(node.name);
       }
@@ -142,7 +165,7 @@ export function FileTree({
 
   const handleRenameCancel = () => {
     setRenamingId(null);
-    setRenameValue("");
+    setRenameValue('');
   };
 
   const handleRenameSubmit = async (node: FileTreeNode) => {
@@ -152,8 +175,8 @@ export function FileTree({
       return;
     }
 
-    if (node.type === "file") {
-      const parts = node.name.split(".");
+    if (node.type === 'file') {
+      const parts = node.name.split('.');
       if (parts.length > 1) {
         const extension = parts[parts.length - 1];
         finalName = `${finalName}.${extension}`;
@@ -167,16 +190,10 @@ export function FileTree({
 
     setIsRenaming(true);
     try {
-      await onRename(
-        node.id,
-        finalName,
-        node.type,
-        node.batchId,
-        node.path
-      );
+      await onRename(node.id, finalName, node.type, node.batchId, node.path);
       handleRenameCancel();
     } catch (error) {
-      logger.error("Rename failed:", error);
+      logger.error('Rename failed:', error);
     } finally {
       setIsRenaming(false);
     }
@@ -185,13 +202,13 @@ export function FileTree({
   const handleDeleteClick = async (node: FileTreeNode, isFolder: boolean) => {
     const fileIds = isFolder ? collectFileIds(node) : [node.id];
     const confirmed = await confirm({
-      title: isFolder ? "Delete folder?" : "Delete file?",
+      title: isFolder ? 'Delete folder?' : 'Delete file?',
       message: isFolder
         ? `Are you sure you want to delete the folder "${node.name}" and all its contents? This cannot be undone.`
         : `Are you sure you want to delete "${node.name}"? This cannot be undone.`,
-      confirmText: "Delete",
-      cancelText: "Cancel",
-      variant: "destructive"
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive',
     });
 
     if (confirmed) {
@@ -210,7 +227,7 @@ export function FileTree({
   };
 
   const collectFileIds = (node: FileTreeNode): string[] => {
-    if (node.type === "file") {
+    if (node.type === 'file') {
       return [node.id];
     }
     let ids: string[] = [];
@@ -223,10 +240,14 @@ export function FileTree({
   };
 
   const containsSelectedFile = (node: FileTreeNode, selectedId?: string): boolean => {
-    if (!selectedId) {return false;}
-    if (node.type === "file") {return node.id === selectedId;}
+    if (!selectedId) {
+      return false;
+    }
+    if (node.type === 'file') {
+      return node.id === selectedId;
+    }
     if (node.children) {
-      return node.children.some(child => containsSelectedFile(child, selectedId));
+      return node.children.some((child) => containsSelectedFile(child, selectedId));
     }
     return false;
   };
@@ -251,9 +272,9 @@ export function FileTree({
       };
 
       if (findAndExpand(nodes)) {
-        setExpandedFolders(prev => {
+        setExpandedFolders((prev) => {
           const combined = new Set(prev);
-          foldersToExpand.forEach(id => combined.add(id));
+          foldersToExpand.forEach((id) => combined.add(id));
           return combined.size === prev.size ? prev : combined;
         });
       }
@@ -261,17 +282,28 @@ export function FileTree({
   }, [selectedFileId, nodes]);
 
   const getFileIcon = (fileName: string, mimeType?: string) => {
-    const ext = fileName.split(".").pop()?.toLowerCase();
-    if (mimeType?.startsWith("image/") || ["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext || "")) {
-      return <ImageIcon className="h-3.5 w-3.5 text-blue-400 group-hover:text-blue-300 transition-colors" />;
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    if (
+      mimeType?.startsWith('image/') ||
+      ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext || '')
+    ) {
+      return (
+        <ImageIcon className="h-3.5 w-3.5 text-blue-400 transition-colors group-hover:text-blue-300" />
+      );
     }
-    if (ext === "pdf") {
-      return <FileText className="h-3.5 w-3.5 text-red-400 group-hover:text-red-300 transition-colors" />;
+    if (ext === 'pdf') {
+      return (
+        <FileText className="h-3.5 w-3.5 text-red-400 transition-colors group-hover:text-red-300" />
+      );
     }
-    if (ext === "md") {
-      return <FileText className="h-3.5 w-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />;
+    if (ext === 'md') {
+      return (
+        <FileText className="h-3.5 w-3.5 text-emerald-400 transition-colors group-hover:text-emerald-300" />
+      );
     }
-    return <FileText className="h-3.5 w-3.5 text-slate-500 group-hover:text-slate-300 transition-colors" />;
+    return (
+      <FileText className="h-3.5 w-3.5 text-slate-500 transition-colors group-hover:text-slate-300" />
+    );
   };
 
   return (
@@ -281,97 +313,118 @@ export function FileTree({
         const isSelected = selectedFileId === node.id;
         const isFolderActive = containsSelectedFile(node, selectedFileId);
         const isCurrentlyRenaming = renamingId === node.id;
-        const isGridMode = node.name === "images" && folderGridModes.has(node.id);
+        const isGridMode = node.name === 'images' && folderGridModes.has(node.id);
 
-        if (node.type === "folder") {
+        if (node.type === 'folder') {
           const folderFileIds = collectFileIds(node);
-          const isDefaultFolder = node.id.startsWith("folder-no-batch") ||
-            folderFileIds.some(id => id.startsWith("default-"));
+          const isDefaultFolder =
+            node.id.startsWith('folder-no-batch') ||
+            folderFileIds.some((id) => id.startsWith('default-'));
 
           return (
-            <div key={node.id} className="flex flex-col group/folder">
+            <div key={node.id} className="group/folder flex flex-col">
               <div
                 className={cn(
-                  "flex items-center justify-between hover:bg-white/5 transition-all text-slate-400 hover:text-slate-100",
-                  isFolderActive && "text-slate-100 bg-white/[0.03] border-l-2 border-amber-500/70",
-                  level > 0 && `ml-${level * 2}`
+                  'flex items-center justify-between text-slate-400 transition-all hover:bg-white/5 hover:text-slate-100',
+                  isFolderActive && 'border-l-2 border-amber-500/70 bg-white/[0.03] text-slate-100',
+                  level > 0 && `ml-${level * 2}`,
                 )}
                 style={{ paddingLeft: `${(level + 1) * 1}rem` }}
               >
                 {isCurrentlyRenaming ? (
-                  <div className="flex-1 flex items-center gap-2 py-1.5 h-8">
-                    <Folder className="h-4 w-4 text-amber-500/80 shrink-0" />
+                  <div className="flex h-8 flex-1 items-center gap-2 py-1.5">
+                    <Folder className="h-4 w-4 shrink-0 text-amber-500/80" />
                     <input
                       autoFocus
-                      className="flex-1 bg-slate-900 border border-amber-500/50 rounded px-1.5 py-0.5 text-sm text-slate-100 outline-none focus:border-amber-500 transition-all font-medium"
+                      className="flex-1 rounded border border-amber-500/50 bg-slate-900 px-1.5 py-0.5 text-sm font-medium text-slate-100 transition-all outline-none focus:border-amber-500"
                       value={renameValue}
                       onChange={(e) => setRenameValue(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") { void handleRenameSubmit(node); }
-                        if (e.key === "Escape") { handleRenameCancel(); }
+                        if (e.key === 'Enter') {
+                          void handleRenameSubmit(node);
+                        }
+                        if (e.key === 'Escape') {
+                          handleRenameCancel();
+                        }
                       }}
                       onBlur={() => {
-                        if (!isRenaming) { void handleRenameSubmit(node); }
+                        if (!isRenaming) {
+                          void handleRenameSubmit(node);
+                        }
                       }}
                     />
                   </div>
                 ) : (
                   <button
                     onClick={() => toggleFolder(node.id)}
-                    className="flex-1 flex items-center gap-2 py-1.5 text-sm text-left truncate"
+                    className="flex flex-1 items-center gap-2 truncate py-1.5 text-left text-sm"
                   >
                     {isExpanded ? (
                       <ChevronDown className="h-3.5 w-3.5" />
                     ) : (
                       <ChevronRight className="h-3.5 w-3.5" />
                     )}
-                    <Folder className={cn("h-4 w-4", isDefaultFolder ? "text-amber-500/50" : "text-amber-500/80")} />
-                    <span className={cn("truncate", isDefaultFolder && "opacity-80 italic")}>{node.name}</span>
-                    {isDefaultFolder && <Lock className="h-2.5 w-2.5 ml-1 opacity-40" />}
+                    <Folder
+                      className={cn(
+                        'h-4 w-4',
+                        isDefaultFolder ? 'text-amber-500/50' : 'text-amber-500/80',
+                      )}
+                    />
+                    <span className={cn('truncate', isDefaultFolder && 'italic opacity-80')}>
+                      {node.name}
+                    </span>
+                    {isDefaultFolder && <Lock className="ml-1 h-2.5 w-2.5 opacity-40" />}
                   </button>
                 )}
                 <div className="flex items-center gap-1">
                   {isSelectionMode && !isDefaultFolder && level === 0 && (
                     <div className="flex items-center px-2">
-                       <div
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           if (onToggleSelection) {
-                             onToggleSelection(folderFileIds);
-                           }
-                         }}
-                         className={cn(
-                           "h-4 w-4 rounded-md border transition-all duration-300 flex items-center justify-center cursor-pointer",
-                           folderFileIds.every(id => selectedIds.has(id))
-                             ? "bg-primary border-primary/50 shadow-[0_0_10px_-2px_rgba(var(--primary),0.3)] scale-110"
-                             : "bg-slate-950 border-white/10 hover:border-primary/50"
-                         )}
-                       >
-                         {folderFileIds.every(id => selectedIds.has(id)) && (
-                           <Check className="h-3 w-3 text-slate-950 stroke-[4]" />
-                         )}
-                       </div>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onToggleSelection) {
+                            onToggleSelection(folderFileIds);
+                          }
+                        }}
+                        className={cn(
+                          'flex h-4 w-4 cursor-pointer items-center justify-center rounded-md border transition-all duration-300',
+                          folderFileIds.every((id) => selectedIds.has(id))
+                            ? 'bg-primary border-primary/50 scale-110 shadow-[0_0_10px_-2px_rgba(var(--primary),0.3)]'
+                            : 'hover:border-primary/50 border-white/10 bg-slate-950',
+                        )}
+                      >
+                        {folderFileIds.every((id) => selectedIds.has(id)) && (
+                          <Check className="h-3 w-3 stroke-[4] text-slate-950" />
+                        )}
+                      </div>
                     </div>
                   )}
                   {!isCurrentlyRenaming && (
-                    <div className="opacity-0 group-hover/folder:opacity-100 flex items-center px-1 transition-opacity">
+                    <div className="flex items-center px-1 opacity-0 transition-opacity group-hover/folder:opacity-100">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
                             <MoreVertical className="h-3.5 w-3.5" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
-                          {node.name === "images" && (
+                        <DropdownMenuContent
+                          align="end"
+                          className="border-slate-800 bg-slate-900 text-slate-100"
+                        >
+                          {node.name === 'images' && (
                             <DropdownMenuItem
                               onClick={() => toggleFolderGridMode(node.id)}
                               className="gap-2 text-xs"
                             >
-                              {isGridMode ? <List className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
-                              {isGridMode ? "View as List" : "View as Grid"}
+                              {isGridMode ? (
+                                <List className="h-3.5 w-3.5" />
+                              ) : (
+                                <LayoutGrid className="h-3.5 w-3.5" />
+                              )}
+                              {isGridMode ? 'View as List' : 'View as Grid'}
                             </DropdownMenuItem>
                           )}
-                          {!isDefaultFolder && node.name !== "images" && (
+                          {!isDefaultFolder && node.name !== 'images' && (
                             <DropdownMenuItem
                               onClick={() => handleRenameStart(node)}
                               className="gap-2 text-xs"
@@ -381,15 +434,24 @@ export function FileTree({
                           )}
                           {!isDefaultFolder && folderFileIds.length > 0 && level === 0 && (
                             <DropdownMenuItem
-                              onClick={() => { void handleDeleteClick(node, true); }}
+                              onClick={() => {
+                                void handleDeleteClick(node, true);
+                              }}
                               className="gap-2 text-xs text-red-400 focus:text-red-400"
                             >
                               <Trash2 className="h-3.5 w-3.5" /> Delete Project
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem onClick={() => toggleFolder(node.id)} className="gap-2 text-xs">
-                            {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                            {isExpanded ? "Collapse" : "Expand"}
+                          <DropdownMenuItem
+                            onClick={() => toggleFolder(node.id)}
+                            className="gap-2 text-xs"
+                          >
+                            {isExpanded ? (
+                              <ChevronUp className="h-3.5 w-3.5" />
+                            ) : (
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            )}
+                            {isExpanded ? 'Collapse' : 'Expand'}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -398,13 +460,18 @@ export function FileTree({
                 </div>
               </div>
               {isExpanded && node.children && (
-                <div className={cn(
-                  "transition-all duration-300",
-                  isGridMode ? "p-2 pl-6 grid grid-cols-2 gap-2" : "flex flex-col"
-                )}>
+                <div
+                  className={cn(
+                    'transition-all duration-300',
+                    isGridMode ? 'grid grid-cols-2 gap-2 p-2 pl-6' : 'flex flex-col',
+                  )}
+                >
                   {isGridMode ? (
-                    node.children.map(child => {
-                      const isImg = child.type === 'file' && (child.file?.mimeType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(child.name));
+                    node.children.map((child) => {
+                      const isImg =
+                        child.type === 'file' &&
+                        (child.file?.mimeType.startsWith('image/') ||
+                          /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(child.name));
                       const isChildSelected = selectedFileId === child.id;
 
                       return (
@@ -412,10 +479,10 @@ export function FileTree({
                           key={child.id}
                           onClick={() => onFileSelect(child)}
                           className={cn(
-                            "aspect-square rounded-lg border flex flex-col items-center justify-center p-1.5 transition-all group/grid overflow-hidden relative",
+                            'group/grid relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-lg border p-1.5 transition-all',
                             isChildSelected
-                              ? "bg-amber-500/10 border-amber-500/50 ring-1 ring-amber-500/20 shadow-lg shadow-amber-500/10"
-                              : "bg-slate-900/40 border-white/5 hover:border-white/10 hover:bg-slate-800/80"
+                              ? 'border-amber-500/50 bg-amber-500/10 shadow-lg ring-1 shadow-amber-500/10 ring-amber-500/20'
+                              : 'border-white/5 bg-slate-900/40 hover:border-white/10 hover:bg-slate-800/80',
                           )}
                           title={child.name}
                         >
@@ -424,16 +491,22 @@ export function FileTree({
                             <img
                               src={child.file.url}
                               alt={child.name}
-                              className="w-full h-full object-cover rounded shadow-sm group-hover/grid:scale-110 transition-transform duration-300"
+                              className="h-full w-full rounded object-cover shadow-sm transition-transform duration-300 group-hover/grid:scale-110"
                             />
                           ) : (
-                            <div className="flex flex-col items-center gap-1 opacity-60 group-hover/grid:opacity-100 transition-opacity">
-                              {child.type === 'folder' ? <Folder className="h-6 w-6 text-amber-500/80" /> : getFileIcon(child.name, child.file?.mimeType)}
-                              <span className="text-[8px] truncate max-w-full font-medium text-slate-400 px-1">{child.name}</span>
+                            <div className="flex flex-col items-center gap-1 opacity-60 transition-opacity group-hover/grid:opacity-100">
+                              {child.type === 'folder' ? (
+                                <Folder className="h-6 w-6 text-amber-500/80" />
+                              ) : (
+                                getFileIcon(child.name, child.file?.mimeType)
+                              )}
+                              <span className="max-w-full truncate px-1 text-[8px] font-medium text-slate-400">
+                                {child.name}
+                              </span>
                             </div>
                           )}
                           {isChildSelected && (
-                            <div className="absolute inset-0 border-2 border-amber-500 rounded-lg pointer-events-none" />
+                            <div className="pointer-events-none absolute inset-0 rounded-lg border-2 border-amber-500" />
                           )}
                         </button>
                       );
@@ -462,76 +535,94 @@ export function FileTree({
           <div
             key={node.id}
             className={cn(
-              "group flex items-center justify-between hover:bg-white/5 transition-all text-slate-400",
+              'group flex items-center justify-between text-slate-400 transition-all hover:bg-white/5',
               isSelected
-                ? "bg-white/10 text-white border-l-2 border-emerald-500 shadow-[inset_4px_0_12px_-4px_rgba(16,185,129,0.1)]"
-                : "hover:text-slate-100"
+                ? 'border-l-2 border-emerald-500 bg-white/10 text-white shadow-[inset_4px_0_12px_-4px_rgba(16,185,129,0.1)]'
+                : 'hover:text-slate-100',
             )}
             style={{ paddingLeft: `${(level + 1.5) * 1}rem` }}
           >
             {isCurrentlyRenaming ? (
-               <div className="flex-1 flex items-center gap-2 py-1.5 h-8">
+              <div className="flex h-8 flex-1 items-center gap-2 py-1.5">
                 {getFileIcon(node.name, node.file?.mimeType)}
                 <input
                   autoFocus
-                  className="flex-1 bg-slate-900 border border-emerald-500/50 rounded px-1.5 py-0.5 text-sm text-slate-100 outline-none focus:border-emerald-500 transition-all font-medium"
+                  className="flex-1 rounded border border-emerald-500/50 bg-slate-900 px-1.5 py-0.5 text-sm font-medium text-slate-100 transition-all outline-none focus:border-emerald-500"
                   value={renameValue}
                   onChange={(e) => setRenameValue(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") { void handleRenameSubmit(node); }
-                    if (e.key === "Escape") { handleRenameCancel(); }
+                    if (e.key === 'Enter') {
+                      void handleRenameSubmit(node);
+                    }
+                    if (e.key === 'Escape') {
+                      handleRenameCancel();
+                    }
                   }}
                   onBlur={() => {
-                    if (!isRenaming) { void handleRenameSubmit(node); }
+                    if (!isRenaming) {
+                      void handleRenameSubmit(node);
+                    }
                   }}
                 />
               </div>
             ) : (
               <button
                 onClick={() => onFileSelect(node)}
-                className="flex-1 flex items-center gap-2 py-1.5 text-sm text-left truncate"
+                className="flex flex-1 items-center gap-2 truncate py-1.5 text-left text-sm"
               >
                 {getFileIcon(node.name, node.file?.mimeType)}
-                <span className={cn("truncate", node.id.startsWith("default-") && "opacity-80 italic")}>{node.name}</span>
-                {node.id.startsWith("default-") && <Lock className="h-2.5 w-2.5 ml-1 opacity-40 text-emerald-500/50" />}
+                <span
+                  className={cn('truncate', node.id.startsWith('default-') && 'italic opacity-80')}
+                >
+                  {node.name}
+                </span>
+                {node.id.startsWith('default-') && (
+                  <Lock className="ml-1 h-2.5 w-2.5 text-emerald-500/50 opacity-40" />
+                )}
               </button>
             )}
             <div className="flex items-center gap-1">
-              {isSelectionMode && !node.id.startsWith("default-") && level === 0 && (
+              {isSelectionMode && !node.id.startsWith('default-') && level === 0 && (
                 <div className="flex items-center px-2">
-                   <div
-                     onClick={(e) => {
-                       e.stopPropagation();
-                       if (onToggleSelection) {
-                         onToggleSelection(node.id);
-                       }
-                     }}
-                     className={cn(
-                       "h-4 w-4 rounded-md border transition-all duration-300 flex items-center justify-center cursor-pointer",
-                       selectedIds.has(node.id)
-                         ? "bg-primary border-primary/50 shadow-[0_0_10px_-2px_rgba(var(--primary),0.3)] scale-110"
-                         : "bg-slate-950 border-white/10 hover:border-primary/50"
-                     )}
-                   >
-                     {selectedIds.has(node.id) && (
-                       <Check className="h-3 w-3 text-slate-950 stroke-[4]" />
-                     )}
-                   </div>
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onToggleSelection) {
+                        onToggleSelection(node.id);
+                      }
+                    }}
+                    className={cn(
+                      'flex h-4 w-4 cursor-pointer items-center justify-center rounded-md border transition-all duration-300',
+                      selectedIds.has(node.id)
+                        ? 'bg-primary border-primary/50 scale-110 shadow-[0_0_10px_-2px_rgba(var(--primary),0.3)]'
+                        : 'hover:border-primary/50 border-white/10 bg-slate-950',
+                    )}
+                  >
+                    {selectedIds.has(node.id) && (
+                      <Check className="h-3 w-3 stroke-[4] text-slate-950" />
+                    )}
+                  </div>
                 </div>
               )}
               {!isCurrentlyRenaming && (
-                <div className="opacity-0 group-hover:opacity-100 flex items-center px-1 transition-opacity">
+                <div className="flex items-center px-1 opacity-0 transition-opacity group-hover:opacity-100">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
                         <MoreVertical className="h-3.5 w-3.5" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
-                      <DropdownMenuItem onClick={() => onFileSelect(node)} className="gap-2 text-xs">
+                    <DropdownMenuContent
+                      align="end"
+                      className="border-slate-800 bg-slate-900 text-slate-100"
+                    >
+                      <DropdownMenuItem
+                        onClick={() => onFileSelect(node)}
+                        className="gap-2 text-xs"
+                      >
                         <ExternalLink className="h-3.5 w-3.5" /> Open
                       </DropdownMenuItem>
-                      {!node.id.startsWith("default-") && (
+                      {!node.id.startsWith('default-') && (
                         <DropdownMenuItem
                           onClick={() => handleRenameStart(node)}
                           className="gap-2 text-xs"
@@ -539,9 +630,11 @@ export function FileTree({
                           <PencilLine className="h-3.5 w-3.5" /> Rename
                         </DropdownMenuItem>
                       )}
-                      {!node.id.startsWith("default-") && level === 0 && (
+                      {!node.id.startsWith('default-') && level === 0 && (
                         <DropdownMenuItem
-                          onClick={() => { void handleDeleteClick(node, false); }}
+                          onClick={() => {
+                            void handleDeleteClick(node, false);
+                          }}
                           className="gap-2 text-xs text-red-400 focus:text-red-400"
                         >
                           <Trash2 className="h-3.5 w-3.5" /> Delete

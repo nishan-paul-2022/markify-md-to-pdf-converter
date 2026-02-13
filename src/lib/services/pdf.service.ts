@@ -1,13 +1,13 @@
 import type { Metadata } from '@/lib/pdf-generator';
 import { generatePdf } from '@/lib/pdf-generator';
-import prisma from "@/lib/prisma";
+import prisma from '@/lib/prisma';
 
-import { randomUUID } from "crypto";
+import { randomUUID } from 'crypto';
 import fs from 'fs';
-import { mkdir,writeFile } from "fs/promises";
+import { mkdir, writeFile } from 'fs/promises';
 import { marked } from 'marked';
 import path from 'path';
-import { join } from "path";
+import { join } from 'path';
 
 /**
  * Service to handle PDF generation pipeline including image processing and persistence.
@@ -26,10 +26,14 @@ export const PdfService = {
       const fullTag = match[0];
       const src = match[1];
 
-      if (src.startsWith('http') || src.startsWith('data:')) { continue; }
+      if (src.startsWith('http') || src.startsWith('data:')) {
+        continue;
+      }
 
       const filename = src.split('/').pop();
-      if (!filename) { continue; }
+      if (!filename) {
+        continue;
+      }
 
       let relativePath = src;
       if (src.startsWith('./')) {
@@ -54,7 +58,7 @@ export const PdfService = {
             const buffer = fs.readFileSync(imgPath);
             const base64 = buffer.toString('base64');
             const ext = path.extname(filename).substring(1).toLowerCase();
-            const mimeType = ext === 'svg' ? 'svg+xml' : (ext === 'jpg' ? 'jpeg' : ext);
+            const mimeType = ext === 'svg' ? 'svg+xml' : ext === 'jpg' ? 'jpeg' : ext;
             const newSrc = `data:image/${mimeType};base64,${base64}`;
 
             processedHtml = processedHtml.replace(fullTag, fullTag.replace(src, newSrc));
@@ -82,7 +86,10 @@ export const PdfService = {
     const { markdown, metadata, userId, basePath, saveToServer, sourceFileId } = params;
 
     // 1. Process markdown to HTML
-    const processedMarkdown = markdown.replace(/\\pagebreak|<!-- pagebreak -->/g, '<div class="page-break-marker"></div>');
+    const processedMarkdown = markdown.replace(
+      /\\pagebreak|<!-- pagebreak -->/g,
+      '<div class="page-break-marker"></div>',
+    );
     let htmlContent = await marked.parse(processedMarkdown);
 
     // 2. Embed images
@@ -96,7 +103,7 @@ export const PdfService = {
     // 4. Persistence logic (Sink)
     if (saveToServer && sourceFileId) {
       const sourceFile = await prisma.file.findUnique({
-        where: { id: sourceFileId, userId }
+        where: { id: sourceFileId, userId },
       });
 
       if (sourceFile) {
@@ -104,19 +111,21 @@ export const PdfService = {
         const pdfFilename = sourceFile.originalName.replace(/\.md$/i, '') + '.pdf';
         const uniqueFilename = `${randomUUID()}.pdf`;
 
-        const relativeStorageDir = join("uploads", userId, batchId);
-        const uploadDir = join(process.cwd(), "public", relativeStorageDir);
+        const relativeStorageDir = join('uploads', userId, batchId);
+        const uploadDir = join(process.cwd(), 'public', relativeStorageDir);
         await mkdir(uploadDir, { recursive: true });
 
         const storageKey = `${relativeStorageDir}/${uniqueFilename}`;
-        const systemFilePath = join(process.cwd(), "public", storageKey);
+        const systemFilePath = join(process.cwd(), 'public', storageKey);
 
         await writeFile(systemFilePath, pdfBuffer);
 
         // Extract Page Count
         const pdfContent = pdfBuffer.toString('binary');
         const pageCountMatch = pdfContent.match(/\/Type\s*\/Pages\s*\/Count\s*(\d+)/);
-        const pageCount = pageCountMatch ? parseInt(pageCountMatch[1]) : (pdfContent.match(/\/Type\s*\/Page\b/g)?.length || 1);
+        const pageCount = pageCountMatch
+          ? parseInt(pageCountMatch[1])
+          : pdfContent.match(/\/Type\s*\/Page\b/g)?.length || 1;
 
         // Create DB record
         pdfFileRecord = await prisma.file.create({
@@ -125,7 +134,9 @@ export const PdfService = {
             batchId,
             filename: uniqueFilename,
             originalName: pdfFilename,
-            relativePath: sourceFile.relativePath ? sourceFile.relativePath.replace(/\.md$/i, '.pdf') : pdfFilename,
+            relativePath: sourceFile.relativePath
+              ? sourceFile.relativePath.replace(/\.md$/i, '.pdf')
+              : pdfFilename,
             mimeType: 'application/pdf',
             size: pdfBuffer.length,
             storageKey,
@@ -134,9 +145,9 @@ export const PdfService = {
               sourceFileId: sourceFile.id,
               isGenerated: true,
               generatedFrom: 'converter',
-              pageCount
-            }
-          }
+              pageCount,
+            },
+          },
         });
 
         // Update Source Link
@@ -150,9 +161,9 @@ export const PdfService = {
               generatedPdfUrl: pdfFileRecord.url,
               generatedPdfSize: pdfBuffer.length,
               generatedPdfPageCount: pageCount,
-              lastConvertedAt: new Date().toISOString()
-            }
-          }
+              lastConvertedAt: new Date().toISOString(),
+            },
+          },
         });
       }
     }
@@ -160,7 +171,7 @@ export const PdfService = {
     return {
       pdfBuffer,
       pdfFileRecord,
-      filename: sourceFileId ? undefined : 'report.pdf'
+      filename: sourceFileId ? undefined : 'report.pdf',
     };
-  }
+  },
 };

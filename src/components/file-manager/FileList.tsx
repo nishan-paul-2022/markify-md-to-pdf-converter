@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { useCallback,useState } from "react";
+import React, { useCallback, useState } from 'react';
 
-import { FileGridView } from "@/components/file-manager/FileGridView";
-import { FileListView } from "@/components/file-manager/FileListView";
-import { ImageModal } from "@/components/file-manager/ImageModal";
+import { FileGridView } from '@/components/file-manager/FileGridView';
+import { FileListView } from '@/components/file-manager/FileListView';
+import { ImageModal } from '@/components/file-manager/ImageModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,13 +14,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import type { File as AppFile} from "@/hooks/use-files";
-import {useFiles } from "@/hooks/use-files";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import type { File as AppFile } from '@/hooks/use-files';
+import { useFiles } from '@/hooks/use-files';
+import { cn } from '@/lib/utils';
 
-import { LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List } from 'lucide-react';
 
 export default function FileList(): React.JSX.Element {
   const filesState = useFiles();
@@ -44,30 +44,33 @@ export default function FileList(): React.JSX.Element {
     localStorage.setItem('markify-view-mode', mode);
   };
 
-  const handleImageClick = useCallback((file: AppFile) => {
-    const gallery = files.filter(f =>
-      f.mimeType.startsWith("image/") && f.batchId === file.batchId
-    );
-    setActiveImage(file);
-    setImageGallery(gallery);
-  }, [files]);
+  const handleImageClick = useCallback(
+    (file: AppFile) => {
+      const gallery = files.filter(
+        (f) => f.mimeType.startsWith('image/') && f.batchId === file.batchId,
+      );
+      setActiveImage(file);
+      setImageGallery(gallery);
+    },
+    [files],
+  );
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold tracking-tight">Project Artifacts</h3>
 
-        <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border">
+        <div className="flex items-center rounded-lg border bg-slate-100 p-1 dark:bg-slate-800">
           <Button
             variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => toggleViewMode('grid')}
             className={cn(
-              "h-8 px-3 rounded-md transition-all duration-200",
-              viewMode === 'grid' && "bg-white dark:bg-slate-700 shadow-sm"
+              'h-8 rounded-md px-3 transition-all duration-200',
+              viewMode === 'grid' && 'bg-white shadow-sm dark:bg-slate-700',
             )}
           >
-            <LayoutGrid className="h-4 w-4 mr-2" />
+            <LayoutGrid className="mr-2 h-4 w-4" />
             <span className="text-xs font-medium">Grid</span>
           </Button>
           <Button
@@ -75,11 +78,11 @@ export default function FileList(): React.JSX.Element {
             size="sm"
             onClick={() => toggleViewMode('list')}
             className={cn(
-              "h-8 px-3 rounded-md transition-all duration-200",
-              viewMode === 'list' && "bg-white dark:bg-slate-700 shadow-sm"
+              'h-8 rounded-md px-3 transition-all duration-200',
+              viewMode === 'list' && 'bg-white shadow-sm dark:bg-slate-700',
             )}
           >
-            <List className="h-4 w-4 mr-2" />
+            <List className="mr-2 h-4 w-4" />
             <span className="text-xs font-medium">List</span>
           </Button>
         </div>
@@ -117,12 +120,12 @@ export default function FileList(): React.JSX.Element {
       {/* Shared Delete Confirmation Dialog */}
       <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent variant="destructive" className="sm:max-w-[400px]">
-          <div className="p-6 sm:p-7 relative">
+          <div className="relative p-6 sm:p-7">
             <AlertDialogHeader>
               <AlertDialogTitle>Delete file?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the file
-                from our servers.
+                This action cannot be undone. This will permanently delete the file from our
+                servers.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-6">
@@ -130,9 +133,9 @@ export default function FileList(): React.JSX.Element {
               <AlertDialogAction
                 onClick={() => deleteId && handleDelete(deleteId)}
                 disabled={deleting}
-                className="bg-red-600 hover:bg-red-500 text-white"
+                className="bg-red-600 text-white hover:bg-red-500"
               >
-                {deleting ? "Deleting…" : "Delete"}
+                {deleting ? 'Deleting…' : 'Delete'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </div>

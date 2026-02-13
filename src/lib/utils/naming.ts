@@ -11,13 +11,15 @@ export function generateStandardName(name: string): string {
   const lastDotIndex = name.lastIndexOf('.');
   const baseName = lastDotIndex === -1 ? name : name.substring(0, lastDotIndex);
 
-  return baseName
-    .toLowerCase()
-    .trim()
-    // 2. Replace all non-alphanumeric characters with hyphens
-    .replace(/[^a-z0-9]+/g, '-')
-    // 3. Remove leading and trailing hyphens
-    .replace(/^-+|-+$/g, '');
+  return (
+    baseName
+      .toLowerCase()
+      .trim()
+      // 2. Replace all non-alphanumeric characters with hyphens
+      .replace(/[^a-z0-9]+/g, '-')
+      // 3. Remove leading and trailing hyphens
+      .replace(/^-+|-+$/g, '')
+  );
 }
 
 /**

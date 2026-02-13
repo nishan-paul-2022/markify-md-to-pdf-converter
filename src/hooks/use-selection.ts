@@ -1,4 +1,4 @@
-import { useCallback,useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Hook to manage multi-selection state with localStorage persistence.
@@ -6,7 +6,9 @@ import { useCallback,useEffect, useRef, useState } from 'react';
  */
 export function useSelection(storageKey: string) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => {
-    if (typeof window === 'undefined') { return new Set(); }
+    if (typeof window === 'undefined') {
+      return new Set();
+    }
     const savedIds = localStorage.getItem(`${storageKey}_selected_ids`);
     if (savedIds) {
       try {
@@ -22,7 +24,9 @@ export function useSelection(storageKey: string) {
   });
 
   const [isSelectionMode, setIsSelectionMode] = useState(() => {
-    if (typeof window === 'undefined') { return false; }
+    if (typeof window === 'undefined') {
+      return false;
+    }
     const savedMode = localStorage.getItem(`${storageKey}_selection_mode`);
     return savedMode === 'true';
   });
@@ -36,17 +40,21 @@ export function useSelection(storageKey: string) {
 
   // Persist to localStorage
   useEffect(() => {
-    if (!isInitialized.current) { return; }
+    if (!isInitialized.current) {
+      return;
+    }
     localStorage.setItem(`${storageKey}_selected_ids`, JSON.stringify(Array.from(selectedIds)));
   }, [selectedIds, storageKey]);
 
   useEffect(() => {
-    if (!isInitialized.current) { return; }
+    if (!isInitialized.current) {
+      return;
+    }
     localStorage.setItem(`${storageKey}_selection_mode`, String(isSelectionMode));
   }, [isSelectionMode, storageKey]);
 
   const toggleSelectionMode = useCallback(() => {
-    setIsSelectionMode(prev => {
+    setIsSelectionMode((prev) => {
       const next = !prev;
       if (!next) {
         setSelectedIds(new Set());
@@ -56,7 +64,7 @@ export function useSelection(storageKey: string) {
   }, []);
 
   const toggleId = useCallback((id: string) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -82,6 +90,6 @@ export function useSelection(storageKey: string) {
     toggleId,
     selectAll,
     clearSelection,
-    setSelectedIds
+    setSelectedIds,
   };
 }

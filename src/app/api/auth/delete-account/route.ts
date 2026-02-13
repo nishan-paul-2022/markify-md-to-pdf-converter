@@ -1,28 +1,25 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
-import { auth } from "@/lib/auth";
-import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
+import { auth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import prisma from '@/lib/prisma';
 
-import { rm } from "fs/promises";
-import { join } from "path";
+import { rm } from 'fs/promises';
+import { join } from 'path';
 
 export async function DELETE(): Promise<NextResponse> {
   try {
     const session = await auth();
 
     if (!session?.user.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const userId = session.user.id;
 
     // 1. Delete files from disk (the entire user directory)
     try {
-      const userUploadsDir = join(process.cwd(), "public", "uploads", userId);
+      const userUploadsDir = join(process.cwd(), 'public', 'uploads', userId);
       await rm(userUploadsDir, { recursive: true, force: true });
       logger.info(`✅ Deleted all files for user: ${userId}`);
     } catch (error) {
@@ -33,20 +30,17 @@ export async function DELETE(): Promise<NextResponse> {
     // 2. Delete user and all related data from database
     // Prisma cascading takes care of Account, Session, and File models due to 'onDelete: Cascade'
     await prisma.user.delete({
-      where: { id: userId }
+      where: { id: userId },
     });
 
     logger.info(`✅ Permanently deleted account and all data for user: ${userId}`);
 
     return NextResponse.json({
       success: true,
-      message: "Account and all associated data permanently deleted"
+      message: 'Account and all associated data permanently deleted',
     });
   } catch (error: unknown) {
-    logger.error("Account deletion error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete account permanently" },
-      { status: 500 }
-    );
+    logger.error('Account deletion error:', error);
+    return NextResponse.json({ error: 'Failed to delete account permanently' }, { status: 500 });
   }
 }

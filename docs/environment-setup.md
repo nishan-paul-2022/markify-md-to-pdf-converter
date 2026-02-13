@@ -30,6 +30,7 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret"
 ### 1. Database Setup
 
 **Option A: Local PostgreSQL**
+
 ```bash
 # Install PostgreSQL (Ubuntu/Debian)
 sudo apt update
@@ -47,6 +48,7 @@ DATABASE_URL="postgresql://markify_user:your_password@localhost:5432/markify?sch
 ```
 
 **Option B: Docker PostgreSQL**
+
 ```bash
 docker run --name markify-postgres \
   -e POSTGRES_DB=markify \
@@ -57,6 +59,7 @@ docker run --name markify-postgres \
 ```
 
 **Option C: Cloud Database (Recommended for Production)**
+
 - [Neon](https://neon.tech) - Free tier with PostgreSQL
 - [Supabase](https://supabase.com) - Free tier with PostgreSQL
 - [Railway](https://railway.app) - PostgreSQL hosting

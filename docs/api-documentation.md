@@ -21,6 +21,7 @@ Signs out the current user and redirects to home page.
 Returns the current user session.
 
 **Response**:
+
 ```json
 {
   "user": {
@@ -44,11 +45,13 @@ All file endpoints require authentication. Include session cookie in requests.
 **Content-Type**: `multipart/form-data`
 
 **Request Body**:
+
 ```
 file: File (required)
 ```
 
 **Allowed File Types**:
+
 - `text/markdown` (.md)
 - `text/plain` (.txt)
 - `application/pdf` (.pdf)
@@ -60,6 +63,7 @@ file: File (required)
 **File Size Limit**: 10MB
 
 **Success Response** (201):
+
 ```json
 {
   "success": true,
@@ -78,6 +82,7 @@ file: File (required)
 **Error Responses**:
 
 401 Unauthorized:
+
 ```json
 {
   "error": "Unauthorized"
@@ -85,6 +90,7 @@ file: File (required)
 ```
 
 400 Bad Request:
+
 ```json
 {
   "error": "No file provided"
@@ -104,19 +110,21 @@ file: File (required)
 ```
 
 **Example (JavaScript)**:
+
 ```javascript
-const formData = new FormData()
-formData.append('file', fileInput.files[0])
+const formData = new FormData();
+formData.append('file', fileInput.files[0]);
 
 const response = await fetch('/api/files', {
   method: 'POST',
   body: formData,
-})
+});
 
-const data = await response.json()
+const data = await response.json();
 ```
 
 **Example (cURL)**:
+
 ```bash
 curl -X POST http://localhost:3000/api/files \
   -H "Cookie: next-auth.session-token=..." \
@@ -128,10 +136,12 @@ curl -X POST http://localhost:3000/api/files \
 **Endpoint**: `GET /api/files`
 
 **Query Parameters**:
+
 - `page` (optional): Page number (default: 1)
 - `limit` (optional): Items per page (default: 10, max: 100)
 
 **Success Response** (200):
+
 ```json
 {
   "files": [
@@ -156,9 +166,10 @@ curl -X POST http://localhost:3000/api/files \
 ```
 
 **Example**:
+
 ```javascript
-const response = await fetch('/api/files?page=1&limit=20')
-const data = await response.json()
+const response = await fetch('/api/files?page=1&limit=20');
+const data = await response.json();
 ```
 
 ### Get File Details
@@ -166,9 +177,11 @@ const data = await response.json()
 **Endpoint**: `GET /api/files/[id]`
 
 **Path Parameters**:
+
 - `id`: File ID
 
 **Success Response** (200):
+
 ```json
 {
   "file": {
@@ -189,6 +202,7 @@ const data = await response.json()
 **Error Responses**:
 
 404 Not Found:
+
 ```json
 {
   "error": "File not found"
@@ -196,6 +210,7 @@ const data = await response.json()
 ```
 
 403 Forbidden:
+
 ```json
 {
   "error": "Forbidden"
@@ -207,9 +222,11 @@ const data = await response.json()
 **Endpoint**: `DELETE /api/files/[id]`
 
 **Path Parameters**:
+
 - `id`: File ID
 
 **Success Response** (200):
+
 ```json
 {
   "success": true,
@@ -220,6 +237,7 @@ const data = await response.json()
 **Error Responses**:
 
 404 Not Found:
+
 ```json
 {
   "error": "File not found"
@@ -227,6 +245,7 @@ const data = await response.json()
 ```
 
 403 Forbidden:
+
 ```json
 {
   "error": "Forbidden"
@@ -234,12 +253,13 @@ const data = await response.json()
 ```
 
 **Example**:
+
 ```javascript
 const response = await fetch(`/api/files/${fileId}`, {
   method: 'DELETE',
-})
+});
 
-const data = await response.json()
+const data = await response.json();
 ```
 
 ## Error Handling
@@ -277,33 +297,30 @@ All protected endpoints require a valid session. The session is managed via HTTP
 ### Client-Side (React)
 
 ```javascript
-import { useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react';
 
 function Component() {
-  const { data: session, status } = useSession()
-  
-  if (status === 'loading') return <div>Loading...</div>
-  if (status === 'unauthenticated') return <div>Not signed in</div>
-  
-  return <div>Signed in as {session.user.email}</div>
+  const { data: session, status } = useSession();
+
+  if (status === 'loading') return <div>Loading...</div>;
+  if (status === 'unauthenticated') return <div>Not signed in</div>;
+
+  return <div>Signed in as {session.user.email}</div>;
 }
 ```
 
 ### Server-Side (API Routes)
 
 ```typescript
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
-  const session = await auth()
-  
+  const session = await auth();
+
   if (!session?.user?.id) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    )
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  
+
   // Your logic here
 }
 ```
@@ -316,11 +333,11 @@ import { redirect } from 'next/navigation'
 
 export default async function Page() {
   const session = await auth()
-  
+
   if (!session?.user) {
     redirect('/auth/signin')
   }
-  
+
   return <div>Protected content</div>
 }
 ```
@@ -338,7 +355,7 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  
+
   accounts      Account[]
   sessions      Session[]
   files         File[]
@@ -360,7 +377,7 @@ model File {
   metadata    Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 ```
@@ -398,7 +415,7 @@ For production, consider migrating from local filesystem to cloud storage:
 ### AWS S3 Example
 
 ```typescript
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -406,45 +423,45 @@ const s3Client = new S3Client({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
   },
-})
+});
 
 export async function uploadToS3(file: File, key: string) {
-  const buffer = Buffer.from(await file.arrayBuffer())
-  
+  const buffer = Buffer.from(await file.arrayBuffer());
+
   await s3Client.send(
     new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET,
       Key: key,
       Body: buffer,
       ContentType: file.type,
-    })
-  )
-  
-  return `https://${process.env.AWS_S3_BUCKET}.s3.amazonaws.com/${key}`
+    }),
+  );
+
+  return `https://${process.env.AWS_S3_BUCKET}.s3.amazonaws.com/${key}`;
 }
 ```
 
 ### Cloudinary Example
 
 ```typescript
-import { v2 as cloudinary } from 'cloudinary'
+import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
-})
+});
 
 export async function uploadToCloudinary(file: File) {
-  const buffer = Buffer.from(await file.arrayBuffer())
-  const base64 = buffer.toString('base64')
-  const dataURI = `data:${file.type};base64,${base64}`
-  
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const base64 = buffer.toString('base64');
+  const dataURI = `data:${file.type};base64,${base64}`;
+
   const result = await cloudinary.uploader.upload(dataURI, {
     folder: 'markify',
-  })
-  
-  return result.secure_url
+  });
+
+  return result.secure_url;
 }
 ```
 
@@ -453,34 +470,34 @@ export async function uploadToCloudinary(file: File) {
 ### Example Test (Jest/Vitest)
 
 ```typescript
-import { POST } from '@/app/api/files/route'
+import { POST } from '@/app/api/files/route';
 
 describe('File Upload API', () => {
   it('should upload file successfully', async () => {
-    const formData = new FormData()
-    const file = new File(['content'], 'test.md', { type: 'text/markdown' })
-    formData.append('file', file)
-    
+    const formData = new FormData();
+    const file = new File(['content'], 'test.md', { type: 'text/markdown' });
+    formData.append('file', file);
+
     const request = new Request('http://localhost:3000/api/files', {
       method: 'POST',
       body: formData,
-    })
-    
-    const response = await POST(request)
-    const data = await response.json()
-    
-    expect(response.status).toBe(200)
-    expect(data.success).toBe(true)
-    expect(data.file).toBeDefined()
-  })
-  
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.file).toBeDefined();
+  });
+
   it('should reject unauthorized requests', async () => {
     // Mock unauthenticated session
-    const response = await POST(new Request('http://localhost:3000/api/files'))
-    
-    expect(response.status).toBe(401)
-  })
-})
+    const response = await POST(new Request('http://localhost:3000/api/files'));
+
+    expect(response.status).toBe(401);
+  });
+});
 ```
 
 ## Webhooks (Future Enhancement)

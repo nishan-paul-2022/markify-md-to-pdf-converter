@@ -1,9 +1,9 @@
-import type { File as AppFile } from "@/hooks/use-files";
+import type { File as AppFile } from '@/hooks/use-files';
 
 export interface FileTreeNode {
   id: string;
   name: string;
-  type: "file" | "folder";
+  type: 'file' | 'folder';
   children?: FileTreeNode[];
   file?: AppFile;
   path: string;
@@ -29,9 +29,9 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
   batchGroups.forEach((batchFiles, batchId) => {
     batchFiles.forEach((file) => {
       const fullPath = file.relativePath || file.originalName;
-      const parts = fullPath.split("/");
+      const parts = fullPath.split('/');
       let currentLevel = root;
-      let accumulatedPath = "";
+      let accumulatedPath = '';
 
       parts.forEach((part, index) => {
         const isLast = index === parts.length - 1;
@@ -39,9 +39,7 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
 
         // CRITICAL: Use batchId in the folder key to ensure folders from different uploads never merge
         // Even if they have the same name (e.g., two uploads both named "content-1")
-        const nodeKey = isLast
-          ? file.id
-          : `folder-${batchId}-${accumulatedPath}`;
+        const nodeKey = isLast ? file.id : `folder-${batchId}-${accumulatedPath}`;
 
         let node = currentLevel.find((n) => n.id === nodeKey);
 
@@ -49,11 +47,11 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
           node = {
             id: nodeKey,
             name: part,
-            type: isLast ? "file" : "folder",
+            type: isLast ? 'file' : 'folder',
             path: accumulatedPath,
             children: isLast ? undefined : [],
             file: isLast ? file : undefined,
-            batchId: batchId
+            batchId: batchId,
           };
           currentLevel.push(node);
         }
@@ -76,17 +74,25 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
       const isDefaultA = a.batchId === 'sample-document' || a.batchId === 'sample-project';
       const isDefaultB = b.batchId === 'sample-document' || b.batchId === 'sample-project';
 
-      if (isDefaultA && !isDefaultB) {return -1;}
-      if (!isDefaultA && isDefaultB) {return 1;}
+      if (isDefaultA && !isDefaultB) {
+        return -1;
+      }
+      if (!isDefaultA && isDefaultB) {
+        return 1;
+      }
 
       // If both are defaults, sample-document goes before sample-project (or vice versa, but let's keep it consistent)
       if (isDefaultA && isDefaultB) {
-        if (a.batchId === 'sample-document' && b.batchId === 'sample-project') {return -1;}
-        if (a.batchId === 'sample-project' && b.batchId === 'sample-document') {return 1;}
+        if (a.batchId === 'sample-document' && b.batchId === 'sample-project') {
+          return -1;
+        }
+        if (a.batchId === 'sample-project' && b.batchId === 'sample-document') {
+          return 1;
+        }
       }
 
       if (a.type !== b.type) {
-        return a.type === "folder" ? -1 : 1;
+        return a.type === 'folder' ? -1 : 1;
       }
       return a.name.localeCompare(b.name);
     });

@@ -1,16 +1,16 @@
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-import { auth } from "@/lib/auth";
-import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
+import { auth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import prisma from '@/lib/prisma';
 
-import { unlink } from "fs/promises";
-import { join } from "path";
+import { unlink } from 'fs/promises';
+import { join } from 'path';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
     const { id: fileId } = await params;
@@ -18,10 +18,7 @@ export async function DELETE(
 
     const userId = session?.user.id;
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Find the file and verify ownership
@@ -30,25 +27,19 @@ export async function DELETE(
     });
 
     if (!file) {
-      return NextResponse.json(
-        { error: "File not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
     if (file.userId !== userId) {
-      return NextResponse.json(
-        { error: "Forbidden" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Delete file from disk
     try {
-      const filePath = join(process.cwd(), "public", file.storageKey);
+      const filePath = join(process.cwd(), 'public', file.storageKey);
       await unlink(filePath);
     } catch (error: unknown) {
-      logger.error("Error deleting file from disk:", error);
+      logger.error('Error deleting file from disk:', error);
       // Continue with database deletion even if file doesn't exist on disk
     }
 
@@ -59,20 +50,17 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: "File deleted successfully",
+      message: 'File deleted successfully',
     });
   } catch (error: unknown) {
-    logger.error("File deletion error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete file" },
-      { status: 500 }
-    );
+    logger.error('File deletion error:', error);
+    return NextResponse.json({ error: 'Failed to delete file' }, { status: 500 });
   }
 }
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
     const { id: fileId } = await params;
@@ -80,10 +68,7 @@ export async function GET(
 
     const userId = session?.user.id;
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const file = await prisma.file.findUnique({
@@ -103,25 +88,16 @@ export async function GET(
     });
 
     if (!file) {
-      return NextResponse.json(
-        { error: "File not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
     if (file.userId !== userId) {
-      return NextResponse.json(
-        { error: "Forbidden" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     return NextResponse.json({ file });
   } catch (error: unknown) {
-    logger.error("File fetch error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch file" },
-      { status: 500 }
-    );
+    logger.error('File fetch error:', error);
+    return NextResponse.json({ error: 'Failed to fetch file' }, { status: 500 });
   }
 }

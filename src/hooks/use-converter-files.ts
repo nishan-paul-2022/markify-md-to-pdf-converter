@@ -14,15 +14,17 @@ export function useConverterFiles(files: AppFile[]) {
 
   const filteredMdFiles = useMemo(() => {
     return files
-      .filter(f =>
-        !f.id.startsWith('default-') &&
-        f.batchId !== 'sample-document' &&
-        f.batchId !== 'sample-project' &&
-        (f.originalName.toLowerCase().endsWith('.md') || f.mimeType === 'text/markdown')
+      .filter(
+        (f) =>
+          !f.id.startsWith('default-') &&
+          f.batchId !== 'sample-document' &&
+          f.batchId !== 'sample-project' &&
+          (f.originalName.toLowerCase().endsWith('.md') || f.mimeType === 'text/markdown'),
       )
-      .filter(f =>
-        f.originalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (f.relativePath && f.relativePath.toLowerCase().includes(searchQuery.toLowerCase()))
+      .filter(
+        (f) =>
+          f.originalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (f.relativePath && f.relativePath.toLowerCase().includes(searchQuery.toLowerCase())),
       )
       .sort((a, b) => {
         let comparison = 0;
@@ -44,6 +46,6 @@ export function useConverterFiles(files: AppFile[]) {
     sortBy,
     setSortBy,
     sortOrder,
-    setSortOrder
+    setSortOrder,
   };
 }

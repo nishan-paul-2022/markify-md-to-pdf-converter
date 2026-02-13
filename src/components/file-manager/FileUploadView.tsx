@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 
-import { Button } from "@/components/ui/button";
-import { formatFileSize } from "@/lib/formatters";
+import { Button } from '@/components/ui/button';
+import { formatFileSize } from '@/lib/formatters';
 
-import { FileText, FolderOpen,Image as ImageIcon, Upload, X } from "lucide-react";
+import { FileText, FolderOpen, Image as ImageIcon, Upload, X } from 'lucide-react';
 
 interface FileUploadViewProps {
   files: File[];
@@ -35,7 +35,7 @@ export function FileUploadView({
   /* formatFileSize removed */
 
   const getFileIcon = (file: File): React.JSX.Element => {
-    if (file.type.startsWith("image/")) {
+    if (file.type.startsWith('image/')) {
       return <ImageIcon className="h-8 w-8 text-blue-500" />;
     }
     return <FileText className="h-8 w-8 text-green-500" />;
@@ -47,29 +47,33 @@ export function FileUploadView({
       <div className="flex gap-4">
         <Button
           variant="outline"
-          className="flex-1 h-32 flex-col gap-3 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all shadow-sm"
+          className="hover:border-primary hover:bg-primary/5 h-32 flex-1 flex-col gap-3 border-2 border-dashed shadow-sm transition-all"
           onClick={() => fileInputRef.current?.click()}
         >
-          <div className="bg-blue-100 p-2 rounded-full">
+          <div className="rounded-full bg-blue-100 p-2">
             <FileText className="h-6 w-6 text-blue-600" />
           </div>
           <div className="text-center">
             <p className="font-bold">Files</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">.md files</p>
+            <p className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              .md files
+            </p>
           </div>
         </Button>
 
         <Button
           variant="outline"
-          className="flex-1 h-32 flex-col gap-3 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all shadow-sm"
+          className="hover:border-primary hover:bg-primary/5 h-32 flex-1 flex-col gap-3 border-2 border-dashed shadow-sm transition-all"
           onClick={triggerFolderUpload}
         >
-          <div className="bg-amber-100 p-2 rounded-full">
+          <div className="rounded-full bg-amber-100 p-2">
             <FolderOpen className="h-6 w-6 text-amber-600" />
           </div>
           <div className="text-center">
             <p className="font-bold">Folder</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Project Dir</p>
+            <p className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Project Dir
+            </p>
           </div>
         </Button>
       </div>
@@ -85,18 +89,20 @@ export function FileUploadView({
         type="file"
         ref={folderInputRef}
         className="hidden"
-        {...({ webkitdirectory: "", directory: "" } as React.InputHTMLAttributes<HTMLInputElement>)}
+        {...({ webkitdirectory: '', directory: '' } as React.InputHTMLAttributes<HTMLInputElement>)}
         onChange={handleFileSelect}
       />
 
       {/* Empty State / Instruction */}
       {files.length === 0 && (
-        <div className="py-12 px-6 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/30 dark:bg-gray-900/10 flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl shadow-sm flex items-center justify-center mb-4 rotate-3">
-             <Upload className="h-8 w-8 text-gray-200" />
+        <div className="flex flex-col items-center rounded-xl border-2 border-dashed border-gray-100 bg-gray-50/30 px-6 py-12 text-center dark:border-gray-800 dark:bg-gray-900/10">
+          <div className="mb-4 flex h-16 w-16 rotate-3 items-center justify-center rounded-2xl bg-white shadow-sm dark:bg-gray-800">
+            <Upload className="h-8 w-8 text-gray-200" />
           </div>
           <h3 className="text-sm font-semibold text-gray-400">Ready for Project Import</h3>
-          <p className="text-xs text-gray-400 mt-1 max-w-[200px]">Use the buttons above to select your files or project folder</p>
+          <p className="mt-1 max-w-[200px] text-xs text-gray-400">
+            Use the buttons above to select your files or project folder
+          </p>
         </div>
       )}
 
@@ -104,7 +110,9 @@ export function FileUploadView({
       {files.length > 0 && (
         <div className="space-y-4 pt-2">
           <div className="flex items-center justify-between border-b pb-2">
-            <h3 className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Selection ({files.length})</h3>
+            <h3 className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
+              Selection ({files.length})
+            </h3>
             <Button
               variant="link"
               size="sm"
@@ -112,24 +120,25 @@ export function FileUploadView({
                 setFiles([]);
               }}
               disabled={uploading}
-              className="h-auto p-0 text-xs text-destructive hover:no-underline"
+              className="text-destructive h-auto p-0 text-xs hover:no-underline"
             >
               Clear selection
             </Button>
           </div>
 
-          <div className="max-h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+          <div className="custom-scrollbar max-h-64 space-y-2 overflow-y-auto pr-2">
             {files.map((file, index) => (
               <div
                 key={`${file.name}-${index}`}
-                className="flex items-center gap-3 p-3 bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-xl group transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="group flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50 dark:hover:bg-gray-800"
               >
                 {getFileIcon(file)}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">
-                    {(file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">
+                    {(file as File & { webkitRelativePath?: string }).webkitRelativePath ||
+                      file.name}
                   </p>
-                  <p className="text-[10px] text-muted-foreground font-medium">
+                  <p className="text-muted-foreground text-[10px] font-medium">
                     {formatFileSize(file.size)}
                   </p>
                 </div>
@@ -138,7 +147,7 @@ export function FileUploadView({
                   size="icon"
                   onClick={() => removeFile(index)}
                   disabled={uploading}
-                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                  className="text-muted-foreground hover:text-destructive h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -147,14 +156,14 @@ export function FileUploadView({
           </div>
 
           {uploading && (
-            <div className="p-4 bg-primary/10 rounded-xl space-y-3">
-              <div className="flex justify-between text-xs font-bold text-primary italic">
+            <div className="bg-primary/10 space-y-3 rounded-xl p-4">
+              <div className="text-primary flex justify-between text-xs font-bold italic">
                 <span>CONVERTING CONTENT...</span>
                 <span>{uploadProgress}%</span>
               </div>
-              <div className="h-1.5 bg-primary/20 rounded-full overflow-hidden">
+              <div className="bg-primary/20 h-1.5 overflow-hidden rounded-full">
                 <div
-                  className="h-full bg-primary transition-all duration-300"
+                  className="bg-primary h-full transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
@@ -164,7 +173,7 @@ export function FileUploadView({
           {!uploading && (
             <Button
               onClick={uploadFiles}
-              className="w-full h-12 shadow-lg shadow-primary/20 text-md font-bold"
+              className="shadow-primary/20 text-md h-12 w-full font-bold shadow-lg"
               size="lg"
             >
               Start Conversion

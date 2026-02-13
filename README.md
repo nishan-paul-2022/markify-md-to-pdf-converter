@@ -50,11 +50,12 @@ npx playwright install chromium
 sudo npx playwright install-deps chromium
 ```
 
-*Note: On Windows or macOS, `npx playwright install chromium` is usually sufficient.*
+_Note: On Windows or macOS, `npx playwright install chromium` is usually sufficient._
 
 ### 3. Set Up Database
 
 **Using Docker (Recommended)**:
+
 ```bash
 docker run --name markify-postgres \
   -e POSTGRES_DB=markify \
@@ -216,14 +217,14 @@ services:
       POSTGRES_USER: markify_user
       POSTGRES_PASSWORD: markify123
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
   app:
     build: .
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       DATABASE_URL: postgresql://markify_user:markify123@postgres:5432/markify
       NEXTAUTH_SECRET: your-secret
@@ -314,4 +315,3 @@ MIT
 - 📖 [Documentation](docs/)
 - 🐛 [Report Issues](https://github.com/yourusername/markify/issues)
 - 💬 [Discussions](https://github.com/yourusername/markify/discussions)
-

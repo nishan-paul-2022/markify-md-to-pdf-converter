@@ -1,14 +1,14 @@
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-import { auth } from "@/lib/auth";
-import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
-import { getDefaultFiles } from "@/lib/server/defaults";
+import { auth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import prisma from '@/lib/prisma';
+import { getDefaultFiles } from '@/lib/server/defaults';
 
-import { randomUUID } from "crypto";
-import { mkdir,writeFile } from "fs/promises";
-import { join } from "path";
+import { randomUUID } from 'crypto';
+import { mkdir, writeFile } from 'fs/promises';
+import { join } from 'path';
 
 // Note: Prisma Client was regenerated to include batchId and relativePath.
 // If you see errors below, please restart your IDE's TypeScript server.
@@ -20,61 +20,52 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     logger.info('🔐 File upload - Auth check:', {
       hasSession: !!session,
       hasUser: !!session?.user,
-      userId: session?.user.id
+      userId: session?.user.id,
     });
 
     const userId = session?.user.id;
     if (!userId) {
       logger.error('❌ File upload REJECTED - No authentication');
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     logger.info('✅ File upload - User authenticated:', userId);
 
     const formData = await request.formData();
-    const file = formData.get("file") as File | null;
-    const batchId = formData.get("batchId") as string | null;
-    const relativePath = formData.get("relativePath") as string | null;
-    const source = formData.get("source") as string | null; // 'editor' or 'converter'
+    const file = formData.get('file') as File | null;
+    const batchId = formData.get('batchId') as string | null;
+    const relativePath = formData.get('relativePath') as string | null;
+    const source = formData.get('source') as string | null; // 'editor' or 'converter'
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
     // Validate file size (10MB limit)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: "Selection exceeds 10MB limit." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Selection exceeds 10MB limit.' }, { status: 400 });
     }
 
     // Validate file type (markdown and images only - NO PDFs, NO TXT)
     const allowedTypes = [
-      "text/markdown",
-      "image/png",
-      "image/jpeg",
-      "image/jpg",
-      "image/gif",
-      "image/webp",
-      "image/svg+xml"
+      'text/markdown',
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml',
     ];
 
     // Some browsers might not send correct mime types for .md files
-    const isMarkdown = file.name.endsWith(".md") || file.type === "text/markdown";
+    const isMarkdown = file.name.endsWith('.md') || file.type === 'text/markdown';
 
     if (!allowedTypes.includes(file.type) && !isMarkdown) {
       logger.info(`❌ Upload rejected - invalid file type: ${file.type} for file: ${file.name}`);
       return NextResponse.json(
-        { error: "Upload failed — only .md files are allowed here." },
-        { status: 400 }
+        { error: 'Upload failed — only .md files are allowed here.' },
+        { status: 400 },
       );
     }
 
@@ -94,8 +85,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (effectiveParts.length === 1) {
         if (!effectiveParts[0].toLowerCase().endsWith('.md')) {
           return NextResponse.json(
-            { error: "Upload failed — only .md files are allowed here." },
-            { status: 400 }
+            { error: 'Upload failed — only .md files are allowed here.' },
+            { status: 400 },
           );
         }
       }
@@ -103,30 +94,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       else if (effectiveParts.length === 2) {
         if (effectiveParts[0] !== 'images') {
           return NextResponse.json(
-            { error: "Upload failed — ensure it follows the required .md + images/ layout." },
-            { status: 400 }
+            { error: 'Upload failed — ensure it follows the required .md + images/ layout.' },
+            { status: 400 },
           );
         }
         // Subfolder files MUST be images
         const isImage = allowedTypes.includes(file.type);
         if (!isImage) {
-           return NextResponse.json(
-            { error: "Upload failed — ensure it follows the required .md + images/ layout." },
-            { status: 400 }
+          return NextResponse.json(
+            { error: 'Upload failed — ensure it follows the required .md + images/ layout.' },
+            { status: 400 },
           );
         }
       }
       // Rule 3: No nested folders or depth > 2 (effective)
       else {
         return NextResponse.json(
-          { error: "Upload failed — ensure it follows the required .md + images/ layout." },
-          { status: 400 }
+          { error: 'Upload failed — ensure it follows the required .md + images/ layout.' },
+          { status: 400 },
         );
       }
     }
 
     // Generate unique filename
-    const fileExtension = file.name.split(".").pop();
+    const fileExtension = file.name.split('.').pop();
     const uniqueFilename = `${randomUUID()}.${fileExtension}`;
 
     // We store the file in a structure that allows linking if it's part of a batch
@@ -137,14 +128,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : `uploads/${userId}/${uniqueFilename}`;
 
     // Create upload directory if it doesn't exist
-    const relativeStorageDir = batchId
-      ? join("uploads", userId, batchId)
-      : join("uploads", userId);
+    const relativeStorageDir = batchId ? join('uploads', userId, batchId) : join('uploads', userId);
 
-    const uploadDir = join(process.cwd(), "public", relativeStorageDir);
+    const uploadDir = join(process.cwd(), 'public', relativeStorageDir);
 
-    if (relativePath && relativePath.includes("/")) {
-      const subDir = relativePath.substring(0, relativePath.lastIndexOf("/"));
+    if (relativePath && relativePath.includes('/')) {
+      const subDir = relativePath.substring(0, relativePath.lastIndexOf('/'));
       await mkdir(join(uploadDir, subDir), { recursive: true });
     } else {
       await mkdir(uploadDir, { recursive: true });
@@ -153,7 +142,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Save file to disk
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const filePath = join(process.cwd(), "public", storageKey);
+    const filePath = join(process.cwd(), 'public', storageKey);
 
     logger.info('💾 Saving file to disk:', filePath);
     logger.info('📦 Buffer size:', buffer.length);
@@ -180,7 +169,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           filename: uniqueFilename,
           originalName: file.name,
           relativePath,
-          mimeType: file.type || (isMarkdown ? "text/markdown" : "application/octet-stream"),
+          mimeType: file.type || (isMarkdown ? 'text/markdown' : 'application/octet-stream'),
           size: file.size,
           storageKey,
           url: `/api/${storageKey}`,
@@ -198,7 +187,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         originalName: file.name,
         url: `/${storageKey}`,
         size: file.size,
-        mimeType: file.type || (isMarkdown ? "text/markdown" : "application/octet-stream"),
+        mimeType: file.type || (isMarkdown ? 'text/markdown' : 'application/octet-stream'),
         batchId,
         relativePath,
         createdAt: new Date(),
@@ -220,12 +209,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
   } catch (error: unknown) {
-    logger.error("File upload error detailed:", error);
+    logger.error('File upload error detailed:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
@@ -235,30 +221,29 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const userId = session?.user.id;
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
-    const source = searchParams.get("source"); // 'editor' or 'converter'
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const source = searchParams.get('source'); // 'editor' or 'converter'
     const skip = (page - 1) * limit;
 
     const [files, total, defaults] = await Promise.all([
       prisma.file.findMany({
         where: {
           userId,
-          ...(source ? {
-            metadata: {
-              path: ["source"],
-              equals: source
-            }
-          } : {})
+          ...(source
+            ? {
+                metadata: {
+                  path: ['source'],
+                  equals: source,
+                },
+              }
+            : {}),
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
         select: {
@@ -278,12 +263,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       prisma.file.count({
         where: {
           userId,
-          ...(source ? {
-            metadata: {
-              path: ["source"],
-              equals: source
-            }
-          } : {})
+          ...(source
+            ? {
+                metadata: {
+                  path: ['source'],
+                  equals: source,
+                },
+              }
+            : {}),
         },
       }),
       !source || source === 'editor' ? getDefaultFiles().catch(() => []) : Promise.resolve([]),
@@ -299,14 +286,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     });
   } catch (error: unknown) {
-    logger.error("❌ File fetch error detailed:", error);
+    logger.error('❌ File fetch error detailed:', error);
     if (error instanceof Error) {
-      logger.error("Message:", error.message);
-      logger.error("Stack:", error.stack);
+      logger.error('Message:', error.message);
+      logger.error('Stack:', error.stack);
     }
     return NextResponse.json(
-      { error: "Failed to fetch files", details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
+      {
+        error: 'Failed to fetch files',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
     );
   }
 }
@@ -317,19 +307,13 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
 
     const userId = session?.user.id;
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { ids } = await request.json();
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return NextResponse.json(
-        { error: "No IDs provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No IDs provided' }, { status: 400 });
     }
 
     // Find all files to get their storage keys
@@ -340,12 +324,12 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    const { unlink } = await import("fs/promises");
+    const { unlink } = await import('fs/promises');
 
     // Delete files from disk
     const deletePromises = files.map(async (file) => {
       try {
-        const filePath = join(process.cwd(), "public", file.storageKey);
+        const filePath = join(process.cwd(), 'public', file.storageKey);
         await unlink(filePath);
       } catch (error: unknown) {
         logger.error(`Error deleting file from disk: ${file.storageKey}`, error);
@@ -357,7 +341,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     // Delete records from database
     await prisma.file.deleteMany({
       where: {
-        id: { in: files.map(f => f.id) },
+        id: { in: files.map((f) => f.id) },
         userId,
       },
     });
@@ -367,11 +351,8 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       message: `${files.length} files deleted successfully`,
     });
   } catch (error: unknown) {
-    logger.error("Bulk deletion error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete files" },
-      { status: 500 }
-    );
+    logger.error('Bulk deletion error:', error);
+    return NextResponse.json({ error: 'Failed to delete files' }, { status: 500 });
   }
 }
 
@@ -381,34 +362,32 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
     const userId = session?.user.id;
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { id, type, newName, batchId, oldPath } = await request.json();
 
     if (!newName || !newName.trim()) {
-      return NextResponse.json(
-        { error: "New name is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'New name is required' }, { status: 400 });
     }
 
     // Protection for default project and document
-    if (id?.startsWith("default-") || batchId === 'no-batch' || (id && id.includes('folder-no-batch'))) {
+    if (
+      id?.startsWith('default-') ||
+      batchId === 'no-batch' ||
+      (id && id.includes('folder-no-batch'))
+    ) {
       return NextResponse.json(
-        { error: "Changing default project or document is not allowed" },
-        { status: 403 }
+        { error: 'Changing default project or document is not allowed' },
+        { status: 403 },
       );
     }
 
-    if (type === "folder") {
+    if (type === 'folder') {
       if (!batchId || !oldPath) {
         return NextResponse.json(
-          { error: "BatchId and oldPath required for folder rename" },
-          { status: 400 }
+          { error: 'BatchId and oldPath required for folder rename' },
+          { status: 400 },
         );
       }
 
@@ -418,39 +397,43 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
           userId,
           batchId: batchId,
           relativePath: {
-            startsWith: oldPath
-          }
-        }
+            startsWith: oldPath,
+          },
+        },
       });
 
-      const updates = files.map(file => {
-        const relativePath = file.relativePath || "";
-        const pathParts = relativePath.split('/');
-        const oldPathParts = oldPath.split('/');
+      const updates = files
+        .map((file) => {
+          const relativePath = file.relativePath || '';
+          const pathParts = relativePath.split('/');
+          const oldPathParts = oldPath.split('/');
 
-        // Check if it's a true prefix (matching full path segments)
-        let matches = true;
-        for (let i = 0; i < oldPathParts.length; i++) {
-          if (pathParts[i] !== oldPathParts[i]) {
-            matches = false;
-            break;
+          // Check if it's a true prefix (matching full path segments)
+          let matches = true;
+          for (let i = 0; i < oldPathParts.length; i++) {
+            if (pathParts[i] !== oldPathParts[i]) {
+              matches = false;
+              break;
+            }
           }
-        }
 
-        if (!matches) {return null;}
-
-        // Replace segments
-        const newPathParts = [...pathParts];
-        newPathParts[oldPathParts.length - 1] = newName;
-        const newPath = newPathParts.join('/');
-
-        return prisma.file.update({
-          where: { id: file.id },
-          data: {
-            relativePath: newPath,
+          if (!matches) {
+            return null;
           }
-        });
-      }).filter((p): p is NonNullable<typeof p> => p !== null);
+
+          // Replace segments
+          const newPathParts = [...pathParts];
+          newPathParts[oldPathParts.length - 1] = newName;
+          const newPath = newPathParts.join('/');
+
+          return prisma.file.update({
+            where: { id: file.id },
+            data: {
+              relativePath: newPath,
+            },
+          });
+        })
+        .filter((p): p is NonNullable<typeof p> => p !== null);
 
       await Promise.all(updates);
 
@@ -458,14 +441,11 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     } else {
       // Single file rename
       const file = await prisma.file.findUnique({
-        where: { id, userId }
+        where: { id, userId },
       });
 
       if (!file) {
-        return NextResponse.json(
-          { error: "File not found" },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: 'File not found' }, { status: 404 });
       }
 
       // Update originalName and relativePath
@@ -480,17 +460,14 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         where: { id },
         data: {
           originalName: newName,
-          relativePath: newRelativePath || newName
-        }
+          relativePath: newRelativePath || newName,
+        },
       });
 
       return NextResponse.json({ success: true });
     }
   } catch (error: unknown) {
-    logger.error("Rename error:", error);
-    return NextResponse.json(
-      { error: "Failed to rename" },
-      { status: 500 }
-    );
+    logger.error('Rename error:', error);
+    return NextResponse.json({ error: 'Failed to rename' }, { status: 500 });
   }
 }

@@ -11,12 +11,18 @@ interface User {
 
 const ConverterClient = dynamic<{ user: User }>(
   () => import('@/components/converter/ConverterClient'),
-  { ssr: false }
+  { ssr: false },
 );
 
 export default function ConverterWrapper({ user }: { user: User }) {
   return (
-    <Suspense fallback={<div className="h-screen w-screen bg-slate-950 flex items-center justify-center text-white">Loading pipeline...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-screen items-center justify-center bg-slate-950 text-white">
+          Loading pipeline...
+        </div>
+      }
+    >
       <ConverterClient user={user} />
     </Suspense>
   );
