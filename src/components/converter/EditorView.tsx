@@ -18,13 +18,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { Metadata } from '@/constants/default-content';
+import { useConverter } from '@/hooks/use-converter';
 import type { File as AppFile } from '@/hooks/use-files';
 import type { FileTreeNode } from '@/lib/file-tree';
 import { buildFileTree } from '@/lib/file-tree';
 import { formatDateTime } from '@/lib/formatters';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { useEditorStore } from '@/store/use-editor-store';
 
 import {
   Check,
@@ -64,54 +65,6 @@ interface EditorViewProps {
   ) => Promise<void>;
   onFileSelect: (node: FileTreeNode) => void;
   refreshFiles: () => Promise<void>;
-  rawContent: string;
-  content: string;
-  metadata: Metadata;
-  isGenerating: boolean;
-  isUploaded: boolean;
-  isReset: boolean;
-  activeTab: 'editor' | 'preview';
-  uploadTime: Date | null;
-  lastModifiedTime: Date | null;
-  isEditorAtTop: boolean;
-  isLoading: boolean;
-  basePath: string;
-  isCopied: boolean;
-  isDownloaded: boolean;
-  isPdfDownloaded: boolean;
-  selectedFileId: string | null;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-  folderInputRef: React.RefObject<HTMLInputElement | null>;
-  zipInputRef: React.RefObject<HTMLInputElement | null>;
-  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
-  stats: {
-    chars: number;
-    words: number;
-  };
-  setActiveTab: (tab: 'editor' | 'preview') => void;
-
-  handleContentChange: (content: string) => void;
-  handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void> | void;
-  handleFolderUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void> | void;
-  handleZipUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void> | void;
-  triggerFileUpload: () => void;
-  triggerFolderUpload: () => void;
-  triggerZipUpload: () => void;
-  handleReset: () => void;
-  handleCopy: () => void;
-  handleDownloadMd: () => void;
-  handleDownloadPdf: () => void;
-  generatePdfBlob: () => Promise<Blob>;
-  scrollToStart: () => void;
-  scrollToEnd: () => void;
-  setFilename: (name: string) => void;
-  setIsLoading: (loading: boolean) => void;
-  MAX_FILENAME_LENGTH: number;
-  getBaseName: (name: string) => string;
-  activeImage: AppFile | null;
-  setActiveImage: (image: AppFile | null) => void;
-  imageGallery: AppFile[];
-  setImageGallery: (images: AppFile[]) => void;
 }
 
 export function EditorView({
@@ -122,52 +75,57 @@ export function EditorView({
   handleFileRename,
   onFileSelect,
   refreshFiles,
-  rawContent,
-  content,
-  metadata,
-  isGenerating,
-  isUploaded,
-  isReset,
-  activeTab,
-  uploadTime,
-  lastModifiedTime,
-  isEditorAtTop,
-  isLoading,
-  basePath,
-  isCopied,
-  isDownloaded,
-  isPdfDownloaded,
-  selectedFileId,
-  fileInputRef,
-  folderInputRef,
-  zipInputRef,
-  textareaRef,
-  stats,
-  setActiveTab,
-
-  handleContentChange,
-  handleFileUpload,
-  handleFolderUpload,
-  handleZipUpload,
-  triggerFileUpload,
-  triggerFolderUpload,
-  triggerZipUpload,
-  handleReset,
-  handleCopy,
-  handleDownloadMd,
-  handleDownloadPdf,
-  generatePdfBlob,
-  scrollToStart,
-  scrollToEnd,
-  setFilename,
-  setIsLoading,
-  activeImage,
-  setActiveImage,
-  imageGallery,
 }: EditorViewProps) {
   const router = useRouter();
   const { confirm } = useAlert();
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+  const converter = useConverter();
+  
+  // Destructure for easier access in JSX
+  const {
+    rawContent,
+    content,
+    metadata,
+    isGenerating,
+    isUploaded,
+    isReset,
+    activeTab,
+    uploadTime,
+    lastModifiedTime,
+    isEditorAtTop,
+    isLoading,
+    basePath,
+    isCopied,
+    isDownloaded,
+    isPdfDownloaded,
+    selectedFileId,
+    fileInputRef,
+    folderInputRef,
+    zipInputRef,
+    textareaRef,
+    stats,
+    setActiveTab,
+    setFilename,
+    setIsLoading,
+    handleContentChange,
+    handleFileUpload,
+    handleFolderUpload,
+    handleZipUpload,
+    triggerFileUpload,
+    triggerFolderUpload,
+    triggerZipUpload,
+    handleReset,
+    handleCopy,
+    handleDownloadMd,
+    handleDownloadPdf,
+    generatePdfBlob,
+    scrollToStart,
+    scrollToEnd,
+    activeImage,
+    setActiveImage,
+    imageGallery,
+  } = converter;
+
+  const { isSidebarOpen, setIsSidebarOpen } = useEditorStore();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isDragging, setIsDragging] = React.useState(false);
   const [isSelectionMode, setIsSelectionMode] = React.useState(false);
@@ -305,7 +263,10 @@ export function EditorView({
               body: formData,
             });
 
-            return response.ok ? await response.json() : null;
+            if (response.ok) {
+              return await response.json();
+            }
+            return null;
           });
 
           await Promise.all(uploadPromises);
@@ -324,7 +285,7 @@ export function EditorView({
             reader.readAsText(mdFile.file);
           }
 
-          await refreshFiles();
+          void refreshFiles();
         } catch (err) {
           logger.error('Drop upload error:', err);
         } finally {
@@ -662,9 +623,11 @@ export function EditorView({
                       accept=".md,image/png,image/jpeg,image/jpg,image/gif,image/webp"
                       multiple
                       ref={fileInputRef}
-                      onChange={async (e) => {
-                        await handleFileUpload(e);
-                        await refreshFiles();
+                      onChange={(e) => {
+                        void (async () => {
+                          await handleFileUpload(e);
+                          void refreshFiles();
+                        })();
                       }}
                       className="hidden"
                     />
@@ -676,18 +639,22 @@ export function EditorView({
                         webkitdirectory: '',
                         directory: '',
                       } as unknown as React.InputHTMLAttributes<HTMLInputElement>)}
-                      onChange={async (e) => {
-                        await handleFolderUpload(e);
-                        await refreshFiles();
+                      onChange={(e) => {
+                        void (async () => {
+                          await handleFolderUpload(e);
+                          void refreshFiles();
+                        })();
                       }}
                     />
                     <input
                       type="file"
                       accept=".zip,.7z,.rar,.tar,.tar.gz,.tgz"
                       ref={zipInputRef}
-                      onChange={async (e) => {
-                        await handleZipUpload(e);
-                        await refreshFiles();
+                      onChange={(e) => {
+                        void (async () => {
+                          await handleZipUpload(e);
+                          void refreshFiles();
+                        })();
                       }}
                       className="hidden"
                     />

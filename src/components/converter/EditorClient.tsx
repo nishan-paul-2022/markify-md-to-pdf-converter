@@ -222,21 +222,6 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
     [converterState, files],
   );
 
-  const handleFileUploadWithRefresh = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      await converterState.handleFileUpload(e);
-      void refreshFiles();
-    },
-    [converterState, refreshFiles],
-  );
-
-  const handleFolderUploadWithRefresh = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      await converterState.handleFolderUpload(e);
-      void refreshFiles();
-    },
-    [converterState, refreshFiles],
-  );
 
   return (
     <EditorView
@@ -247,9 +232,6 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       handleFileRename={handleRename}
       onFileSelect={handleFileSelect}
       refreshFiles={refreshFiles}
-      {...converterState}
-      handleFileUpload={handleFileUploadWithRefresh}
-      handleFolderUpload={handleFolderUploadWithRefresh}
     />
   );
 }
