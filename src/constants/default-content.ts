@@ -98,7 +98,12 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
  */
 export function removeLandingPageSection(markdown: string): string {
   // More robust removal that handles different termination markers
-  return markdown.replace(/(?:^|\r?\n)#\s+Landing\s+Page\s*\r?\n[\s\S]*?(?=\r?\n#\s+|(?:\r?\n){2}---|(?![^]))/i, '').trim();
+  return markdown
+    .replace(
+      /(?:^|\r?\n)#\s+Landing\s+Page\s*\r?\n[\s\S]*?(?=\r?\n#\s+|(?:\r?\n){2}---|(?![^]))/i,
+      '',
+    )
+    .trim();
 }
 
 export const DEFAULT_METADATA: Metadata = {};

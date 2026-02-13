@@ -54,11 +54,7 @@ export const FileRow: React.FC<FileRowProps> = ({
   const isDone = processingState === 'done';
   const isError = processingState === 'error';
 
-  const hasOutput = !!(
-    hasLocalBlob ||
-    isDone ||
-    (file.metadata && file.metadata.generatedPdfUrl)
-  );
+  const hasOutput = !!(hasLocalBlob || isDone || (file.metadata && file.metadata.generatedPdfUrl));
 
   return (
     <div
@@ -144,7 +140,7 @@ export const FileRow: React.FC<FileRowProps> = ({
           <div className="mx-1 h-6 w-px bg-white/5" />
 
           {isDone ? (
-            <div className="flex h-9 items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 text-[10px] font-black tracking-wider text-emerald-500/60 uppercase whitespace-nowrap">
+            <div className="flex h-9 items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 text-[10px] font-black tracking-wider whitespace-nowrap text-emerald-500/60 uppercase">
               <CheckCircle className="h-3.5 w-3.5" />
               <span>Finished</span>
             </div>
@@ -178,14 +174,14 @@ export const FileRow: React.FC<FileRowProps> = ({
       {/* Output File Card (Always visible for every file) */}
       <div
         className={cn(
-          'group/output animate-in slide-in-from-right-8 relative flex w-[480px] items-center justify-between overflow-hidden rounded-3xl border transition-all duration-500 shadow-xl',
+          'group/output animate-in slide-in-from-right-8 relative flex w-[480px] items-center justify-between overflow-hidden rounded-3xl border shadow-xl transition-all duration-500',
           isProcessing
             ? 'border-amber-500/20 bg-amber-500/[0.02] hover:bg-amber-500/[0.04]'
             : isError
               ? 'border-red-500/20 bg-red-500/[0.02] hover:bg-red-500/[0.04]'
               : isDone || hasOutput
                 ? 'border-emerald-500/10 bg-emerald-500/[0.03] hover:border-emerald-500/30 hover:bg-emerald-500/[0.06]'
-                : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.04] opacity-40 hover:opacity-60',
+                : 'border-white/5 bg-white/[0.02] opacity-40 hover:bg-white/[0.04] hover:opacity-60',
         )}
       >
         <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4 pl-5">
@@ -240,7 +236,7 @@ export const FileRow: React.FC<FileRowProps> = ({
                       : isError
                         ? 'text-red-500'
                         : isDone || hasOutput
-                          ? 'text-emerald-500 font-black'
+                          ? 'font-black text-emerald-500'
                           : 'text-slate-500',
                   )}
                 >

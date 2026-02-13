@@ -5,14 +5,7 @@ import { Button } from '@/components/ui/button';
 import UserNav from '@/features/auth/components/user-nav';
 import { auth, signIn } from '@/lib/auth';
 
-import {
-  Code2,
-  FileDown,
-  FilePlus,
-  Layers,
-  Sparkles,
-  Zap,
-} from 'lucide-react';
+import { Code2, FileDown, FilePlus, Layers, Sparkles, Zap } from 'lucide-react';
 
 /**
  * A visual diagram showing the Markdown-to-PDF pipeline.
@@ -76,7 +69,7 @@ function PipelineDiagram(): React.JSX.Element {
       </div>
 
       {/* Background Decorative Gradient for Diagram */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-blue-500/5 to-transparent blur-3xl opacity-50" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-blue-500/5 to-transparent opacity-50 blur-3xl" />
     </div>
   );
 }
@@ -176,8 +169,8 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
           </h1>
 
           <p className="animate-in fade-in slide-in-from-bottom-12 mx-auto mb-14 max-w-2xl text-lg leading-relaxed text-slate-400 delay-500 duration-1000 lg:text-xl">
-            Markify transforms your Markdown folders into professional PDFs with
-            real-time preview and custom branding.
+            Markify transforms your Markdown folders into professional PDFs with real-time preview
+            and custom branding.
           </p>
 
           <div className="animate-in fade-in slide-in-from-bottom-16 flex flex-col items-center justify-center gap-5 delay-700 duration-1000 sm:flex-row">
@@ -187,9 +180,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
                   size="lg"
                   className="group relative h-14 overflow-hidden rounded-2xl bg-white px-8 text-base font-bold text-slate-950 transition-all hover:scale-[1.02] hover:bg-slate-100"
                 >
-                  <span className="relative z-10 flex items-center gap-2">
-                    Open Workspace
-                  </span>
+                  <span className="relative z-10 flex items-center gap-2">Open Workspace</span>
                 </Button>
               </Link>
             ) : (
@@ -203,9 +194,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
                   size="lg"
                   className="group relative h-14 overflow-hidden rounded-2xl bg-white px-8 text-base font-bold text-slate-950 transition-all hover:scale-[1.02] hover:bg-slate-100"
                 >
-                  <span className="relative z-10 flex items-center gap-2">
-                    Get Started
-                  </span>
+                  <span className="relative z-10 flex items-center gap-2">Get Started</span>
                 </Button>
               </form>
             )}
@@ -242,8 +231,8 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
                 </div>
                 <h3 className="mb-4 text-2xl font-bold text-white">Live Feedback</h3>
                 <p className="leading-relaxed text-slate-400">
-                  Write once, preview instantly. Our render engine updates your PDF view
-                  as you type every character.
+                  Write once, preview instantly. Our render engine updates your PDF view as you type
+                  every character.
                 </p>
               </div>
 
@@ -276,16 +265,19 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
 
         {/* Showcase / CTA Section */}
         <section className="mx-auto max-w-7xl px-6 py-32">
-          <div className="group relative overflow-hidden rounded-[3rem] border border-white/10 bg-slate-900 shadow-3xl">
+          <div className="group shadow-3xl relative overflow-hidden rounded-[3rem] border border-white/10 bg-slate-900">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-transparent to-indigo-600/10" />
-            
+
             <div className="relative flex flex-col items-center p-12 text-center lg:p-24">
               <h2 className="mb-8 text-4xl font-black tracking-tight text-white lg:text-6xl">
                 Ready to transform <br /> your documentation?
               </h2>
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Link href="/editor">
-                  <Button size="lg" className="h-14 rounded-2xl bg-white px-10 text-base font-bold text-slate-950 hover:bg-slate-200">
+                  <Button
+                    size="lg"
+                    className="h-14 rounded-2xl bg-white px-10 text-base font-bold text-slate-950 hover:bg-slate-200"
+                  >
                     Get Started Now
                   </Button>
                 </Link>
@@ -293,11 +285,11 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
             </div>
 
             {/* Subtle dashboard-like decorative elements */}
-            <div className="absolute -bottom-20 -left-20 opacity-20 transition-transform group-hover:scale-105 duration-1000">
-                <div className="h-64 w-64 rounded-3xl border border-white/20 bg-slate-800 shadow-2xl" />
+            <div className="absolute -bottom-20 -left-20 opacity-20 transition-transform duration-1000 group-hover:scale-105">
+              <div className="h-64 w-64 rounded-3xl border border-white/20 bg-slate-800 shadow-2xl" />
             </div>
-            <div className="absolute -top-20 -right-20 opacity-20 transition-transform group-hover:scale-105 duration-1000">
-                <div className="h-64 w-64 rounded-3xl border border-white/20 bg-slate-800 shadow-2xl" />
+            <div className="absolute -top-20 -right-20 opacity-20 transition-transform duration-1000 group-hover:scale-105">
+              <div className="h-64 w-64 rounded-3xl border border-white/20 bg-slate-800 shadow-2xl" />
             </div>
           </div>
         </section>
@@ -309,7 +301,13 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
             {/* Brand Section */}
             <div className="flex justify-center md:justify-start">
               <div className="flex items-center gap-2.5">
-                <Image src="/brand-logo.svg" alt="Markify" width={28} height={28} className="brightness-110" />
+                <Image
+                  src="/brand-logo.svg"
+                  alt="Markify"
+                  width={28}
+                  height={28}
+                  className="brightness-110"
+                />
                 <span className="text-xl font-bold tracking-tight text-white/90">Markify</span>
               </div>
             </div>
@@ -319,7 +317,13 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
               <div className="group relative flex flex-col items-center">
                 <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-b from-blue-500/5 to-transparent opacity-0 blur-xl transition-opacity group-hover:opacity-100" />
                 <div className="relative flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-6 py-3 backdrop-blur-md transition-all group-hover:border-white/20 group-hover:bg-white/10">
-                  <Image src="/company-logo.svg" alt="KAI" width={18} height={18} className="opacity-90" />
+                  <Image
+                    src="/company-logo.svg"
+                    alt="KAI"
+                    width={18}
+                    height={18}
+                    className="opacity-90"
+                  />
                   <span className="text-sm font-black tracking-[0.2em] text-white">KAI</span>
                 </div>
               </div>
@@ -327,9 +331,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
 
             {/* Copyright Section */}
             <div className="flex flex-col items-center gap-1.5 md:items-end md:justify-end">
-              <p className="text-sm font-medium text-slate-400">
-                © 2026 Markify
-              </p>
+              <p className="text-sm font-medium text-slate-400">© 2026 Markify</p>
               <p className="text-[10px] font-bold tracking-widest text-slate-600 uppercase">
                 Crafted for Modern Teams
               </p>
