@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useConverter } from '@/hooks/use-converter';
 import { useFiles } from '@/hooks/use-files';
 import { EditorView } from '@/components/converter/EditorView';
@@ -18,58 +18,100 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
   const converterState = useConverter();
   const { files, loading: filesLoading, handleDelete, handleBulkDelete, handleRename, refreshFiles } = useFiles('editor');
 
+  const router = useRouter();
   const searchParams = useSearchParams();
   const fileIdFromUrl = searchParams.get('fileId');
 
-  // Initial selection of file (either from URL or default)
+  // Helper to load file content
+  const loadFileContent = useCallback(async (targetFile: typeof files[0]) => {
+    try {
+      const fileUrl = targetFile.url || '';
+      const fetchUrl = (fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/')) 
+        ? `/api${fileUrl}` 
+        : fileUrl;
+        
+      const response = await fetch(fetchUrl);
+      if (response.ok) {
+        const text = await response.text();
+        converterState.handleContentChange(text);
+        converterState.setFilename(targetFile.originalName);
+        converterState.setSelectedFileId(targetFile.id);
+        
+        if (fileUrl) {
+          const lastSlashIndex = fileUrl.lastIndexOf('/');
+          if (lastSlashIndex !== -1) {
+            const directoryPath = fileUrl.substring(0, lastSlashIndex);
+            const finalBasePath = (directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')) 
+              ? directoryPath 
+              : `/api${directoryPath}`;
+            converterState.setBasePath(finalBasePath);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load file:', error);
+    }
+  }, [converterState]);
+
+  // Initial selection of file (URL -> LocalStorage -> Default)
   useEffect(() => {
     if (!filesLoading && files.length > 0 && !converterState.selectedFileId) {
       // 1. Check if we have a fileId in the URL
       if (fileIdFromUrl) {
         const targetFile = files.find(f => f.id === fileIdFromUrl);
         if (targetFile) {
-          // Manual fetch and state update (similar to handleFileSelect but for a flat File object)
-          const loadFile = async () => {
-            try {
-              const fileUrl = targetFile.url || '';
-              const fetchUrl = (fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/')) 
-                ? `/api${fileUrl}` 
-                : fileUrl;
-                
-              const response = await fetch(fetchUrl);
-              if (response.ok) {
-                const text = await response.text();
-                converterState.handleContentChange(text);
-                converterState.setFilename(targetFile.originalName);
-                converterState.setSelectedFileId(targetFile.id);
-                
-                if (fileUrl) {
-                  const lastSlashIndex = fileUrl.lastIndexOf('/');
-                  if (lastSlashIndex !== -1) {
-                    const directoryPath = fileUrl.substring(0, lastSlashIndex);
-                    const finalBasePath = (directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')) 
-                      ? directoryPath 
-                      : `/api${directoryPath}`;
-                    converterState.setBasePath(finalBasePath);
-                  }
-                }
-              }
-            } catch (error) {
-              console.error('Failed to load file from URL param:', error);
-            }
-          };
-          loadFile();
+          loadFileContent(targetFile);
           return;
         }
       }
 
-      // 2. Fallback to default file
+      // 2. Check LocalStorage for last active file (if user is known)
+      if (user.email) {
+        const storageKey = `markify_last_file_${user.email}`;
+        const lastFileId = localStorage.getItem(storageKey);
+        if (lastFileId) {
+           const targetFile = files.find(f => f.id === lastFileId);
+           if (targetFile) {
+             loadFileContent(targetFile);
+             return;
+           }
+        }
+      }
+
+      // 3. Fallback to default file
       const defaultFile = files.find(f => f.url === DEFAULT_MARKDOWN_PATH);
       if (defaultFile) {
         converterState.setSelectedFileId(defaultFile.id);
       }
     }
-  }, [files, filesLoading, converterState.selectedFileId, converterState, fileIdFromUrl]);
+  }, [files, filesLoading, converterState.selectedFileId, converterState, fileIdFromUrl, user.email, loadFileContent]);
+
+  // Sync state changes to URL and LocalStorage
+  useEffect(() => {
+    if (converterState.selectedFileId) {
+      // URL Sync
+      const params = new URLSearchParams(searchParams.toString());
+      if (params.get('fileId') !== converterState.selectedFileId) {
+        params.set('fileId', converterState.selectedFileId);
+        router.replace(`?${params.toString()}`, { scroll: false });
+      }
+      
+      // LocalStorage Sync
+      if (user.email) {
+         const storageKey = `markify_last_file_${user.email}`;
+         localStorage.setItem(storageKey, converterState.selectedFileId);
+      }
+
+    } else {
+      // Cleanup if deselected
+      if (searchParams.has('fileId')) {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('fileId');
+        router.replace(`?${params.toString()}`, { scroll: false });
+      }
+      // Optional: Clear local storage? No, let's keep the last one unless explicitly handled.
+    }
+  }, [converterState.selectedFileId, searchParams, router, user.email]);
 
   const handleUnifiedDelete = useCallback((id: string | string[]) => {
     if (Array.isArray(id)) {
@@ -146,6 +188,8 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       }
     }
   }, [converterState, files]);
+
+
 
   const handleFileUploadWithRefresh = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     await converterState.handleFileUpload(e);
