@@ -1,6 +1,8 @@
 import React from 'react';
+
 import { Button } from '@/components/ui/button';
-import { Upload, FileCode, FolderOpen, FileDown } from 'lucide-react';
+
+import { FileCode, FileDown,FolderOpen, Upload } from 'lucide-react';
 
 interface SourceSegmentProps {
   onUploadClick: (type: 'file' | 'folder' | 'zip') => void;
@@ -19,12 +21,12 @@ export const SourceSegment: React.FC<SourceSegmentProps> = ({ onUploadClick }) =
           <span>Source</span>
         </div>
       </div>
-      
+
       <div className="flex-grow bg-amber-400/[0.03] border border-amber-400/10 rounded-[1.5rem] p-6 backdrop-blur-xl flex flex-col justify-center gap-6 shadow-2xl relative overflow-hidden group">
         <div className="absolute inset-0 bg-gradient-to-br from-amber-400/[0.05] to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
-        
+
         <div className="space-y-4 w-full relative z-10">
-          <Button 
+          <Button
             onClick={(e) => { e.stopPropagation(); onUploadClick('file'); }}
             className="w-full h-16 bg-slate-900/40 border border-white/10 hover:border-amber-500/50 hover:bg-amber-500/10 rounded-2xl flex items-center justify-start px-6 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
           >
@@ -36,7 +38,7 @@ export const SourceSegment: React.FC<SourceSegmentProps> = ({ onUploadClick }) =
             </div>
           </Button>
 
-          <Button 
+          <Button
             onClick={(e) => { e.stopPropagation(); onUploadClick('folder'); }}
             className="w-full h-16 bg-slate-900/40 border border-white/10 hover:border-indigo-500/50 hover:bg-indigo-500/10 rounded-2xl flex items-center justify-start px-6 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
           >
@@ -48,7 +50,7 @@ export const SourceSegment: React.FC<SourceSegmentProps> = ({ onUploadClick }) =
             </div>
           </Button>
 
-          <Button 
+          <Button
             onClick={(e) => { e.stopPropagation(); onUploadClick('zip'); }}
             className="w-full h-16 bg-slate-900/40 border border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/10 rounded-2xl flex items-center justify-start px-6 gap-4 transition-all duration-300 group/btn shadow-lg backdrop-blur-sm"
           >

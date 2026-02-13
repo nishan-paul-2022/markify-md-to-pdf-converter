@@ -1,9 +1,11 @@
 import React from 'react';
 import Image from 'next/image';
-import { Search, FileCode } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import UserNav from '@/components/auth/UserNav';
 import { useRouter } from 'next/navigation';
+
+import UserNav from '@/components/auth/UserNav';
+import { Button } from '@/components/ui/button';
+
+import { FileCode,Search } from 'lucide-react';
 
 interface ConverterHeaderProps {
   user: {
@@ -28,7 +30,7 @@ export const ConverterHeader: React.FC<ConverterHeaderProps> = ({
 
   return (
     <header className="relative z-10 h-16 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl flex items-center justify-between px-6 shrink-0">
-      <div 
+      <div
         className="flex items-center gap-4 w-[280px] cursor-pointer group/logo"
         onClick={() => router.push('/')}
       >
@@ -53,7 +55,7 @@ export const ConverterHeader: React.FC<ConverterHeaderProps> = ({
             className="h-9 w-56 bg-white/5 border border-white/5 rounded-full pl-9 pr-4 text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/30 focus:bg-blue-500/5 focus:text-blue-100 transition-all"
           />
         </div>
-        
+
         <Button
           variant="ghost"
           onClick={() => router.push('/editor')}

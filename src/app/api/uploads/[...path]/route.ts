@@ -1,14 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
-import { join } from "path";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
+
 import fs from "fs";
 import { lookup } from "mime-types";
+import { join } from "path";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ): Promise<NextResponse> {
   const { path: routePath } = await params;
-  
+
   if (!routePath || routePath.length === 0) {
     return new NextResponse("Not Found", { status: 404 });
   }
@@ -22,13 +24,13 @@ export async function GET(
   // Map /api/uploads/xxx to public/uploads/xxx
   // Note: routePath will be ["user-id", "batch-id", "filename.png"] or similar
   // We assume the route is /api/uploads/[...path]
-  
+
   console.log('🔍 Uploads API - Requested path:', routePath);
-  
+
   // Construct absolute path to file
   const uploadsDir = join(process.cwd(), "public", "uploads");
   const filePath = join(uploadsDir, ...routePath);
-  
+
   console.log('📂 Uploads API - Looking for file at:', filePath);
 
   if (!fs.existsSync(filePath)) {

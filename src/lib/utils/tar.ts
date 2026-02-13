@@ -3,7 +3,7 @@ export async function createTar(files: { name: string; blob: Blob }[]): Promise<
   const chunks: BlobPart[] = [];
   const encoder = new TextEncoder();
 
-  function pad(num: number, bytes: number, base: number = 8): string {
+  function pad(num: number, bytes: number, base = 8): string {
     const str = num.toString(base);
     return '0'.repeat(Math.max(0, bytes - str.length)) + str;
   }
@@ -19,7 +19,7 @@ export async function createTar(files: { name: string; blob: Blob }[]): Promise<
     const header = new Uint8Array(512);
     const name = file.name;
     const size = file.blob.size;
-    
+
     // POSIX ustar header format
     // Ref: https://www.gnu.org/software/tar/manual/html_node/Standard.html
     header.set(writeString(name, 100), 0); // name
@@ -30,9 +30,9 @@ export async function createTar(files: { name: string; blob: Blob }[]): Promise<
     header.set(writeString(pad(Math.floor(Date.now() / 1000), 11), 12), 136); // mtime
     header.set(writeString('        ', 8), 148); // chksum (blank for now)
     header[156] = '0'.charCodeAt(0); // typeflag (0 = file)
-    
+
     // Magic ustar
-    header.set(writeString('ustar', 6), 257); 
+    header.set(writeString('ustar', 6), 257);
     header.set(writeString('00', 2), 263);
 
     // Calculate checksum
@@ -40,7 +40,7 @@ export async function createTar(files: { name: string; blob: Blob }[]): Promise<
     for (let i = 0; i < 512; i++) {
  checksum += header[i];
 }
-    
+
     // Write checksum
     const chksumStr = pad(checksum, 6) + '\0 ';
     header.set(writeString(chksumStr, 8), 148);

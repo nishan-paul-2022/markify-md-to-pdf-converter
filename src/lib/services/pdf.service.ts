@@ -1,21 +1,23 @@
-import { generatePdf, Metadata } from '@/lib/pdf-generator';
-import { marked } from 'marked';
-import fs from 'fs';
-import path from 'path';
+import type { Metadata } from '@/lib/pdf-generator';
+import { generatePdf } from '@/lib/pdf-generator';
 import prisma from "@/lib/prisma";
-import { writeFile, mkdir } from "fs/promises";
+
 import { randomUUID } from "crypto";
+import fs from 'fs';
+import { mkdir,writeFile } from "fs/promises";
+import { marked } from 'marked';
+import path from 'path';
 import { join } from "path";
 
 /**
  * Service to handle PDF generation pipeline including image processing and persistence.
  * Follows Guideline 1 (Source -> Process -> Sink) and Guideline 6 (Service-Level Abstraction).
  */
-export class PdfService {
+export const PdfService = {
   /**
    * Embeds local images as base64 in HTML content.
    */
-  private static async processHtmlImages(html: string, basePath?: string): Promise<string> {
+  processHtmlImages: async (html: string, basePath?: string): Promise<string> => {
     const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/g;
     const matches = [...html.matchAll(imgRegex)];
     let processedHtml = html;
@@ -23,7 +25,7 @@ export class PdfService {
     for (const match of matches) {
       const fullTag = match[0];
       const src = match[1];
-      
+
       if (src.startsWith('http') || src.startsWith('data:')) { continue; }
 
       const filename = src.split('/').pop();
@@ -54,9 +56,9 @@ export class PdfService {
             const ext = path.extname(filename).substring(1).toLowerCase();
             const mimeType = ext === 'svg' ? 'svg+xml' : (ext === 'jpg' ? 'jpeg' : ext);
             const newSrc = `data:image/${mimeType};base64,${base64}`;
-            
+
             processedHtml = processedHtml.replace(fullTag, fullTag.replace(src, newSrc));
-            break; 
+            break;
           } catch (e) {
             console.error(`Error reading image ${imgPath}:`, e);
           }
@@ -64,27 +66,27 @@ export class PdfService {
       }
     }
     return processedHtml;
-  }
+  },
 
   /**
    * Main pipeline for generating and optionally saving a PDF.
    */
-  static async processPdfPipeline(params: {
+  processPdfPipeline: async (params: {
     markdown: string;
     metadata: Metadata;
     userId: string;
     basePath?: string;
     saveToServer?: boolean;
     sourceFileId?: string;
-  }) {
+  }) => {
     const { markdown, metadata, userId, basePath, saveToServer, sourceFileId } = params;
 
     // 1. Process markdown to HTML
     const processedMarkdown = markdown.replace(/\\pagebreak|<!-- pagebreak -->/g, '<div class="page-break-marker"></div>');
     let htmlContent = await marked.parse(processedMarkdown);
-    
+
     // 2. Embed images
-    htmlContent = await this.processHtmlImages(htmlContent, basePath);
+    htmlContent = await PdfService.processHtmlImages(htmlContent, basePath);
 
     // 3. Generate PDF Buffer
     const pdfBuffer = await generatePdf(htmlContent, metadata);
@@ -101,7 +103,7 @@ export class PdfService {
         const batchId = sourceFile.batchId || 'no-batch';
         const pdfFilename = sourceFile.originalName.replace(/\.md$/i, '') + '.pdf';
         const uniqueFilename = `${randomUUID()}.pdf`;
-        
+
         const relativeStorageDir = join("uploads", userId, batchId);
         const uploadDir = join(process.cwd(), "public", relativeStorageDir);
         await mkdir(uploadDir, { recursive: true });
@@ -138,7 +140,7 @@ export class PdfService {
         });
 
         // Update Source Link
-        const currentMetadata = (sourceFile.metadata as Record<string, unknown>) || {};
+        const currentMetadata = (sourceFile.metadata as Record<string, unknown> | null) ?? {};
         await prisma.file.update({
           where: { id: sourceFile.id },
           data: {
@@ -158,7 +160,7 @@ export class PdfService {
     return {
       pdfBuffer,
       pdfFileRecord,
-      filename: sourceFileId ? undefined : 'report.pdf' 
+      filename: sourceFileId ? undefined : 'report.pdf'
     };
   }
-}
+};

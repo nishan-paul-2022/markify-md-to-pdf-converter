@@ -1,16 +1,18 @@
-"use client"
+"use client";
 
-import React from "react"
-import { Trash2, Download, FileText, PencilLine, Lock, MoreVertical, Eye } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { File } from "@/hooks/use-files"
+import React from "react";
+
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
+import type { File } from "@/hooks/use-files";
+import { cn } from "@/lib/utils";
+
+import { Download, Eye,FileText, Lock, MoreVertical, PencilLine, Trash2 } from "lucide-react";
 
 interface FileGridViewProps {
   files: File[];
@@ -27,24 +29,24 @@ export function FileGridView({
   setDeleteId,
   handleRename,
 }: FileGridViewProps) {
-  const [renamingId, setRenamingId] = React.useState<string | null>(null)
-  const [renameValue, setRenameValue] = React.useState("")
-  const [isRenaming, setIsRenaming] = React.useState(false)
+  const [renamingId, setRenamingId] = React.useState<string | null>(null);
+  const [renameValue, setRenameValue] = React.useState("");
+  const [isRenaming, setIsRenaming] = React.useState(false);
 
   const handleRenameStart = (file: File) => {
-    setRenamingId(file.id)
+    setRenamingId(file.id);
     const parts = file.originalName.split(".");
     if (parts.length > 1) {
       setRenameValue(parts.slice(0, -1).join("."));
     } else {
       setRenameValue(file.originalName);
     }
-  }
+  };
 
   const handleRenameCancel = () => {
-    setRenamingId(null)
-    setRenameValue("")
-  }
+    setRenamingId(null);
+    setRenameValue("");
+  };
 
   const handleRenameSubmit = async (file: File) => {
     let finalName = renameValue.trim();
@@ -60,20 +62,20 @@ export function FileGridView({
     }
 
     if (finalName === file.originalName) {
-      handleRenameCancel()
-      return
+      handleRenameCancel();
+      return;
     }
 
-    setIsRenaming(true)
+    setIsRenaming(true);
     try {
-      await handleRename(file.id, finalName, "file")
-      handleRenameCancel()
+      await handleRename(file.id, finalName, "file");
+      handleRenameCancel();
     } catch (error) {
-      console.error("Rename failed:", error)
+      console.error("Rename failed:", error);
     } finally {
-      setIsRenaming(false)
+      setIsRenaming(false);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -82,7 +84,7 @@ export function FileGridView({
           <div key={i} className="aspect-square rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
         ))}
       </div>
-    )
+    );
   }
 
   if (files.length === 0) {
@@ -91,7 +93,7 @@ export function FileGridView({
         <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
         <h3 className="text-lg font-medium mb-2">No files yet</h3>
       </div>
-    )
+    );
   }
 
   return (
@@ -102,12 +104,12 @@ export function FileGridView({
         const isCurrentlyRenaming = renamingId === file.id;
 
         return (
-          <div 
+          <div
             key={file.id}
             className="group relative flex flex-col bg-white dark:bg-slate-900 border rounded-xl overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 transform hover:-translate-y-1"
           >
             {/* Preview Area */}
-            <div 
+            <div
               className={cn(
                 "relative aspect-square w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950/50 overflow-hidden",
                 isImage && "cursor-pointer"
@@ -116,8 +118,8 @@ export function FileGridView({
             >
               {isImage ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img 
-                  src={file.url} 
+                <img
+                  src={file.url}
                   alt={file.originalName}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
@@ -131,9 +133,9 @@ export function FileGridView({
               {/* Hover Overlays */}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                 {isImage && (
-                  <Button 
-                    size="icon" 
-                    variant="secondary" 
+                  <Button
+                    size="icon"
+                    variant="secondary"
                     className="rounded-full shadow-lg"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -143,9 +145,9 @@ export function FileGridView({
                     <Eye className="h-4 w-4" />
                   </Button>
                 )}
-                <Button 
-                  size="icon" 
-                  variant="secondary" 
+                <Button
+                  size="icon"
+                  variant="secondary"
                   className="rounded-full shadow-lg"
                   asChild
                 >
@@ -188,12 +190,12 @@ export function FileGridView({
                   {file.originalName}
                 </p>
               )}
-              
+
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">
                   {isImage ? 'Image' : 'Markdown'}
                 </span>
-                
+
                 {!isDefault && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -206,8 +208,8 @@ export function FileGridView({
                         <PencilLine className="mr-2 h-4 w-4" />
                         Rename
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        className="text-red-500 focus:text-red-500" 
+                      <DropdownMenuItem
+                        className="text-red-500 focus:text-red-500"
                         onClick={() => setDeleteId(file.id)}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
@@ -219,8 +221,8 @@ export function FileGridView({
               </div>
             </div>
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

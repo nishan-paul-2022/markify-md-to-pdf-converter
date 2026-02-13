@@ -2,16 +2,17 @@
 
 import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import dynamic from 'next/dynamic';
+
+import { createMarkdownComponents } from '@/components/converter/MarkdownComponents';
+import { MdPreviewToolbar } from '@/components/converter/MdPreviewToolbar';
+import { CoverPage, PageWrapper } from '@/components/converter/PageTemplates';
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Loader2 } from 'lucide-react';
+import { A4_HEIGHT_PX,A4_WIDTH_PX, usePreview } from '@/hooks/use-preview';
 import { cn } from '@/lib/utils';
 
-import { usePreview, A4_WIDTH_PX, A4_HEIGHT_PX } from '@/hooks/use-preview';
-import { createMarkdownComponents } from '@/components/converter/MarkdownComponents';
-import { CoverPage, PageWrapper } from '@/components/converter/PageTemplates';
-import { MdPreviewToolbar } from '@/components/converter/MdPreviewToolbar';
+import { Loader2 } from 'lucide-react';
+import remarkGfm from 'remark-gfm';
 
 const PdfViewer = dynamic(() => import('@/components/converter/PdfViewer'), {
   ssr: false,
@@ -56,7 +57,7 @@ const MdPreview = React.memo(({
 }: MdPreviewProps): React.JSX.Element => {
   const previewState = usePreview({ content, metadata, onGeneratePdf, basePath });
   const {
-    viewMode, pdfBlobUrl, isPdfReady, isPdfLoading, 
+    viewMode, pdfBlobUrl, isPdfReady, isPdfLoading,
     containerRef, contentRef, stagingRef,
     paginatedPages, totalPages, showCoverPage,
     contentHeight, getScale, isInitializing,
@@ -103,7 +104,7 @@ const MdPreview = React.memo(({
         )}
 
         {showToolbar && (
-          <MdPreviewToolbar 
+          <MdPreviewToolbar
             {...previewState}
             isPdfRendering={isPdfRendering}
             onDownload={onDownload}
@@ -113,17 +114,17 @@ const MdPreview = React.memo(({
         )}
 
         <div ref={containerRef} className={cn("flex-grow overflow-y-scroll overflow-x-auto flex justify-center bg-slate-900/40 custom-scrollbar relative", previewState.zoomMode === 'fit-width' ? "p-0" : "p-4")}>
-          <div 
-            style={{ 
+          <div
+            style={{
               height: contentHeight > 0 ? `${contentHeight * getScale()}px` : 'auto',
               width: `${A4_WIDTH_PX * getScale()}px`,
               transition: 'height 0.3s ease-out, width 0.3s ease-out',
               overflow: 'hidden'
             }}
           >
-            <div 
+            <div
               ref={contentRef}
-              className="grid grid-cols-1 grid-rows-1 origin-top-left transition-transform duration-300 ease-out relative" 
+              className="grid grid-cols-1 grid-rows-1 origin-top-left transition-transform duration-300 ease-out relative"
               style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}
             >
               {/* Live View Layer */}

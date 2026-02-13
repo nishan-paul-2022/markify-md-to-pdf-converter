@@ -1,19 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { signOut } from "next-auth/react"
-import { usePathname } from "next/navigation"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,9 +15,19 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LogOut, Trash2, Loader2 } from "lucide-react"
+} from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import { Loader2,LogOut, Trash2 } from "lucide-react";
 
 interface UserNavProps {
   user: {
@@ -36,38 +38,38 @@ interface UserNavProps {
 }
 
 export default function UserNav({ user }: UserNavProps): React.JSX.Element {
-  const pathname = usePathname()
-  const isEditor = pathname?.startsWith("/editor")
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const pathname = usePathname();
+  const isEditor = pathname?.startsWith("/editor");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteAccount = async () => {
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
       const response = await fetch("/api/auth/delete-account", {
         method: "DELETE",
-      })
+      });
 
       if (response.ok) {
         // Redirect to landing page and sign out
-        signOut({ callbackUrl: "/" })
+        signOut({ callbackUrl: "/" });
       } else {
-        const data = await response.json()
-        alert(data.error || "Failed to delete account")
-        setIsDeleting(false)
+        const data = await response.json();
+        alert(data.error || "Failed to delete account");
+        setIsDeleting(false);
       }
     } catch (error) {
-      console.error("Error deleting account:", error)
-      alert("An unexpected error occurred")
-      setIsDeleting(false)
+      console.error("Error deleting account:", error);
+      alert("An unexpected error occurred");
+      setIsDeleting(false);
     }
-  }
+  };
 
   const initials = user.name
     ?.split(" ")
     .map((n) => n[0])
     .join("")
-    .toUpperCase() || user.email?.[0].toUpperCase() || "U"
+    .toUpperCase() || user.email?.[0].toUpperCase() || "U";
 
   return (
     <>
@@ -92,7 +94,7 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
               </p>
             </div>
           </DropdownMenuLabel>
-          
+
           {isEditor && (
             <>
               <DropdownMenuSeparator className="bg-white/5 mx-1" />
@@ -118,7 +120,7 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
               <LogOut className="mr-3 h-4 w-4" />
               <span className="text-xs font-black uppercase tracking-[0.15em]">Log out</span>
             </DropdownMenuItem>
-            
+
             <DropdownMenuItem
               className="py-3 px-3 rounded-lg focus:bg-red-600/20 text-red-600/60 focus:text-red-500 cursor-pointer transition-colors mt-1"
               onClick={() => setShowDeleteConfirm(true)}
@@ -138,7 +140,7 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
               Delete Permanently?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400 font-medium pt-2">
-              This action cannot be undone. This will permanently delete your account, 
+              This action cannot be undone. This will permanently delete your account,
               all uploaded files, and all associated data from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -148,8 +150,8 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
-                e.preventDefault()
-                handleDeleteAccount()
+                e.preventDefault();
+                handleDeleteAccount();
               }}
               disabled={isDeleting}
               className="bg-red-600 hover:bg-red-500 text-white border-none rounded-xl uppercase text-[10px] font-black tracking-widest flex items-center justify-center gap-2 w-36 h-11"
@@ -167,5 +169,5 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

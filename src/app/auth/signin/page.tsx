@@ -1,6 +1,6 @@
-import { signIn } from "@/lib/auth"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { signIn } from "@/lib/auth";
 
 export default async function SignInPage({
   searchParams,
@@ -28,11 +28,11 @@ export default async function SignInPage({
                 : 'An error occurred during sign in. Please try again.'}
             </div>
           )}
-          
+
           <form
             action={async () => {
-              "use server"
-              await signIn("google", { redirectTo: callbackUrl })
+              "use server";
+              await signIn("google", { redirectTo: callbackUrl });
             }}
             className="space-y-4"
           >
@@ -77,5 +77,5 @@ export default async function SignInPage({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

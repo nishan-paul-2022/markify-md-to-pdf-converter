@@ -1,4 +1,4 @@
-import { File as AppFile } from "@/hooks/use-files";
+import type { File as AppFile } from "@/hooks/use-files";
 
 export interface FileTreeNode {
   id: string;
@@ -13,7 +13,7 @@ export interface FileTreeNode {
 export function buildFileTree(files: AppFile[]): FileTreeNode[] {
   // Group files by batchId first to ensure complete separation
   const batchGroups = new Map<string, AppFile[]>();
-  
+
   files.forEach((file) => {
     const batchId = file.batchId || 'no-batch';
     if (!batchGroups.has(batchId)) {
@@ -35,13 +35,13 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
       parts.forEach((part, index) => {
         const isLast = index === parts.length - 1;
         accumulatedPath = accumulatedPath ? `${accumulatedPath}/${part}` : part;
-        
+
         // CRITICAL: Use batchId in the folder key to ensure folders from different uploads never merge
         // Even if they have the same name (e.g., two uploads both named "content-1")
-        const nodeKey = isLast 
-          ? file.id 
+        const nodeKey = isLast
+          ? file.id
           : `folder-${batchId}-${accumulatedPath}`;
-        
+
         let node = currentLevel.find((n) => n.id === nodeKey);
 
         if (!node) {
@@ -67,17 +67,17 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
   // Sort: folders first, then alphabetically
   const sortNodes = (nodes: FileTreeNode[]) => {
     nodes.sort((a, b) => {
-      // Priority sorting: 
+      // Priority sorting:
       // 1. Default items (sample-document, sample-project)
       // 2. Folders
       // 3. Alphabetical
-      
+
       const isDefaultA = a.batchId === 'sample-document' || a.batchId === 'sample-project';
       const isDefaultB = b.batchId === 'sample-document' || b.batchId === 'sample-project';
 
       if (isDefaultA && !isDefaultB) {return -1;}
       if (!isDefaultA && isDefaultB) {return 1;}
-      
+
       // If both are defaults, sample-document goes before sample-project (or vice versa, but let's keep it consistent)
       if (isDefaultA && isDefaultB) {
         if (a.batchId === 'sample-document' && b.batchId === 'sample-project') {return -1;}

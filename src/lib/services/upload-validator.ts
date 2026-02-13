@@ -22,12 +22,12 @@ const normalizePath = (path: string): string => {
  */
 export const extractImageReferences = (markdownContent: string): Set<string> => {
   const imageRefs = new Set<string>();
-  
+
   // Standard Markdown images: ![alt](path)
   const mdImageRegex = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
   // HTML img tags: <img src="path">
   const htmlImageRegex = /<img[^>]+src=["']([^"']+)["']/gi;
-  
+
   let match;
   while ((match = mdImageRegex.exec(markdownContent)) !== null) {
     const url = match[2];
@@ -35,28 +35,28 @@ export const extractImageReferences = (markdownContent: string): Set<string> => 
       imageRefs.add(normalizePath(url));
     }
   }
-  
+
   while ((match = htmlImageRegex.exec(markdownContent)) !== null) {
     const url = match[1];
     if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('data:')) {
       imageRefs.add(normalizePath(url));
     }
   }
-  
+
   return imageRefs;
 };
 
 /**
  * Validates the structure of uploaded files and classifies them into 4 cases.
  */
-export function validateUploadStructure(files: File[], referencedImages: Set<string> = new Set()): ValidationResult {
+export function validateUploadStructure(files: File[], referencedImages = new Set<string>()): ValidationResult {
   if (files.length === 0) {
     return { case: 0, valid: false, error: "No files selected.", filteredFiles: [] };
   }
 
   // Determine if it's a folder upload
   const isFolderUpload = files.some(f => f.webkitRelativePath && f.webkitRelativePath.includes('/'));
-  
+
   // Apply Smart Filtering for folder uploads: Ignore hidden files/folders and system directories
   let processedFiles = files;
   if (isFolderUpload) {
@@ -110,8 +110,8 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
       return { case: 1, valid: false, error: "No Markdown (.md) files found in selection.", filteredFiles: [] };
     }
 
-    return { 
-      case: filteredFiles.length === 1 ? 1 : 2, 
+    return {
+      case: filteredFiles.length === 1 ? 1 : 2,
       valid: true,
       filteredFiles
     };
@@ -127,7 +127,7 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
   });
 
   const isSingleFolderDrop = firstParts.size === 1 && !processedFiles.some(f => !(f.webkitRelativePath || "").includes('/'));
-  
+
   const subdirectories = new Set<string>();
   const foundImageRefs = new Set<string>();
   let mdFilesInRootCount = 0;
@@ -139,7 +139,7 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
 
     const subParts = isSingleFolderDrop ? pathParts.slice(1) : pathParts;
     const internalPath = subParts.join('/');
-    
+
     if (subParts.length > 1) {
       subdirectories.add(subParts[0]);
     }
@@ -151,7 +151,7 @@ export function validateUploadStructure(files: File[], referencedImages: Set<str
       } else {
         violations.push(`Violation: Invalid root file: ${fileName}`);
       }
-    } 
+    }
     else if (subParts.length === 2 && subParts[0] === 'images') {
       const isImage = ALLOWED_IMAGE_EXTENSIONS.some(ext => fileName.toLowerCase().endsWith(ext));
       if (isImage) {

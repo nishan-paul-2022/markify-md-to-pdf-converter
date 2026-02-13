@@ -1,11 +1,13 @@
 import React from 'react';
+
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, DownloadCloud, Loader2, RefreshCw, Play, Pause, Check, MoreVertical, Eye, Printer } from 'lucide-react';
+import type { ViewMode, ZoomMode } from '@/hooks/use-preview';
 import { cn } from '@/lib/utils';
-import { ViewMode, ZoomMode } from '@/hooks/use-preview';
+
+import { ArrowLeftRight, Check, ChevronDown, ChevronsDown, ChevronsUp, ChevronUp, DownloadCloud, Eye, Loader2, Maximize, MoreVertical, Pause, Play, Printer,RefreshCw, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface MdPreviewToolbarProps {
   viewMode: ViewMode;
@@ -169,13 +171,13 @@ export const MdPreviewToolbar = ({
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                {renderSuccess 
-                  ? "Sync Complete" 
+                {renderSuccess
+                  ? "Sync Complete"
                   : isPdfRendering
-                    ? "Syncing" 
+                    ? "Syncing"
                     : !hasChanges
-                      ? "No Changes" 
-                      : isAutoRender 
+                      ? "No Changes"
+                      : isAutoRender
                         ? "Auto-Sync ON"
                         : "Sync Pending"}
               </TooltipContent>
@@ -200,7 +202,7 @@ export const MdPreviewToolbar = ({
             </TooltipTrigger>
             <TooltipContent>First Page</TooltipContent>
           </Tooltip>
-          
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -220,8 +222,8 @@ export const MdPreviewToolbar = ({
           <div className="px-1.5 min-w-[3.5rem] flex justify-center items-center relative h-6 overflow-hidden">
             <div className={cn(
               "absolute transition-all duration-300 ease-in-out flex items-center justify-center",
-              (isInitializing || isPdfRendering) 
-                ? "opacity-100 scale-100 blur-0" 
+              (isInitializing || isPdfRendering)
+                ? "opacity-100 scale-100 blur-0"
                 : "opacity-0 scale-75 blur-sm pointer-events-none"
             )}>
               <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
@@ -229,8 +231,8 @@ export const MdPreviewToolbar = ({
 
             <div className={cn(
               "transition-all duration-300 ease-out flex items-center justify-center",
-              !(isInitializing || isPdfRendering) 
-                ? "opacity-100 scale-100 translate-y-0" 
+              !(isInitializing || isPdfRendering)
+                ? "opacity-100 scale-100 translate-y-0"
                 : "opacity-0 scale-95 translate-y-1 pointer-events-none"
             )}>
               <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1">
@@ -391,10 +393,10 @@ export const MdPreviewToolbar = ({
                   aria-label="Download PDF"
                   className={cn(
                     "h-6 w-8 rounded-full transition-all duration-200 active:scale-95 border border-transparent flex items-center justify-center",
-                    isDownloaded 
+                    isDownloaded
                       ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
-                      : isGenerating 
-                        ? "bg-white/10 text-white shadow-sm" 
+                      : isGenerating
+                        ? "bg-white/10 text-white shadow-sm"
                         : "text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 hover:border-rose-500/20 shadow-sm"
                   )}
                 >
@@ -428,9 +430,9 @@ export const MdPreviewToolbar = ({
                     {isAutoRender ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                     {isAutoRender ? 'Pause Auto-Sync' : 'Resume Auto-Sync'}
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    disabled={isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges} 
-                    onClick={handleManualRefresh} 
+                  <DropdownMenuItem
+                    disabled={isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges}
+                    onClick={handleManualRefresh}
                     className="gap-2 text-xs"
                   >
                     <RefreshCw className={cn("w-3.5 h-3.5", isPdfRendering && "animate-spin")} />

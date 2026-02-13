@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import mermaid from 'mermaid';
+
 import { Loader2 } from 'lucide-react';
+import mermaid from 'mermaid';
 
 export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);

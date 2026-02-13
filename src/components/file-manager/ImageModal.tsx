@@ -1,10 +1,12 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react"
-import { X, ChevronLeft, ChevronRight, Download, Maximize2, Minimize2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { File as AppFile } from "@/hooks/use-files"
+import React, { useCallback, useEffect, useRef,useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import type { File as AppFile } from "@/hooks/use-files";
+import { cn } from "@/lib/utils";
+
+import { ChevronLeft, ChevronRight, Download, Maximize2, Minimize2,X } from "lucide-react";
 
 interface ImageModalProps {
   activeImage: AppFile;
@@ -13,29 +15,29 @@ interface ImageModalProps {
   onSelectImage: (image: AppFile) => void;
 }
 
-export function ImageModal({ 
-  activeImage, 
-  images, 
-  onClose, 
-  onSelectImage 
+export function ImageModal({
+  activeImage,
+  images,
+  onClose,
+  onSelectImage
 }: ImageModalProps) {
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const [imgLoaded, setImgLoaded] = useState(false)
-  const thumbnailsRef = useRef<HTMLDivElement>(null)
-  
-  const currentIndex = images.findIndex(img => img.id === activeImage.id)
-  
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const thumbnailsRef = useRef<HTMLDivElement>(null);
+
+  const currentIndex = images.findIndex(img => img.id === activeImage.id);
+
   const handlePrev = useCallback(() => {
-    const prevIndex = (currentIndex - 1 + images.length) % images.length
-    setImgLoaded(false)
-    onSelectImage(images[prevIndex])
-  }, [currentIndex, images, onSelectImage])
+    const prevIndex = (currentIndex - 1 + images.length) % images.length;
+    setImgLoaded(false);
+    onSelectImage(images[prevIndex]);
+  }, [currentIndex, images, onSelectImage]);
 
   const handleNext = useCallback(() => {
-    const nextIndex = (currentIndex + 1) % images.length
-    setImgLoaded(false)
-    onSelectImage(images[nextIndex])
-  }, [currentIndex, images, onSelectImage])
+    const nextIndex = (currentIndex + 1) % images.length;
+    setImgLoaded(false);
+    onSelectImage(images[nextIndex]);
+  }, [currentIndex, images, onSelectImage]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -43,31 +45,31 @@ export function ImageModal({
       if (e.key === "Escape") {onClose();}
       if (e.key === "ArrowLeft") {handlePrev();}
       if (e.key === "ArrowRight") {handleNext();}
-    }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [onClose, handlePrev, handleNext])
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, handlePrev, handleNext]);
 
   // Auto-scroll active thumbnail into view
   useEffect(() => {
     if (thumbnailsRef.current) {
-      const activeBtn = thumbnailsRef.current.querySelector('[data-active="true"]') as HTMLElement
+      const activeBtn = thumbnailsRef.current.querySelector('[data-active="true"]') as HTMLElement;
       if (activeBtn) {
         activeBtn.scrollIntoView({
           behavior: 'smooth',
           block: 'nearest',
           inline: 'center'
-        })
+        });
       }
     }
-  }, [activeImage.id])
+  }, [activeImage.id]);
 
   // Handle horizontal scroll with mouse wheel
   const handleWheel = (e: React.WheelEvent) => {
     if (thumbnailsRef.current) {
       thumbnailsRef.current.scrollLeft += e.deltaY;
     }
-  }
+  };
 
   if (!activeImage) {return null;}
 
@@ -75,9 +77,9 @@ export function ImageModal({
     <div className="fixed inset-0 z-[100] flex flex-col bg-slate-950 animate-in fade-in duration-300">
       {/* Dynamic Blurred Background (Facebook Style) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div 
+        <div
           className="absolute inset-[-20%] bg-cover bg-center scale-150"
-          style={{ 
+          style={{
             backgroundImage: `url(${activeImage.url})`,
             filter: 'blur(20px) brightness(0.25)',
           }}
@@ -93,7 +95,7 @@ export function ImageModal({
             {currentIndex + 1} of {images.length}
           </span>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -172,11 +174,11 @@ export function ImageModal({
       {/* Thumbnails Footer */}
       <div className="bg-gradient-to-t from-black/90 to-transparent p-4 pt-10 pb-6">
         <div className="relative max-w-5xl mx-auto flex justify-center">
-          <div 
+          <div
             ref={thumbnailsRef}
             onWheel={handleWheel}
             className="flex items-center gap-1.5 overflow-x-auto py-2 px-10 no-scrollbar custom-scrollbar mask-fade"
-            style={{ 
+            style={{
               maxWidth: '100%',
               scrollSnapType: 'x proximity'
             }}
@@ -193,8 +195,8 @@ export function ImageModal({
                 }}
                 className={cn(
                   "relative shrink-0 w-12 h-12 rounded-sm overflow-hidden transition-all duration-200 cursor-pointer scroll-snap-align-center",
-                  img.id === activeImage.id 
-                    ? "ring-2 ring-white scale-110 z-10 opacity-100 shadow-lg shadow-white/20" 
+                  img.id === activeImage.id
+                    ? "ring-2 ring-white scale-110 z-10 opacity-100 shadow-lg shadow-white/20"
                     : "opacity-40 hover:opacity-100 hover:scale-105"
                 )}
               >
@@ -226,5 +228,5 @@ export function ImageModal({
         }
       `}</style>
     </div>
-  )
+  );
 }

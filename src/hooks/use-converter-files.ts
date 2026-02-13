@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
-import { File as AppFile } from '@/hooks/use-files';
+
+import type { File as AppFile } from '@/hooks/use-files';
+
 import { useQueryState, useSearchQuery } from './use-query-state';
 
 /**
@@ -13,13 +15,13 @@ export function useConverterFiles(files: AppFile[]) {
 
   const filteredMdFiles = useMemo(() => {
     return files
-      .filter(f => 
-        !f.id.startsWith('default-') && 
-        f.batchId !== 'sample-document' && 
+      .filter(f =>
+        !f.id.startsWith('default-') &&
+        f.batchId !== 'sample-document' &&
         f.batchId !== 'sample-project' &&
         (f.originalName.toLowerCase().endsWith('.md') || f.mimeType === 'text/markdown')
       )
-      .filter(f => 
+      .filter(f =>
         f.originalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (f.relativePath && f.relativePath.toLowerCase().includes(searchQuery.toLowerCase()))
       )

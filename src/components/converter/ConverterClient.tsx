@@ -1,28 +1,29 @@
 'use client';
 
 import React from 'react';
-import JSZip from 'jszip';
-import { FileCode, Loader2 } from 'lucide-react';
 
-// Hooks
-import { useFiles, File as AppFile } from '@/hooks/use-files';
-import { useSelection } from '@/hooks/use-selection';
-import { useConverterFiles } from '@/hooks/use-converter-files';
 import { useAlert } from "@/components/AlertProvider";
-
+import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
 // Components
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
-import { ConverterHeader } from './ConverterHeader';
-import { SourceSegment } from './SourceSegment';
-import { PipelineHeader } from './PipelineHeader';
-import { FileRow } from './FileRow';
-
-// Utilities
-import { generateStandardName, addTimestampToName } from '@/lib/utils/naming';
 import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
-import { createTar } from '@/lib/utils/tar';
+import { useConverterFiles } from '@/hooks/use-converter-files';
+// Hooks
+import type { File as AppFile} from '@/hooks/use-files';
+import {useFiles } from '@/hooks/use-files';
+import { useSelection } from '@/hooks/use-selection';
 import { formatConverterDate, formatFileSize } from '@/lib/formatters';
+// Utilities
+import { addTimestampToName,generateStandardName } from '@/lib/utils/naming';
+import { createTar } from '@/lib/utils/tar';
+
+import { ConverterHeader } from './ConverterHeader';
+import { FileRow } from './FileRow';
+import { PipelineHeader } from './PipelineHeader';
+import { SourceSegment } from './SourceSegment';
+
+import JSZip from 'jszip';
+import { FileCode, Loader2 } from 'lucide-react';
 
 interface User {
   name?: string | null;
@@ -37,27 +38,27 @@ interface ConverterClientProps {
 export default function ConverterClient({ user }: ConverterClientProps): React.JSX.Element {
   const { files, loading, refreshFiles, handleBulkDelete, deleting, handleDelete } = useFiles('converter');
   const { show: showAlert, confirm: confirmAlert } = useAlert();
-  
+
   const [uploadRulesModal, setUploadRulesModal] = React.useState<{ isOpen: boolean, type: 'file' | 'folder' | 'zip' }>({ isOpen: false, type: 'file' });
-  
+
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const folderInputRef = React.useRef<HTMLInputElement>(null);
   const zipInputRef = React.useRef<HTMLInputElement>(null);
 
   // Status and result management (kept local as it's ephemeral/session-based)
-  const [processingStates, setProcessingStates] = React.useState<Record<string, 'pending' | 'converting' | 'done' | 'error'>>({});
-  const [convertedFiles, setConvertedFiles] = React.useState<Record<string, Blob>>({});
+  const [processingStates, setProcessingStates] = React.useState<Record<string, 'pending' | 'converting' | 'done' | 'error' | undefined>>({});
+  const [convertedFiles, setConvertedFiles] = React.useState<Record<string, Blob | undefined>>({});
   const [isBatchProcessing, setIsBatchProcessing] = React.useState(false);
 
   // Modular Hooks (Guidelines 4 & 6)
-  const { 
-    filteredMdFiles, 
-    searchQuery, 
-    setSearchQuery, 
-    sortBy, 
-    setSortBy, 
-    sortOrder, 
-    setSortOrder 
+  const {
+    filteredMdFiles,
+    searchQuery,
+    setSearchQuery,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder
   } = useConverterFiles(files);
 
   const {
@@ -71,9 +72,9 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
   // Derived state for the "Converted" column (matching filtered set)
   const completedResults = React.useMemo(() => {
-    return filteredMdFiles.filter(f => 
-      processingStates[f.id] === 'done' || 
-      convertedFiles[f.id] || 
+    return filteredMdFiles.filter(f =>
+      processingStates[f.id] === 'done' ||
+      convertedFiles[f.id] ||
       (f.metadata && f.metadata.generatedPdfUrl)
     );
   }, [filteredMdFiles, processingStates, convertedFiles]);
@@ -88,17 +89,17 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
   const handleBatchConvert = async () => {
     if (selectedFileIds.size === 0) { return; }
-    
+
     setIsBatchProcessing(true);
     const idsToConvert = Array.from(selectedFileIds);
-    
+
     for (const id of idsToConvert) {
       const file = filteredMdFiles.find(f => f.id === id);
       if (file && processingStates[id] !== 'done' && processingStates[id] !== 'converting') {
         await handleConvertFile(file);
       }
     }
-    
+
     setIsBatchProcessing(false);
     clearSelection();
     toggleSelectionMode(); // Exit selection mode after batch action
@@ -123,7 +124,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
   const handleConvertFile = async (file: AppFile) => {
     setProcessingStates(prev => ({ ...prev, [file.id]: 'converting' }));
-    
+
     try {
       const contentRes = await fetch(file.url);
       if (!contentRes.ok) { throw new Error('Failed to fetch file content'); }
@@ -141,18 +142,18 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         body: JSON.stringify({
           markdown: contentWithoutLandingPage,
           basePath: basePath.startsWith('/api') ? basePath : `/api${basePath}`,
-          metadata: parsedMetadata, 
+          metadata: parsedMetadata,
           saveToServer: true,
           sourceFileId: file.id
         }),
       });
 
       if (!response.ok) { throw new Error('PDF generation failed'); }
-      
+
       const blob = await response.blob();
       setConvertedFiles(prev => ({ ...prev, [file.id]: blob }));
       setProcessingStates(prev => ({ ...prev, [file.id]: 'done' }));
-      
+
       await refreshFiles();
       return true;
     } catch (error) {
@@ -175,7 +176,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       const pdfUrl = file.metadata?.generatedPdfUrl;
 
       if (!blob && !pdfUrl) { return; }
-      
+
       if (pdfUrl && !blob) {
          const a = document.createElement('a');
          a.href = pdfUrl as string;
@@ -185,7 +186,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
          document.body.removeChild(a);
          return;
       }
-      
+
       const url = URL.createObjectURL(blob as Blob);
       const a = document.createElement('a');
       a.href = url;
@@ -205,7 +206,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
   const handleDownloadArchive = async (format: 'zip' | 'tar') => {
     if (completedResults.length === 0) {return;}
-    
+
     const filesToArchive = await Promise.all(completedResults.map(async file => {
       let blob = convertedFiles[file.id];
       if (!blob && file.metadata?.generatedPdfUrl) {
@@ -228,8 +229,8 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         blob: blob
       };
     }));
-    
-    const validFiles = filesToArchive.filter(Boolean) as { name: string, blob: Blob }[]; 
+
+    const validFiles = filesToArchive.filter(Boolean) as { name: string, blob: Blob }[];
     if (validFiles.length === 0) {return;}
 
     try {
@@ -263,7 +264,6 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     }
   };
 
-
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
     if (!selectedFiles || selectedFiles.length === 0) {return;}
@@ -275,12 +275,12 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       formData.append('batchId', batchId);
       formData.append('relativePath', file.name);
       formData.append('source', 'converter');
-      
+
       const response = await fetch('/api/files', {
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         return { error: errorText, file: file.name };
@@ -305,7 +305,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
       formData.append('relativePath', relativePath);
       formData.append('source', 'converter');
-      
+
       const response = await fetch('/api/files', {
         method: 'POST',
         body: formData,
@@ -328,12 +328,12 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         const formData = new FormData();
         formData.append('file', archiveFile);
         formData.append('source', 'converter');
-        
+
         const response = await fetch('/api/files/archive', {
           method: 'POST',
           body: formData,
         });
-        
+
         if (!response.ok) { throw new Error(await response.text()); }
         return response.json();
       });
@@ -357,10 +357,10 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay" />
         </div>
 
-        <ConverterHeader 
-          user={user} 
-          searchQuery={searchQuery} 
-          onSearchChange={setSearchQuery} 
+        <ConverterHeader
+          user={user}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
 
         <input type="file" multiple accept=".md" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
@@ -371,7 +371,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
           <SourceSegment onUploadClick={(type) => setUploadRulesModal({ isOpen: true, type })} />
 
           <section className="flex-grow h-full flex flex-col gap-4 overflow-hidden">
-            <PipelineHeader 
+            <PipelineHeader
               filteredFilesCount={filteredMdFiles.length}
               completedResultsCount={completedResults.length}
               isSelectionMode={isSelectionMode}
@@ -395,7 +395,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
               <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-4 pr-2 relative z-10">
                 {!loading && filteredMdFiles.length > 0 ? (
                   filteredMdFiles.map((file, index) => (
-                    <FileRow 
+                    <FileRow
                       key={file.id}
                       file={file}
                       index={index}
@@ -428,14 +428,18 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
           </section>
         </div>
 
-        <UploadRulesModal 
+        <UploadRulesModal
           isOpen={uploadRulesModal.isOpen}
           onClose={() => setUploadRulesModal(prev => ({ ...prev, isOpen: false }))}
           onConfirm={() => {
             setUploadRulesModal(prev => ({ ...prev, isOpen: false }));
-            if (uploadRulesModal.type === 'file') { fileInputRef.current?.click(); }
-            else if (uploadRulesModal.type === 'folder') { folderInputRef.current?.click(); }
-            else if (uploadRulesModal.type === 'zip') { zipInputRef.current?.click(); }
+            if (uploadRulesModal.type === 'file') {
+              fileInputRef.current?.click();
+            } else if (uploadRulesModal.type === 'folder') {
+              folderInputRef.current?.click();
+            } else {
+              zipInputRef.current?.click();
+            }
           }}
           type={uploadRulesModal.type}
         />

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useCallback, useEffect,useRef, useState } from 'react';
 
 export type ViewMode = 'live' | 'preview';
 export type ZoomMode = 'fit-page' | 'fit-width' | 'custom';
@@ -128,7 +128,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     if (!meta) {return false;}
     return Object.values(meta).some(val => typeof val === 'string' && val.trim().length > 0);
   };
-  
+
   const showCoverPage = metadata && hasMetadataValues(metadata);
 
   const totalPages = viewMode === 'preview'
@@ -168,7 +168,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
   useEffect(() => {
     const isModeSwitch = lastViewModeRef.current !== viewMode;
     const isPdfJustReady = !lastIsPdfReadyRef.current && isPdfReady;
-    
+
     if (isModeSwitch) {
       transitionTargetPageRef.current = currentPage;
     }
@@ -176,10 +176,10 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     lastViewModeRef.current = viewMode;
     lastIsPdfReadyRef.current = isPdfReady;
 
-    const targetPage = transitionTargetPageRef.current !== null 
-      ? transitionTargetPageRef.current 
+    const targetPage = transitionTargetPageRef.current !== null
+      ? transitionTargetPageRef.current
       : currentPage;
-      
+
     let needsScroll = isModeSwitch || isPdfJustReady;
 
     let clampedTarget = targetPage;
@@ -223,7 +223,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
 
     const currentScale = zoomMode === 'fit-page' ? newFitPageScale : (zoomMode === 'fit-width' ? newFitWidthScale : customZoom / 100);
     setZoomInput(`${Math.round(currentScale * 100)}%`);
-    
+
     setIsScaleCalculated(true);
   }, [zoomMode, customZoom]);
 
@@ -310,13 +310,13 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     const input = e.target;
     const cursorPos = input.selectionStart;
     const value = e.target.value.replace(/\D/g, '');
-    
+
     // Allow empty or prevent values that would exceed totalPages
     if (value === '') {
       setPageInput(value);
       return;
     }
-    
+
     const numValue = parseInt(value, 10);
     if (!isNaN(numValue) && numValue <= totalPages) {
       setPageInput(value);
@@ -334,13 +334,13 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     const input = e.target;
     const cursorPos = input.selectionStart;
     const value = e.target.value.replace(/\D/g, '');
-    
+
     // Allow empty or prevent values that would exceed 400
     if (value === '') {
       setZoomInput('%');
       return;
     }
-    
+
     const numValue = parseInt(value, 10);
     if (!isNaN(numValue) && numValue <= 400) {
       setZoomInput(`${value}%`);
@@ -358,7 +358,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     e.preventDefault();
     const cleanValue = zoomInput.replace(/[^0-9]/g, '');
     const zoomVal = parseInt(cleanValue, 10);
-    
+
     if (!isNaN(zoomVal) && zoomVal >= 25 && zoomVal <= 400) {
       setZoomMode('custom');
       setCustomZoom(zoomVal);

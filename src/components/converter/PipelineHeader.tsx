@@ -1,37 +1,39 @@
 import React from 'react';
-import { 
-  Layers, 
-  CheckCircle2, 
-  X, 
-  MousePointer2, 
-  CheckSquare, 
-  MinusSquare, 
-  Square, 
-  SortAsc, 
-  Clock, 
-  HardDrive, 
-  ArrowUp, 
-  ArrowDown, 
-  Download,
-  Loader2,
-  Trash2,
-  Zap
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from '@/lib/utils';
+
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
-import { Button } from '@/components/ui/button';
+  ArrowDown,
+  ArrowUp,
+  CheckCircle2,
+  CheckSquare,
+  Clock,
+  Download,
+  HardDrive,
+  Layers,
+  Loader2,
+  MinusSquare,
+  MousePointer2,
+  SortAsc,
+  Square,
+  Trash2,
+  X,
+  Zap
+} from 'lucide-react';
 
 interface PipelineHeaderProps {
   filteredFilesCount: number;
@@ -95,7 +97,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
           )}
         </div>
       </div>
-      
+
       <div className="flex items-center gap-4">
         {filteredFilesCount > 0 && (
           <div className="flex items-center gap-3">
@@ -103,12 +105,12 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
             <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 p-1 rounded-lg">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button 
+                  <button
                     onClick={onToggleSelectionMode}
                     className={cn(
                       "flex items-center gap-2 px-3 py-1.5 rounded-md transition-all group cursor-pointer h-8 whitespace-nowrap",
-                      isSelectionMode 
-                        ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold" 
+                      isSelectionMode
+                        ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold"
                         : "text-slate-300 hover:bg-white/10 hover:text-white"
                     )}
                   >
@@ -126,7 +128,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
               {isSelectionMode && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button 
+                    <button
                       onClick={onToggleSelectAll}
                       className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 transition-all group animate-in fade-in slide-in-from-left-2 cursor-pointer h-8 whitespace-nowrap font-bold"
                     >
@@ -227,7 +229,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
           <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
+                <Button
                   size="sm"
                   variant="ghost"
                   onClick={onBatchDelete}
@@ -243,7 +245,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
+                <Button
                   size="sm"
                   onClick={onBatchConvert}
                   disabled={isBatchProcessing || deleting}

@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback,useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
 import { getAlert } from "@/components/AlertProvider";
 
 export interface File {
@@ -50,10 +51,10 @@ export function useFiles(source?: string) {
         }
         throw new Error(errorDetail || `Failed to fetch files (Status: ${response.status})`);
       }
-      
+
       const data: FileListResponse = await response.json();
       console.log(`📂 Fetched ${data.files.length} files from API (source: ${source || 'all'})`);
-      
+
       setFiles(data.files);
     } catch (error: unknown) {
       console.error("Error fetching files:", error);
@@ -127,10 +128,10 @@ export function useFiles(source?: string) {
   }, [router]);
 
   const handleRename = useCallback(async (
-    id: string, 
-    newName: string, 
-    type: "file" | "folder", 
-    batchId?: string, 
+    id: string,
+    newName: string,
+    type: "file" | "folder",
+    batchId?: string,
     oldPath?: string
   ): Promise<void> => {
     try {

@@ -1,13 +1,10 @@
-"use client"
+"use client";
 
-import React, { useState, useCallback } from "react"
-import { LayoutGrid, List } from "lucide-react"
-import { useFiles, File as AppFile } from "@/hooks/use-files"
-import { FileListView } from "@/components/file-manager/FileListView"
-import { FileGridView } from "@/components/file-manager/FileGridView"
-import { ImageModal } from "@/components/file-manager/ImageModal"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import React, { useCallback,useState } from "react";
+
+import { FileGridView } from "@/components/file-manager/FileGridView";
+import { FileListView } from "@/components/file-manager/FileListView";
+import { ImageModal } from "@/components/file-manager/ImageModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,41 +14,47 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import type { File as AppFile} from "@/hooks/use-files";
+import {useFiles } from "@/hooks/use-files";
+import { cn } from "@/lib/utils";
+
+import { LayoutGrid, List } from "lucide-react";
 
 export default function FileList(): React.JSX.Element {
-  const filesState = useFiles()
-  const { files, deleteId, deleting, setDeleteId, handleDelete } = filesState
-  const [activeImage, setActiveImage] = useState<AppFile | null>(null)
-  const [imageGallery, setImageGallery] = useState<AppFile[]>([])
-  
+  const filesState = useFiles();
+  const { files, deleteId, deleting, setDeleteId, handleDelete } = filesState;
+  const [activeImage, setActiveImage] = useState<AppFile | null>(null);
+  const [imageGallery, setImageGallery] = useState<AppFile[]>([]);
+
   // Initialize from localStorage safely
   const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => {
     if (typeof window !== 'undefined') {
-      const savedMode = localStorage.getItem('markify-view-mode') as 'list' | 'grid'
-      return savedMode || 'grid'
+      const savedMode = localStorage.getItem('markify-view-mode') as 'list' | 'grid';
+      return savedMode || 'grid';
     }
-    return 'grid'
-  })
+    return 'grid';
+  });
 
   const toggleViewMode = (mode: 'list' | 'grid') => {
-    setViewMode(mode)
-    localStorage.setItem('markify-view-mode', mode)
-  }
+    setViewMode(mode);
+    localStorage.setItem('markify-view-mode', mode);
+  };
 
   const handleImageClick = useCallback((file: AppFile) => {
-    const gallery = files.filter(f => 
+    const gallery = files.filter(f =>
       f.mimeType.startsWith("image/") && f.batchId === file.batchId
-    )
-    setActiveImage(file)
-    setImageGallery(gallery)
-  }, [files])
+    );
+    setActiveImage(file);
+    setImageGallery(gallery);
+  }, [files]);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold tracking-tight">Project Artifacts</h3>
-        
+
         <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border">
           <Button
             variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
@@ -82,16 +85,16 @@ export default function FileList(): React.JSX.Element {
 
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
         {viewMode === 'list' ? (
-          <FileListView 
-            files={files} 
+          <FileListView
+            files={files}
             loading={filesState.loading}
             onImageClick={handleImageClick}
             setDeleteId={setDeleteId}
             handleRename={filesState.handleRename}
           />
         ) : (
-          <FileGridView 
-            files={files} 
+          <FileGridView
+            files={files}
             loading={filesState.loading}
             onImageClick={handleImageClick}
             setDeleteId={setDeleteId}
@@ -134,5 +137,5 @@ export default function FileList(): React.JSX.Element {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

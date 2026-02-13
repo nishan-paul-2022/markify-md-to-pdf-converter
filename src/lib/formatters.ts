@@ -1,7 +1,7 @@
 /**
  * Formats a date into a standard string format (e.g., "01 Jan 2026 12:00:00").
  * Returns a placeholder '—' if the date is null.
- * 
+ *
  * @param date - The date to format
  * @returns Formatted date string
  */
@@ -30,7 +30,7 @@ export function formatConverterDate(date: string | Date): string {
 
 /**
  * Formats file size in bytes to human-readable string (e.g., "1.5 MB").
- * 
+ *
  * @param bytes - Size in bytes
  * @returns Formatted size string
  */

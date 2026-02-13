@@ -1,7 +1,7 @@
 /**
  * Enforces lowercase kebab-case on a string.
  * Replaces spaces and special characters with hyphens and removes the file extension.
- * 
+ *
  * @param name - The name to standardize (e.g., "Sample Document.md")
  * @returns The standardized name (e.g., "sample-document")
  */
@@ -22,13 +22,13 @@ export function generateStandardName(name: string): string {
 
 /**
  * Appends the current timestamp to a name in the format YYYY-MM-DD-HH-mm-ss.
- * 
+ *
  * @param name - The base name (should be standardized first)
  * @returns The name with the timestamp appended (e.g., "name-2026-02-09-21-26-55")
  */
 export function addTimestampToName(name: string): string {
   const now = new Date();
-  
+
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
@@ -37,6 +37,6 @@ export function addTimestampToName(name: string): string {
   const seconds = String(now.getSeconds()).padStart(2, '0');
 
   const timestamp = `${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
-  
+
   return `${name}-${timestamp}`;
 }

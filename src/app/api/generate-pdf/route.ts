@@ -1,11 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { auth } from "@/lib/auth";
 import { PdfService } from '@/lib/services/pdf.service';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const session = await auth();
-    
+
     // Auth Check (Guideline 2)
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -39,7 +41,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   } catch (error: unknown) {
     console.error('PDF Generation Route Error:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: error instanceof Error ? error.message : "Internal Server Error"
     }, { status: 500 });
   }

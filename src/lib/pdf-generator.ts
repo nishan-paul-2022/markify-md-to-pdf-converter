@@ -1,6 +1,6 @@
-import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
+import { chromium } from 'playwright';
 
 export interface GroupMember {
   name: string;
@@ -30,9 +30,9 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     console.log('✅ Browser launched successfully');
-    
+
     const page = await browser.newPage();
-    
+
     // Capture browser console logs for debugging
     page.on('console', msg => console.log('Browser console:', msg.text()));
     page.on('pageerror', error => console.error('Browser page error:', error));
@@ -692,7 +692,6 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
       </body>
       </html>
     `;
-
 
     console.log('📄 Setting page content...');
     await page.setContent(html, { waitUntil: 'networkidle' });

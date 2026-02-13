@@ -1,6 +1,6 @@
 
-import type { NextAuthConfig } from "next-auth"
-import Google from "next-auth/providers/google"
+import type { NextAuthConfig } from "next-auth";
+import Google from "next-auth/providers/google";
 
 export default {
   providers: [
@@ -23,40 +23,40 @@ export default {
   callbacks: {
     async session({ session, token }) {
       if (token?.sub && session.user) {
-        session.user.id = token.sub
+        session.user.id = token.sub;
       }
-      return session
+      return session;
     },
     async jwt({ token, user }) {
       if (user) {
-        token.sub = user.id
+        token.sub = user.id;
       }
-      return token
+      return token;
     },
     authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user
-      
+      const isLoggedIn = !!auth?.user;
+
       // Define protected routes
       const isProtectedRoute = nextUrl.pathname.startsWith('/dashboard') ||
                                nextUrl.pathname.startsWith('/editor') ||
                                nextUrl.pathname.startsWith('/converter') ||
-                               nextUrl.pathname.startsWith('/api/files')
-      
+                               nextUrl.pathname.startsWith('/api/files');
+
       // Define auth routes
       const isAuthRoute = nextUrl.pathname.startsWith('/auth/signin') ||
-                         nextUrl.pathname.startsWith('/auth/signup')
-      
+                         nextUrl.pathname.startsWith('/auth/signup');
+
       // Redirect to signin if accessing protected route while not logged in
       if (isProtectedRoute && !isLoggedIn) {
-        return false // Redirect to signin handled by NextAuth automatically or we can return Response
+        return false; // Redirect to signin handled by NextAuth automatically or we can return Response
       }
-      
+
       // Redirect to dashboard if accessing auth routes while logged in
       if (isAuthRoute && isLoggedIn) {
-        return Response.redirect(new URL('/editor', nextUrl))
+        return Response.redirect(new URL('/editor', nextUrl));
       }
-      
-      return true
+
+      return true;
     },
   },
-} satisfies NextAuthConfig
+} satisfies NextAuthConfig;

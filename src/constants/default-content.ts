@@ -27,31 +27,31 @@ export interface Metadata {
  */
 export function parseMetadataFromMarkdown(markdown: string): Metadata {
   const metadata: Metadata = {};
-  
+
   // Find the Landing Page section
   // It starts with # Landing Page and ends at the next main heading (#) or horizontal rule (---)
   const landingPageMatch = markdown.match(/^#\s+Landing\s+Page\s*\n([\s\S]*?)(?=\n#\s+|(?:\r?\n){2}---|\Z)/im);
-  
+
   if (!landingPageMatch) {
     return metadata;
   }
-  
+
   const landingPageContent = landingPageMatch[1];
-  
+
   // 1. Parse Key-Value pairs: - **Key:** Value
   const lineRegex = /^-\s+\*\*(.+?):\*\*[ \t]*(.*)$/gm;
   let match;
-  
+
   while ((match = lineRegex.exec(landingPageContent)) !== null) {
     const key = match[1].trim();
     let value = match[2].trim();
-    
+
     // Remove trailing comma if present
     value = value.replace(/,\s*$/, '');
-    
+
     // Remove surrounding quotes if present
     value = value.replace(/^["'](.+?)["']$/, '$1');
-    
+
     // Map the keys to our metadata structure
     const keyMap: Record<string, keyof Metadata> = {
       'University': 'university',
@@ -65,7 +65,7 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
       'Batch': 'batch',
       'Submission Date': 'date'
     };
-    
+
     const metadataKey = keyMap[key];
     if (metadataKey && value) {
       (metadata as Record<string, unknown>)[metadataKey] = value;
@@ -78,7 +78,7 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
   if (tableHeaderIndex !== -1) {
     const contentAfterHeader = landingPageContent.substring(tableHeaderIndex);
     const tableRows = contentAfterHeader.match(/\|[^|]+\|[^|]+\|/g);
-    
+
     if (tableRows && tableRows.length >= 3) { // Header + Separator + At least one member
       const memberRows = tableRows.slice(2);
       const members: GroupMember[] = memberRows.map(row => {
@@ -91,13 +91,13 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
         }
         return null;
       }).filter((m): m is GroupMember => m !== null);
-      
+
       if (members.length > 0) {
         metadata.groupMembers = members;
       }
     }
   }
-  
+
   return metadata;
 }
 

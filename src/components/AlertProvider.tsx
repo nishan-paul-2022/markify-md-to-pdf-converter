@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, {
   createContext,
@@ -6,8 +6,8 @@ import React, {
   useContext,
   useEffect,
   useState,
-} from "react"
-import { AlertTriangle, Info, CheckCircle2, X } from "lucide-react"
+} from "react";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,9 +17,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { cn } from "@/lib/utils"
-export type AlertOptions = {
+} from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
+
+import { AlertTriangle, CheckCircle2, Info, X } from "lucide-react";
+export interface AlertOptions {
   title?: string
   message: string
   confirmText?: string
@@ -27,110 +29,110 @@ export type AlertOptions = {
   variant?: "default" | "warning" | "destructive" | "info"
 }
 
-type AlertApi = {
+interface AlertApi {
   show: (messageOrOptions: string | AlertOptions) => void
   confirm: (options: AlertOptions) => Promise<boolean>
 }
 
-const AlertContext = createContext<AlertApi | null>(null)
+const AlertContext = createContext<AlertApi | null>(null);
 
-let globalAlertRef: AlertApi | null = null
+let globalAlertRef: AlertApi | null = null;
 
 export function getAlert(): AlertApi | null {
-  return globalAlertRef
+  return globalAlertRef;
 }
 
 export function useAlert(): AlertApi {
-  const api = useContext(AlertContext)
+  const api = useContext(AlertContext);
   if (!api) {
     return {
       show: (msg) => {
         if (typeof window !== "undefined") {
-          window.alert(typeof msg === "string" ? msg : msg.message)
+          window.alert(typeof msg === "string" ? msg : msg.message);
         }
       },
       confirm: async (options) => {
         if (typeof window !== "undefined") {
-          return window.confirm(options.message)
+          return window.confirm(options.message);
         }
-        return false
+        return false;
       }
-    }
+    };
   }
-  return api
+  return api;
 }
 
 export function AlertProvider({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false)
-  const [title, setTitle] = useState("")
-  const [message, setMessage] = useState("")
-  const [confirmText, setConfirmText] = useState("OK")
-  const [cancelText, setCancelText] = useState("Cancel")
-  const [variant, setVariant] = useState<AlertOptions["variant"]>("default")
-  const [isConfirm, setIsConfirm] = useState(false)
-  const [resolveRef, setResolveRef] = useState<((value: boolean) => void) | null>(null)
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [confirmText, setConfirmText] = useState("OK");
+  const [cancelText, setCancelText] = useState("Cancel");
+  const [variant, setVariant] = useState<AlertOptions["variant"]>("default");
+  const [isConfirm, setIsConfirm] = useState(false);
+  const [resolveRef, setResolveRef] = useState<((value: boolean) => void) | null>(null);
 
   const show = useCallback((messageOrOptions: string | AlertOptions) => {
-    setIsConfirm(false)
+    setIsConfirm(false);
     if (typeof messageOrOptions === "string") {
-      setTitle("")
-      setMessage(messageOrOptions)
-      setConfirmText("OK")
-      setVariant("default")
+      setTitle("");
+      setMessage(messageOrOptions);
+      setConfirmText("OK");
+      setVariant("default");
     } else {
-      setTitle(messageOrOptions.title ?? "")
-      setMessage(messageOrOptions.message)
-      setConfirmText(messageOrOptions.confirmText ?? "OK")
-      setVariant(messageOrOptions.variant ?? "default")
+      setTitle(messageOrOptions.title ?? "");
+      setMessage(messageOrOptions.message);
+      setConfirmText(messageOrOptions.confirmText ?? "OK");
+      setVariant(messageOrOptions.variant ?? "default");
     }
-    setOpen(true)
-  }, [])
+    setOpen(true);
+  }, []);
 
   const confirm = useCallback((options: AlertOptions) => {
-    setIsConfirm(true)
-    setTitle(options.title ?? "Confirm Action")
-    setMessage(options.message)
-    setConfirmText(options.confirmText ?? "Continue")
-    setCancelText(options.cancelText ?? "Cancel")
-    setVariant(options.variant ?? "default")
-    setOpen(true)
+    setIsConfirm(true);
+    setTitle(options.title ?? "Confirm Action");
+    setMessage(options.message);
+    setConfirmText(options.confirmText ?? "Continue");
+    setCancelText(options.cancelText ?? "Cancel");
+    setVariant(options.variant ?? "default");
+    setOpen(true);
 
     return new Promise<boolean>((resolve) => {
-      setResolveRef(() => resolve)
-    })
-  }, [])
+      setResolveRef(() => resolve);
+    });
+  }, []);
 
   const handleAction = useCallback(() => {
-    setOpen(false)
+    setOpen(false);
     if (resolveRef) {
-      resolveRef(true)
-      setResolveRef(null)
+      resolveRef(true);
+      setResolveRef(null);
     }
-  }, [resolveRef])
+  }, [resolveRef]);
 
   const handleCancel = useCallback(() => {
-    setOpen(false)
+    setOpen(false);
     if (resolveRef) {
-      resolveRef(false)
-      setResolveRef(null)
+      resolveRef(false);
+      setResolveRef(null);
     }
-  }, [resolveRef])
+  }, [resolveRef]);
 
-  const api: AlertApi = React.useMemo(() => ({ show, confirm }), [show, confirm])
+  const api: AlertApi = React.useMemo(() => ({ show, confirm }), [show, confirm]);
 
   useEffect(() => {
-    globalAlertRef = api
+    globalAlertRef = api;
     return () => {
-      globalAlertRef = null
-    }
-  }, [api])
+      globalAlertRef = null;
+    };
+  }, [api]);
 
   return (
     <AlertContext.Provider value={api}>
       {children}
       <AlertDialog open={open} onOpenChange={(isOpen) => {
         if (!isOpen) {
-          handleCancel()
+          handleCancel();
         }
       }}>
         <AlertDialogContent
@@ -141,12 +143,12 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
             {/* Background Decoration */}
             <div className={cn(
               "absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full blur-3xl pointer-events-none opacity-20",
-              variant === "destructive" ? "bg-red-500/20" : 
-              variant === "warning" ? "bg-amber-500/20" : 
+              variant === "destructive" ? "bg-red-500/20" :
+              variant === "warning" ? "bg-amber-500/20" :
               variant === "info" ? "bg-blue-500/20" : "bg-emerald-500/20"
             )} />
 
-            <button 
+            <button
               onClick={handleCancel}
               className="absolute top-2 right-2 p-4 text-slate-500 hover:text-white hover:bg-white/5 rounded-full transition-all z-10 cursor-pointer group"
               aria-label="Close"
@@ -174,7 +176,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
                   </AlertDialogTitle>
                 </div>
               ) : null}
-              
+
               <AlertDialogDescription
                 className={cn(
                   "text-slate-300 leading-relaxed mt-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 relative z-10",
@@ -187,7 +189,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
                     {message.split(/(\.md|images\/|`.+?`)/).map((part, i) => {
                       const isHighlighted = part === ".md" || part === "images/" || (part.startsWith('`') && part.endsWith('`'));
                       const cleanPart = (part.startsWith('`') && part.endsWith('`')) ? part.slice(1, -1) : part;
-                      
+
                       return isHighlighted ? (
                         <span key={i} className="text-blue-400 font-mono font-bold not-italic mx-0.5">
                           {cleanPart}
@@ -208,7 +210,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
                 {cancelText}
               </AlertDialogCancel>
             )}
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleAction}
               className={cn(
                 "sm:flex-1 h-10 rounded-lg text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300 shadow-lg",
@@ -225,5 +227,5 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
       </AlertDialog>
 
     </AlertContext.Provider>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useCallback } from 'react';
+import { usePathname,useRouter, useSearchParams } from 'next/navigation';
 
 /**
  * Hook to manage UI state via URL query parameters.
@@ -14,8 +14,8 @@ export function useQueryState<T extends string>(key: string, defaultValue: T) {
 
   const setValue = useCallback((newValue: T | ((prev: T) => T)) => {
     const params = new URLSearchParams(searchParams.toString());
-    const resolvedValue = typeof newValue === 'function' 
-      ? (newValue as (prev: T) => T)(value) 
+    const resolvedValue = typeof newValue === 'function'
+      ? (newValue as (prev: T) => T)(value)
       : newValue;
 
     if (resolvedValue === defaultValue) {
@@ -23,7 +23,7 @@ export function useQueryState<T extends string>(key: string, defaultValue: T) {
     } else {
       params.set(key, resolvedValue);
     }
-    
+
     router.push(`${pathname}?${params.toString()}`);
   }, [router, pathname, searchParams, key, defaultValue, value]);
 

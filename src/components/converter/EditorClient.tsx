@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter,useSearchParams } from 'next/navigation';
+
+import { EditorView } from '@/components/converter/EditorView';
+import { DEFAULT_MARKDOWN_PATH } from '@/constants/default-content';
 import { useConverter } from '@/hooks/use-converter';
 import { useFiles } from '@/hooks/use-files';
-import { EditorView } from '@/components/converter/EditorView';
-import { FileTreeNode } from '@/lib/file-tree';
-import { DEFAULT_MARKDOWN_PATH } from '@/constants/default-content';
+import type { FileTreeNode } from '@/lib/file-tree';
 
 interface EditorClientProps {
   user: {
@@ -26,23 +27,23 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
   const loadFileContent = useCallback(async (targetFile: typeof files[0]) => {
     try {
       const fileUrl = targetFile.url || '';
-      const fetchUrl = (fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/')) 
-        ? `/api${fileUrl}` 
+      const fetchUrl = (fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/'))
+        ? `/api${fileUrl}`
         : fileUrl;
-        
+
       const response = await fetch(fetchUrl);
       if (response.ok) {
         const text = await response.text();
         converterState.handleContentChange(text);
         converterState.setFilename(targetFile.originalName);
         converterState.setSelectedFileId(targetFile.id);
-        
+
         if (fileUrl) {
           const lastSlashIndex = fileUrl.lastIndexOf('/');
           if (lastSlashIndex !== -1) {
             const directoryPath = fileUrl.substring(0, lastSlashIndex);
-            const finalBasePath = (directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')) 
-              ? directoryPath 
+            const finalBasePath = (directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads'))
+              ? directoryPath
               : `/api${directoryPath}`;
             converterState.setBasePath(finalBasePath);
           }
@@ -95,7 +96,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         params.set('fileId', converterState.selectedFileId);
         router.replace(`?${params.toString()}`, { scroll: false });
       }
-      
+
       // LocalStorage Sync
       if (user.email) {
          const storageKey = `markify_last_file_${user.email}`;
@@ -124,30 +125,30 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
   const handleFileSelect = useCallback(async (node: FileTreeNode) => {
     if (node.type === 'file' && node.file) {
       // Check if it's an image
-      const isImage = node.file.mimeType.startsWith('image/') || 
+      const isImage = node.file.mimeType.startsWith('image/') ||
                       node.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
-      
+
       if (isImage) {
         // Find all images in the same folder/batch
         const currentPath = node.path;
         const lastSlash = currentPath.lastIndexOf('/');
         const parentDir = lastSlash !== -1 ? currentPath.substring(0, lastSlash) : '';
-        
+
         const targetBatchId = node.batchId || 'no-batch';
         const gallery = files.filter(f => {
-          const isImg = f.mimeType.startsWith('image/') || 
+          const isImg = f.mimeType.startsWith('image/') ||
                         f.originalName.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
           if (!isImg) {return false;}
-          
+
           const fPath = f.relativePath || f.originalName;
           const fLastSlash = fPath.lastIndexOf('/');
           const fParentDir = fLastSlash !== -1 ? fPath.substring(0, fLastSlash) : '';
-          
+
           // Same parent directory and same normalized batch
           const fBatchId = f.batchId || 'no-batch';
           return fParentDir === parentDir && fBatchId === targetBatchId;
         });
-        
+
         converterState.setActiveImage(node.file);
         converterState.setImageGallery(gallery);
         return;
@@ -159,25 +160,25 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
 
       try {
         const fileUrl = node.file.url || '';
-        const fetchUrl = (fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/')) 
-          ? `/api${fileUrl}` 
+        const fetchUrl = (fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/'))
+          ? `/api${fileUrl}`
           : fileUrl;
-          
+
         const response = await fetch(fetchUrl);
         if (response.ok) {
           const text = await response.text();
           converterState.handleContentChange(text);
           converterState.setFilename(node.file.originalName);
           converterState.setSelectedFileId(node.file.id);
-          
+
           // Set base path for images if it's a batch/folder upload
           if (fileUrl) {
             const lastSlashIndex = fileUrl.lastIndexOf('/');
             if (lastSlashIndex !== -1) {
               const directoryPath = fileUrl.substring(0, lastSlashIndex);
             // Only prepend /api for uploaded files (in /uploads), not for default content (in /content-x)
-            const finalBasePath = (directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')) 
-              ? directoryPath 
+            const finalBasePath = (directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads'))
+              ? directoryPath
               : `/api${directoryPath}`;
             converterState.setBasePath(finalBasePath);
             }
@@ -188,8 +189,6 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       }
     }
   }, [converterState, files]);
-
-
 
   const handleFileUploadWithRefresh = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     await converterState.handleFileUpload(e);
@@ -202,7 +201,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
   }, [converterState, refreshFiles]);
 
   return (
-    <EditorView 
+    <EditorView
       user={user}
       files={files}
       filesLoading={filesLoading}

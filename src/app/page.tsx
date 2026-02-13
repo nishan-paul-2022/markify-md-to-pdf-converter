@@ -1,16 +1,16 @@
-import { auth, signIn } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, FileText, Layout, Share2, Sparkles } from "lucide-react";
-import UserNav from "@/components/auth/UserNav";
 
+import UserNav from "@/components/auth/UserNav";
+import { Button } from "@/components/ui/button";
+import { auth, signIn } from "@/lib/auth";
+
+import { ArrowRight, FileText, Layout, Share2, Sparkles } from "lucide-react";
 
 export default async function LandingPage(): Promise<React.JSX.Element> {
   const session = await auth();
 
 // Redirection removed to allow logged-in users to access home page
-
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden selection:bg-blue-500/30">
@@ -24,7 +24,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
 
       {/* Navigation */}
       <header className="relative z-50 flex items-center justify-between px-6 lg:px-12 h-20 border-b border-white/5 backdrop-blur-md bg-slate-950/50">
-        <Link 
+        <Link
           href="/"
           className="flex items-center gap-3 cursor-pointer group/logo"
         >
@@ -37,7 +37,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
           <a href="#features" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Features</a>
           <a href="#showcase" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Showcase</a>
         </div>
-        
+
         <div className="flex items-center gap-4">
           {session?.user ? (
             <>
@@ -50,8 +50,8 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
             </>
           ) : (
             <form action={async () => {
-              "use server"
-              await signIn("google")
+              "use server";
+              await signIn("google");
             }}>
               <Button variant="outline" className="rounded-full px-6 border-white/10 hover:bg-white/5 transition-all">
                 Log In
@@ -68,13 +68,13 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
             <Sparkles className="w-3.5 h-3.5" />
             <span>Transform your writing</span>
           </div>
-          
+
           <h1 className="text-5xl lg:text-8xl font-black tracking-tighter mb-8 bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">
             Markdown to PDF.<br className="hidden md:block" /> Reimagined.
           </h1>
-          
+
           <p className="text-lg lg:text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Create professional documents, assignments, and reports with Markify. 
+            Create professional documents, assignments, and reports with Markify.
             The most powerful Markdown editor that feels like a dream.
           </p>
 
@@ -88,8 +88,8 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
               </Link>
             ) : (
               <form action={async () => {
-                "use server"
-                await signIn("google")
+                "use server";
+                await signIn("google");
               }}>
                 <Button size="lg" className="h-14 px-8 rounded-2xl bg-white text-slate-950 hover:bg-slate-200 transition-all text-base font-bold group">
                   Continue with Google
@@ -116,7 +116,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
                   See your changes instantly with our butter-smooth real-time preview engine.
                 </p>
               </div>
-              
+
               <div className="p-8 rounded-3xl bg-slate-950/50 border border-white/5 hover:border-white/10 transition-colors group">
                 <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6 text-purple-400 group-hover:scale-110 transition-transform">
                   <FileText className="w-6 h-6" />

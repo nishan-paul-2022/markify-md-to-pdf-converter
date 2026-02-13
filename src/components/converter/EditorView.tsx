@@ -1,35 +1,37 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import MdPreview from '@/components/converter/MdPreview';
+import { useRouter } from 'next/navigation';
+
+import { useAlert } from "@/components/AlertProvider";
+import UserNav from '@/components/auth/UserNav';
 import Editor from '@/components/converter/Editor';
-import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, Check, Copy, Download, Eye, MoreVertical, FolderOpen, Trash2, ListChecks, FileArchive, X, Layers } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import MdPreview from '@/components/converter/MdPreview';
+import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
+import { FileTree } from '@/components/file-manager/FileTree';
+import { ImageModal } from '@/components/file-manager/ImageModal';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import UserNav from '@/components/auth/UserNav';
-import { Metadata } from '@/constants/default-content';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { Metadata } from '@/constants/default-content';
+import type { File as AppFile } from '@/hooks/use-files';
+import type {FileTreeNode } from '@/lib/file-tree';
+import { buildFileTree } from '@/lib/file-tree';
 import { formatDateTime } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 
-import { useRouter } from 'next/navigation';
-import { File as AppFile } from '@/hooks/use-files';
-import { useAlert } from "@/components/AlertProvider";
-import { FileTree } from '@/components/file-manager/FileTree';
-import { FileTreeNode, buildFileTree } from '@/lib/file-tree';
+import { Check, ChevronsDown, ChevronsUp, Copy, Download, Eye, FileArchive, FileCode, FolderOpen, Layers,ListChecks, MoreVertical, RotateCcw, Trash2, Upload, X } from 'lucide-react';
 import { PanelLeftClose, PanelLeftOpen, RefreshCw, Search } from 'lucide-react';
-import { ImageModal } from '@/components/file-manager/ImageModal';
-import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
 
 interface EditorViewProps {
   user: {
@@ -157,7 +159,7 @@ export function EditorView({
     setSelectedIds(prev => {
       const next = new Set(prev);
       const ids = Array.isArray(id) ? id : [id];
-      
+
       const allSelected = ids.every(i => next.has(i));
       if (allSelected) {
         ids.forEach(i => next.delete(i));
@@ -170,7 +172,7 @@ export function EditorView({
 
   const handleBulkDeleteClick = async () => {
     if (selectedIds.size === 0) {return;}
-    
+
     const confirmed = await confirm({
       title: "Delete multiple items?",
       message: `Are you sure you want to delete ${selectedIds.size} selected items? This cannot be undone.`,
@@ -195,7 +197,7 @@ export function EditorView({
   const handleSelectAll = React.useCallback(() => {
     const allIds = getAllDeletableFileIds();
     const allSelected = allIds.every(id => selectedIds.has(id));
-    
+
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
@@ -255,7 +257,7 @@ export function EditorView({
     if (newFiles.length > 0) {
       setIsLoading(true);
       const batchId = self.crypto.randomUUID();
-      
+
       try {
         const uploadPromises = newFiles.map(async ({ file, path }) => {
           const formData = new FormData();
@@ -263,17 +265,17 @@ export function EditorView({
           formData.append('batchId', batchId);
           formData.append('relativePath', path);
           formData.append('source', 'editor');
-          
+
           const response = await fetch('/api/files', {
             method: 'POST',
             body: formData,
           });
-          
+
           return response.ok ? await response.json() : null;
         });
 
         await Promise.all(uploadPromises);
-        
+
         // Find first MD file and load it
         const mdFile = newFiles.find(nf => nf.file.name.endsWith('.md'));
         if (mdFile) {
@@ -302,7 +304,7 @@ export function EditorView({
   }, [isSidebarOpen]);
 
   const fileTree = React.useMemo(() => {
-    const filteredFiles = files.filter(f => 
+    const filteredFiles = files.filter(f =>
       f.originalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (f.relativePath && f.relativePath.toLowerCase().includes(searchQuery.toLowerCase()))
     );
@@ -315,7 +317,7 @@ export function EditorView({
       if (node.id.startsWith("default-") || node.batchId === 'sample-document' || node.batchId === 'sample-project') {
         return;
       }
-      
+
       if (node.type === 'folder') {
         const batchFiles = files.filter(f => f.batchId === node.batchId);
         if (batchFiles.length > 0 && batchFiles.every(f => selectedIds.has(f.id))) {
@@ -342,11 +344,9 @@ export function EditorView({
     }
   };
 
-
-
   return (
     <TooltipProvider>
-      <main 
+      <main
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -385,7 +385,7 @@ export function EditorView({
                 activeTab === 'editor' ? 'text-white' : 'text-slate-500 hover:text-slate-200'
               }`}
             >
-              <FileCode className={`w-3.5 h-3.5 transition-transform duration-300 ${activeTab === 'editor' ? 'scale-110' : ''}`} /> 
+              <FileCode className={`w-3.5 h-3.5 transition-transform duration-300 ${activeTab === 'editor' ? 'scale-110' : ''}`} />
               <span>Editor</span>
             </button>
             <button
@@ -394,11 +394,11 @@ export function EditorView({
                 activeTab === 'preview' ? 'text-white' : 'text-slate-500 hover:text-slate-200'
               }`}
             >
-              <Eye className={`w-3.5 h-3.5 transition-transform duration-300 ${activeTab === 'preview' ? 'scale-110' : ''}`} /> 
+              <Eye className={`w-3.5 h-3.5 transition-transform duration-300 ${activeTab === 'preview' ? 'scale-110' : ''}`} />
               <span>Preview</span>
             </button>
-            
-            <div 
+
+            <div
               className="absolute top-1 bottom-1 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-white/10 rounded-lg shadow-sm"
               style={{
                 width: 'calc(50% - 4px)',
@@ -410,7 +410,7 @@ export function EditorView({
 
         <div className="flex-grow flex flex-row overflow-hidden relative">
           {/* Sidebar */}
-          <aside 
+          <aside
             className={cn(
               "hidden lg:flex flex-col bg-slate-900/30 border-r border-white/5 transition-all duration-300 ease-in-out overflow-hidden z-30 shrink-0",
               isSidebarOpen ? "w-72 opacity-100" : "w-0 border-r-0 opacity-0 pointer-events-none"
@@ -507,8 +507,8 @@ export function EditorView({
                       onClick={handleSelectAll}
                       className={cn(
                         "h-7 px-3 text-[9px] font-bold uppercase tracking-widest transition-all rounded-md border border-white/20 shadow-sm",
-                        selectedIds.size === getAllDeletableFileIds().length && selectedIds.size > 0 
-                          ? "text-primary hover:text-slate-100 hover:bg-white/10 border-primary/40" 
+                        selectedIds.size === getAllDeletableFileIds().length && selectedIds.size > 0
+                          ? "text-primary hover:text-slate-100 hover:bg-white/10 border-primary/40"
                           : "text-slate-500 hover:text-slate-100 hover:bg-white/10"
                       )}
                     >
@@ -527,14 +527,14 @@ export function EditorView({
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="p-2.5">
                   <button
                     disabled={selectedIds.size === 0}
                     onClick={handleBulkDeleteClick}
                     className={cn(
                       "w-full h-11 text-[11px] font-black uppercase tracking-[0.25em] gap-3 transition-all duration-300 rounded-lg border flex items-center justify-center cursor-pointer",
-                      selectedIds.size > 0 
+                      selectedIds.size > 0
                         ? "text-red-500/80 bg-transparent border-red-500/20 hover:text-white hover:border-red-500 hover:bg-red-500 shadow-sm"
                         : "text-slate-600 bg-transparent border-white/5 opacity-50 cursor-not-allowed"
                     )}
@@ -553,9 +553,9 @@ export function EditorView({
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Empty Explorer</span>
                 </div>
               ) : (
-                <FileTree 
-                  nodes={isSelectionMode ? fileTree.filter(node => node.batchId !== 'sample-document' && node.batchId !== 'sample-project') : fileTree} 
-                  onFileSelect={onFileSelect} 
+                <FileTree
+                  nodes={isSelectionMode ? fileTree.filter(node => node.batchId !== 'sample-document' && node.batchId !== 'sample-project') : fileTree}
+                  onFileSelect={onFileSelect}
                   onDelete={handleFileDelete}
                   onRename={handleFileRename}
                   selectedFileId={selectedFileId || undefined}
@@ -589,7 +589,7 @@ export function EditorView({
                   </Button>
                 </div>
               )}
-                
+
               <div className="flex items-center gap-4 sm:gap-8 lg:gap-10">
                 {/* Group 1: Uploads */}
                 <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-full h-8 px-1 border border-white/5 shadow-inner">
@@ -624,7 +624,7 @@ export function EditorView({
                     }}
                     className="hidden"
                   />
-                  
+
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -691,7 +691,7 @@ export function EditorView({
                     </TooltipTrigger>
                     <TooltipContent>Scroll to Top</TooltipContent>
                   </Tooltip>
-                  
+
                   <div className="w-[1px] h-3 bg-white/10" />
 
                   <Tooltip>
@@ -804,7 +804,7 @@ export function EditorView({
                     <span className="tabular-nums text-slate-300">{stats.chars}</span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-6">
                   {uploadTime && (
                     <div className="flex items-center gap-1.5 group/stat">
@@ -849,7 +849,7 @@ export function EditorView({
         </div>
         </div>
         {activeImage && (
-          <ImageModal 
+          <ImageModal
             activeImage={activeImage}
             images={imageGallery}
             onClose={() => setActiveImage(null)}
@@ -857,7 +857,7 @@ export function EditorView({
           />
         )}
 
-        <UploadRulesModal 
+        <UploadRulesModal
           isOpen={uploadRulesModal.isOpen}
           type={uploadRulesModal.type}
           onClose={() => setUploadRulesModal(prev => ({ ...prev, isOpen: false }))}

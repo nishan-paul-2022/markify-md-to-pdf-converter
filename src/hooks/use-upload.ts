@@ -1,7 +1,8 @@
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef,useState } from "react";
 import { useRouter } from "next/navigation";
-import { validateUploadStructure, extractImageReferences } from "@/lib/services/upload-validator";
+
 import { getAlert } from "@/components/AlertProvider";
+import { extractImageReferences,validateUploadStructure } from "@/lib/services/upload-validator";
 
 const processFilesWithNaming = (filesToProcess: File[], uploadCase: number): File[] => {
   console.log(`UseUpload: Processing ${filesToProcess.length} files for Case ${uploadCase}`);
@@ -38,12 +39,12 @@ export function useUpload() {
 
       // Now validate and filter using the consolidated logic
       const validation = validateUploadStructure(inputFiles, referencedImages);
-      
+
       if (!validation.valid) {
         const api = getAlert();
         if (api) {
-          api.show({ 
-            title: validation.case <= 2 ? "Invalid File" : "Invalid Folder", 
+          api.show({
+            title: validation.case <= 2 ? "Invalid File" : "Invalid Folder",
             message: validation.error || "Invalid selection.",
             variant: "destructive"
           });
@@ -55,7 +56,7 @@ export function useUpload() {
 
       setError(null);
       const processedFiles = processFilesWithNaming(validation.filteredFiles, validation.case);
-      
+
       // For selective file uploads, we only allow one file at a time
       if (validation.case <= 2) {
         setFiles(processedFiles);

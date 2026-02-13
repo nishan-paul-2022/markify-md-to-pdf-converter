@@ -1,16 +1,17 @@
-import { auth } from "@/lib/auth"
-import { redirect } from "next/navigation"
-import UserNav from "@/components/auth/UserNav"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import prisma from "@/lib/prisma"
-import FileUpload from "@/components/file-manager/FileUpload"
-import FileList from "@/components/file-manager/FileList"
+import { redirect } from "next/navigation";
+
+import UserNav from "@/components/auth/UserNav";
+import FileList from "@/components/file-manager/FileList";
+import FileUpload from "@/components/file-manager/FileUpload";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
 export default async function DashboardPage(): Promise<React.JSX.Element> {
-  const session = await auth()
+  const session = await auth();
 
   if (!session?.user) {
-    redirect("/auth/signin")
+    redirect("/auth/signin");
   }
 
   // Fetch user's file statistics
@@ -22,15 +23,15 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
       where: { userId: session.user.id },
       _sum: { size: true },
     }),
-  ])
+  ]);
 
   const formatBytes = (bytes: number): string => {
-    if (bytes === 0) {return "0 Bytes"}
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i]
-  }
+    if (bytes === 0) {return "0 Bytes";}
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -167,5 +168,5 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
         </Card>
       </main>
     </div>
-  )
+  );
 }

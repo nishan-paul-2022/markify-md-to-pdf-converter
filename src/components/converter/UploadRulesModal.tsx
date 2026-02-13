@@ -1,14 +1,7 @@
-"use client"
+"use client";
 
-import React from "react"
-import { 
-  FileText, 
-  FolderOpen, 
-  Image as ImageIcon, 
-  AlertCircle, 
-  CheckCircle2,
-  X,
-} from "lucide-react"
+import React from "react";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,8 +10,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
+
+import {
+  AlertCircle,
+  CheckCircle2,
+  FileText,
+  FolderOpen,
+  Image as ImageIcon,
+  X,
+} from "lucide-react";
 
 interface UploadRulesModalProps {
   isOpen: boolean
@@ -33,7 +35,7 @@ export function UploadRulesModal({
   onConfirm,
   type
 }: UploadRulesModalProps) {
-  const isFile = type === "file"
+  const isFile = type === "file";
 
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -41,8 +43,8 @@ export function UploadRulesModal({
         <div className="relative p-6 sm:p-8">
           {/* Background Decoration */}
           <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-          
-          <button 
+
+          <button
             onClick={onClose}
             className="absolute top-2 right-2 p-4 text-slate-500 hover:text-white hover:bg-white/5 rounded-full transition-all z-10 cursor-pointer group"
             aria-label="Close modal"
@@ -175,7 +177,7 @@ export function UploadRulesModal({
           <AlertDialogCancel onClick={onClose} className="sm:flex-1 h-10 bg-transparent border-none text-slate-500 hover:text-slate-200 hover:bg-white/5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all">
             Cancel
           </AlertDialogCancel>
-          <AlertDialogAction 
+          <AlertDialogAction
             onClick={onConfirm}
             className={cn(
               "sm:flex-1 h-10 rounded-lg text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300",
@@ -187,5 +189,5 @@ export function UploadRulesModal({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
+  );
 }

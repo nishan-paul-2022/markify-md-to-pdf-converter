@@ -1,9 +1,11 @@
-"use client"
+"use client";
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Upload, X, FileText, Image as ImageIcon, FolderOpen } from "lucide-react"
-import { formatFileSize } from "@/lib/formatters"
+import React from "react";
+
+import { Button } from "@/components/ui/button";
+import { formatFileSize } from "@/lib/formatters";
+
+import { FileText, FolderOpen,Image as ImageIcon, Upload, X } from "lucide-react";
 
 interface FileUploadViewProps {
   files: File[];
@@ -34,10 +36,10 @@ export function FileUploadView({
 
   const getFileIcon = (file: File): React.JSX.Element => {
     if (file.type.startsWith("image/")) {
-      return <ImageIcon className="h-8 w-8 text-blue-500" />
+      return <ImageIcon className="h-8 w-8 text-blue-500" />;
     }
-    return <FileText className="h-8 w-8 text-green-500" />
-  }
+    return <FileText className="h-8 w-8 text-green-500" />;
+  };
 
   return (
     <div className="space-y-6">
@@ -103,19 +105,19 @@ export function FileUploadView({
         <div className="space-y-4 pt-2">
           <div className="flex items-center justify-between border-b pb-2">
             <h3 className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Selection ({files.length})</h3>
-            <Button 
-              variant="link" 
-              size="sm" 
+            <Button
+              variant="link"
+              size="sm"
               onClick={() => {
                 setFiles([]);
-              }} 
-              disabled={uploading} 
+              }}
+              disabled={uploading}
               className="h-auto p-0 text-xs text-destructive hover:no-underline"
             >
               Clear selection
             </Button>
           </div>
-          
+
           <div className="max-h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
             {files.map((file, index) => (
               <div
@@ -171,5 +173,5 @@ export function FileUploadView({
         </div>
       )}
     </div>
-  )
+  );
 }

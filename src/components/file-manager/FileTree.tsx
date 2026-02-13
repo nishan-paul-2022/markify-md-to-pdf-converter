@@ -1,17 +1,19 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { ChevronRight, ChevronDown, ChevronUp, Folder, FileText, ImageIcon, MoreVertical, Trash2, ExternalLink, PencilLine, Lock, LayoutGrid, List, Check } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { FileTreeNode } from "@/lib/file-tree"
-import { Button } from "@/components/ui/button"
+import React, { useState } from "react";
+
+import { useAlert } from "@/components/AlertProvider";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useAlert } from "@/components/AlertProvider"
+} from "@/components/ui/dropdown-menu";
+import type { FileTreeNode } from "@/lib/file-tree";
+import { cn } from "@/lib/utils";
+
+import { Check,ChevronDown, ChevronRight, ChevronUp, ExternalLink, FileText, Folder, ImageIcon, LayoutGrid, List, Lock, MoreVertical, PencilLine, Trash2 } from "lucide-react";
 
 interface FileTreeProps {
   nodes: FileTreeNode[];
@@ -38,16 +40,16 @@ export function FileTree({
   onToggleSelection,
   searchQuery = "",
 }: FileTreeProps) {
-  const { confirm } = useAlert()
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
-  const [renamingId, setRenamingId] = useState<string | null>(null)
-  const [renameValue, setRenameValue] = useState("")
-  const [isRenaming, setIsRenaming] = useState(false)
-  
+  const { confirm } = useAlert();
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [isRenaming, setIsRenaming] = useState(false);
+
   // Track grid mode for individual folders. Persist in localStorage.
   const [folderGridModes, setFolderGridModes] = useState<Set<string>>(() => {
     const initial = new Set<string>();
-    
+
     // Load from localStorage if available
     if (typeof window !== 'undefined') {
       try {
@@ -62,7 +64,7 @@ export function FileTree({
         console.warn('Failed to parse folder grid modes:', error);
       }
     }
-    
+
     return initial;
   });
 
@@ -73,7 +75,7 @@ export function FileTree({
 
       const checkNode = (node: FileTreeNode): boolean => {
         const nameMatch = node.name.toLowerCase().includes(searchQuery.toLowerCase());
-        
+
         if (node.type === 'file') {
           return nameMatch;
         }
@@ -112,19 +114,19 @@ export function FileTree({
       } else {
         next.add(id);
       }
-      
+
       // Save to localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem('markify-folder-grid-modes', JSON.stringify(Array.from(next)));
       }
-      
+
       return next;
     });
-  }
+  };
 
   const handleRenameStart = (node: FileTreeNode) => {
     if (node.type === "folder" && node.name === "images") { return; }
-    setRenamingId(node.id)
+    setRenamingId(node.id);
     if (node.type === "file") {
       const parts = node.name.split(".");
       if (parts.length > 1) {
@@ -135,12 +137,12 @@ export function FileTree({
     } else {
       setRenameValue(node.name);
     }
-  }
+  };
 
   const handleRenameCancel = () => {
-    setRenamingId(null)
-    setRenameValue("")
-  }
+    setRenamingId(null);
+    setRenameValue("");
+  };
 
   const handleRenameSubmit = async (node: FileTreeNode) => {
     let finalName = renameValue.trim();
@@ -158,53 +160,53 @@ export function FileTree({
     }
 
     if (finalName === node.name) {
-      handleRenameCancel()
-      return
+      handleRenameCancel();
+      return;
     }
 
-    setIsRenaming(true)
+    setIsRenaming(true);
     try {
       await onRename(
-        node.id, 
+        node.id,
         finalName,
         node.type,
         node.batchId,
         node.path
-      )
-      handleRenameCancel()
+      );
+      handleRenameCancel();
     } catch (error) {
-      console.error("Rename failed:", error)
+      console.error("Rename failed:", error);
     } finally {
-      setIsRenaming(false)
+      setIsRenaming(false);
     }
-  }
+  };
 
   const handleDeleteClick = async (node: FileTreeNode, isFolder: boolean) => {
-    const fileIds = isFolder ? collectFileIds(node) : [node.id]
+    const fileIds = isFolder ? collectFileIds(node) : [node.id];
     const confirmed = await confirm({
       title: isFolder ? "Delete folder?" : "Delete file?",
-      message: isFolder 
+      message: isFolder
         ? `Are you sure you want to delete the folder "${node.name}" and all its contents? This cannot be undone.`
         : `Are you sure you want to delete "${node.name}"? This cannot be undone.`,
       confirmText: "Delete",
       cancelText: "Cancel",
       variant: "destructive"
-    })
+    });
 
     if (confirmed) {
-      onDelete(fileIds.length === 1 ? fileIds[0] : fileIds)
+      onDelete(fileIds.length === 1 ? fileIds[0] : fileIds);
     }
-  }
+  };
 
   const toggleFolder = (id: string) => {
-    const newExpanded = new Set(expandedFolders)
+    const newExpanded = new Set(expandedFolders);
     if (newExpanded.has(id)) {
-      newExpanded.delete(id)
+      newExpanded.delete(id);
     } else {
-      newExpanded.add(id)
+      newExpanded.add(id);
     }
-    setExpandedFolders(newExpanded)
-  }
+    setExpandedFolders(newExpanded);
+  };
 
   const collectFileIds = (node: FileTreeNode): string[] => {
     if (node.type === "file") {
@@ -231,58 +233,58 @@ export function FileTree({
   // Auto-expand folders containing the selected file
   React.useEffect(() => {
     if (selectedFileId && nodes.length > 0) {
-      const foldersToExpand = new Set<string>()
+      const foldersToExpand = new Set<string>();
       const findAndExpand = (items: FileTreeNode[]): boolean => {
-        let found = false
+        let found = false;
         for (const item of items) {
           if (item.id === selectedFileId) {
-            found = true
+            found = true;
           } else if (item.children) {
             if (findAndExpand(item.children)) {
-              foldersToExpand.add(item.id)
-              found = true
+              foldersToExpand.add(item.id);
+              found = true;
             }
           }
         }
-        return found
-      }
-      
+        return found;
+      };
+
       if (findAndExpand(nodes)) {
         setExpandedFolders(prev => {
-          const combined = new Set(prev)
-          foldersToExpand.forEach(id => combined.add(id))
-          return combined.size === prev.size ? prev : combined
-        })
+          const combined = new Set(prev);
+          foldersToExpand.forEach(id => combined.add(id));
+          return combined.size === prev.size ? prev : combined;
+        });
       }
     }
   }, [selectedFileId, nodes]);
 
   const getFileIcon = (fileName: string, mimeType?: string) => {
-    const ext = fileName.split(".").pop()?.toLowerCase()
+    const ext = fileName.split(".").pop()?.toLowerCase();
     if (mimeType?.startsWith("image/") || ["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext || "")) {
-      return <ImageIcon className="h-3.5 w-3.5 text-blue-400 group-hover:text-blue-300 transition-colors" />
+      return <ImageIcon className="h-3.5 w-3.5 text-blue-400 group-hover:text-blue-300 transition-colors" />;
     }
     if (ext === "pdf") {
-      return <FileText className="h-3.5 w-3.5 text-red-400 group-hover:text-red-300 transition-colors" />
+      return <FileText className="h-3.5 w-3.5 text-red-400 group-hover:text-red-300 transition-colors" />;
     }
     if (ext === "md") {
-      return <FileText className="h-3.5 w-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+      return <FileText className="h-3.5 w-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />;
     }
-    return <FileText className="h-3.5 w-3.5 text-slate-500 group-hover:text-slate-300 transition-colors" />
-  }
+    return <FileText className="h-3.5 w-3.5 text-slate-500 group-hover:text-slate-300 transition-colors" />;
+  };
 
   return (
     <div className="flex flex-col">
       {nodes.map((node) => {
-        const isExpanded = expandedFolders.has(node.id)
-        const isSelected = selectedFileId === node.id
-        const isFolderActive = containsSelectedFile(node, selectedFileId)
-        const isCurrentlyRenaming = renamingId === node.id
-        const isGridMode = node.name === "images" && folderGridModes.has(node.id)
+        const isExpanded = expandedFolders.has(node.id);
+        const isSelected = selectedFileId === node.id;
+        const isFolderActive = containsSelectedFile(node, selectedFileId);
+        const isCurrentlyRenaming = renamingId === node.id;
+        const isGridMode = node.name === "images" && folderGridModes.has(node.id);
 
         if (node.type === "folder") {
           const folderFileIds = collectFileIds(node);
-          const isDefaultFolder = node.id.startsWith("folder-no-batch") || 
+          const isDefaultFolder = node.id.startsWith("folder-no-batch") ||
             folderFileIds.some(id => id.startsWith("default-"));
 
           return (
@@ -330,7 +332,7 @@ export function FileTree({
                 <div className="flex items-center gap-1">
                   {isSelectionMode && !isDefaultFolder && level === 0 && (
                     <div className="flex items-center px-2">
-                       <div 
+                       <div
                          onClick={(e) => {
                            e.stopPropagation();
                            if (onToggleSelection) {
@@ -360,7 +362,7 @@ export function FileTree({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
                           {node.name === "images" && (
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => toggleFolderGridMode(node.id)}
                               className="gap-2 text-xs"
                             >
@@ -369,7 +371,7 @@ export function FileTree({
                             </DropdownMenuItem>
                           )}
                           {!isDefaultFolder && node.name !== "images" && (
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleRenameStart(node)}
                               className="gap-2 text-xs"
                             >
@@ -377,7 +379,7 @@ export function FileTree({
                             </DropdownMenuItem>
                           )}
                           {!isDefaultFolder && folderFileIds.length > 0 && level === 0 && (
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleDeleteClick(node, true)}
                               className="gap-2 text-xs text-red-400 focus:text-red-400"
                             >
@@ -410,16 +412,16 @@ export function FileTree({
                           onClick={() => onFileSelect(child)}
                           className={cn(
                             "aspect-square rounded-lg border flex flex-col items-center justify-center p-1.5 transition-all group/grid overflow-hidden relative",
-                            isChildSelected 
-                              ? "bg-amber-500/10 border-amber-500/50 ring-1 ring-amber-500/20 shadow-lg shadow-amber-500/10" 
+                            isChildSelected
+                              ? "bg-amber-500/10 border-amber-500/50 ring-1 ring-amber-500/20 shadow-lg shadow-amber-500/10"
                               : "bg-slate-900/40 border-white/5 hover:border-white/10 hover:bg-slate-800/80"
                           )}
                           title={child.name}
                         >
                           {isImg && child.file?.url ? (
                             /* eslint-disable-next-line @next/next/no-img-element */
-                            <img 
-                              src={child.file.url} 
+                            <img
+                              src={child.file.url}
                               alt={child.name}
                               className="w-full h-full object-cover rounded shadow-sm group-hover/grid:scale-110 transition-transform duration-300"
                             />
@@ -452,7 +454,7 @@ export function FileTree({
                 </div>
               )}
             </div>
-          )
+          );
         }
 
         return (
@@ -460,8 +462,8 @@ export function FileTree({
             key={node.id}
             className={cn(
               "group flex items-center justify-between hover:bg-white/5 transition-all text-slate-400",
-              isSelected 
-                ? "bg-white/10 text-white border-l-2 border-emerald-500 shadow-[inset_4px_0_12px_-4px_rgba(16,185,129,0.1)]" 
+              isSelected
+                ? "bg-white/10 text-white border-l-2 border-emerald-500 shadow-[inset_4px_0_12px_-4px_rgba(16,185,129,0.1)]"
                 : "hover:text-slate-100"
             )}
             style={{ paddingLeft: `${(level + 1.5) * 1}rem` }}
@@ -496,7 +498,7 @@ export function FileTree({
             <div className="flex items-center gap-1">
               {isSelectionMode && !node.id.startsWith("default-") && level === 0 && (
                 <div className="flex items-center px-2">
-                   <div 
+                   <div
                      onClick={(e) => {
                        e.stopPropagation();
                        if (onToggleSelection) {
@@ -529,7 +531,7 @@ export function FileTree({
                         <ExternalLink className="h-3.5 w-3.5" /> Open
                       </DropdownMenuItem>
                       {!node.id.startsWith("default-") && (
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => handleRenameStart(node)}
                           className="gap-2 text-xs"
                         >
@@ -537,7 +539,7 @@ export function FileTree({
                         </DropdownMenuItem>
                       )}
                       {!node.id.startsWith("default-") && level === 0 && (
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => handleDeleteClick(node, false)}
                           className="gap-2 text-xs text-red-400 focus:text-red-400"
                         >
@@ -550,8 +552,8 @@ export function FileTree({
               )}
             </div>
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

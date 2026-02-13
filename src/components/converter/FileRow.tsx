@@ -1,23 +1,24 @@
 import React from 'react';
-import { 
-  FileCode, 
-  Trash2, 
-  Download, 
-  Loader2, 
-  Zap, 
-  CheckCircle2, 
-  FileDown, 
-  CheckCircle,
-  AlertCircle
-} from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { File as AppFile } from '@/hooks/use-files';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { File as AppFile } from '@/hooks/use-files';
+import { cn } from '@/lib/utils';
+
+import {
+  AlertCircle,
+  CheckCircle,
+  CheckCircle2,
+  Download,
+  FileCode,
+  FileDown,
+  Loader2,
+  Trash2,
+  Zap} from 'lucide-react';
 
 interface FileRowProps {
   file: AppFile;
@@ -56,7 +57,7 @@ export const FileRow: React.FC<FileRowProps> = ({
   const isProcessing = processingState === 'converting';
 
   return (
-    <div 
+    <div
       style={{ animationDelay: `${index * 0.05}s` }}
       className={cn(
         "group/row flex items-stretch gap-4 animate-card-in",
@@ -71,12 +72,12 @@ export const FileRow: React.FC<FileRowProps> = ({
         <div className="flex items-center gap-4 min-w-0 flex-1 relative z-10">
           {/* Selection Checkbox */}
           {isSelectionMode && (
-            <button 
+            <button
               onClick={() => onToggleSelection(file.id)}
               className={cn(
                 "w-6 h-6 rounded-lg flex items-center justify-center transition-all cursor-pointer animate-in zoom-in-50",
-                isSelected 
-                  ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" 
+                isSelected
+                  ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
                   : "bg-white/5 border border-white/10 text-transparent hover:border-indigo-500/30"
               )}
             >
@@ -114,7 +115,7 @@ export const FileRow: React.FC<FileRowProps> = ({
         <div className="flex items-center gap-2 relative z-10 shrink-0">
           <Tooltip>
             <TooltipTrigger asChild>
-              <button 
+              <button
                 onClick={() => onDownload(file, 'md')}
                 className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
               >
@@ -127,7 +128,7 @@ export const FileRow: React.FC<FileRowProps> = ({
           {!isSelectionMode && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <button 
+                <button
                   onClick={() => onDelete(file.id)}
                   className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-all cursor-pointer"
                 >
@@ -146,8 +147,8 @@ export const FileRow: React.FC<FileRowProps> = ({
             disabled={isProcessing || isSelectionMode}
             className={cn(
               "h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-2 transition-all active:scale-95",
-              processingState === 'done' 
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white" 
+              processingState === 'done'
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white"
                 : processingState === 'error'
                 ? "bg-red-500/10 text-red-400 border border-red-500/20"
                 : "bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
@@ -176,11 +177,11 @@ export const FileRow: React.FC<FileRowProps> = ({
           <div className="flex items-center gap-4 min-w-0 relative z-10">
             <div className={cn(
               "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-              isProcessing ? "bg-amber-500/10 text-amber-500" : 
+              isProcessing ? "bg-amber-500/10 text-amber-500" :
               processingState === 'error' ? "bg-red-500/10 text-red-500" :
               "bg-emerald-500/10 text-emerald-400 group-hover/output:scale-110 transition-transform"
             )}>
-              {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : 
+              {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> :
                processingState === 'error' ? <AlertCircle className="w-5 h-5" /> :
                <FileDown className="w-5 h-5" />}
             </div>
@@ -188,7 +189,7 @@ export const FileRow: React.FC<FileRowProps> = ({
               <div className="flex items-center gap-2">
                 <span className={cn(
                   "text-[9px] font-black tracking-widest uppercase",
-                  isProcessing ? "text-amber-500" : 
+                  isProcessing ? "text-amber-500" :
                   processingState === 'error' ? "text-red-500" : "text-emerald-500"
                 )}>
                   {isProcessing ? 'Processing' : processingState === 'error' ? 'Failed' : 'Ready'}
@@ -205,7 +206,7 @@ export const FileRow: React.FC<FileRowProps> = ({
             <div className="relative z-10 shrink-0">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button 
+                  <button
                     onClick={() => onDownload(file, 'pdf')}
                     className="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all cursor-pointer shadow-lg shadow-emerald-500/10 active:scale-90"
                   >

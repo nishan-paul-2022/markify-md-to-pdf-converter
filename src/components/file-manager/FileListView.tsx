@@ -1,9 +1,8 @@
-"use client"
+"use client";
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import { Trash2, Download, FileText, Image as ImageIcon, Loader2, PencilLine, Lock } from "lucide-react"
-import { cn } from "@/lib/utils"
+import React from "react";
+
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -11,8 +10,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { File } from "@/hooks/use-files"
+} from "@/components/ui/table";
+import type { File } from "@/hooks/use-files";
+import { cn } from "@/lib/utils";
+
+import { Download, FileText, Image as ImageIcon, Loader2, Lock,PencilLine, Trash2 } from "lucide-react";
 
 interface FileListViewProps {
   files: File[];
@@ -29,24 +31,24 @@ export function FileListView({
   handleRename,
   onImageClick,
 }: FileListViewProps) {
-  const [renamingId, setRenamingId] = React.useState<string | null>(null)
-  const [renameValue, setRenameValue] = React.useState("")
-  const [isRenaming, setIsRenaming] = React.useState(false)
+  const [renamingId, setRenamingId] = React.useState<string | null>(null);
+  const [renameValue, setRenameValue] = React.useState("");
+  const [isRenaming, setIsRenaming] = React.useState(false);
 
   const handleRenameStart = (file: File) => {
-    setRenamingId(file.id)
+    setRenamingId(file.id);
     const parts = file.originalName.split(".");
     if (parts.length > 1) {
       setRenameValue(parts.slice(0, -1).join("."));
     } else {
       setRenameValue(file.originalName);
     }
-  }
+  };
 
   const handleRenameCancel = () => {
-    setRenamingId(null)
-    setRenameValue("")
-  }
+    setRenamingId(null);
+    setRenameValue("");
+  };
 
   const handleRenameSubmit = async (file: File) => {
     let finalName = renameValue.trim();
@@ -62,53 +64,53 @@ export function FileListView({
     }
 
     if (finalName === file.originalName) {
-      handleRenameCancel()
-      return
+      handleRenameCancel();
+      return;
     }
 
-    setIsRenaming(true)
+    setIsRenaming(true);
     try {
-      await handleRename(file.id, finalName, "file")
-      handleRenameCancel()
+      await handleRename(file.id, finalName, "file");
+      handleRenameCancel();
     } catch (error) {
-      console.error("Rename failed:", error)
+      console.error("Rename failed:", error);
     } finally {
-      setIsRenaming(false)
+      setIsRenaming(false);
     }
-  }
+  };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) {return "0 Bytes"}
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i]
-  }
+    if (bytes === 0) {return "0 Bytes";}
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+  };
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    }).format(date)
-  }
+    }).format(date);
+  };
 
   const getFileIcon = (type: string): React.JSX.Element => {
     if (type.startsWith("image/")) {
-      return <ImageIcon className="h-5 w-5 text-blue-500" />
+      return <ImageIcon className="h-5 w-5 text-blue-500" />;
     }
-    return <FileText className="h-5 w-5 text-green-500" />
-  }
+    return <FileText className="h-5 w-5 text-green-500" />;
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-    )
+    );
   }
 
   if (files.length === 0) {
@@ -120,7 +122,7 @@ export function FileListView({
           Upload your first file to get started
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -144,7 +146,7 @@ export function FileListView({
               <TableRow key={file.id}>
                 <TableCell>
                   {file.mimeType.startsWith("image/") && onImageClick ? (
-                    <button 
+                    <button
                       onClick={() => onImageClick(file)}
                       className="hover:scale-110 transition-transform active:scale-95 cursor-pointer bg-transparent border-none p-0 flex items-center justify-center outline-none"
                     >
@@ -227,5 +229,5 @@ export function FileListView({
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

@@ -1,6 +1,7 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function AuthErrorPage({
   searchParams,
@@ -30,9 +31,9 @@ export default async function AuthErrorPage({
       title: "Authentication Error",
       description: "An unexpected error occurred during authentication. Please try again.",
     },
-  }
+  };
 
-  const errorInfo = errorMessages[error || "Default"] || errorMessages.Default
+  const errorInfo = errorMessages[error || "Default"] || errorMessages.Default;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
@@ -69,7 +70,7 @@ export default async function AuthErrorPage({
               <Link href="/">Go Home</Link>
             </Button>
           </div>
-          
+
           {error && (
             <p className="text-center text-xs text-muted-foreground">
               Error code: {error}
@@ -78,5 +79,5 @@ export default async function AuthErrorPage({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
