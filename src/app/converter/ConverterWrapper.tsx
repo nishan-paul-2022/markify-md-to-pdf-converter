@@ -1,6 +1,5 @@
-'use client';
-
 import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 
 interface User {
   name?: string | null;
@@ -14,5 +13,9 @@ const ConverterClient = dynamic<{ user: User }>(
 );
 
 export default function ConverterWrapper({ user }: { user: User }) {
-  return <ConverterClient user={user} />;
+  return (
+    <Suspense fallback={<div className="h-screen w-screen bg-slate-950 flex items-center justify-center text-white">Loading pipeline...</div>}>
+      <ConverterClient user={user} />
+    </Suspense>
+  );
 }

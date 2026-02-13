@@ -84,87 +84,44 @@ const formatSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
+import { useSelection } from '@/hooks/use-selection';
+import { useConverterFiles } from '@/hooks/use-converter-files';
+
 export default function ConverterClient({ user }: ConverterClientProps): React.JSX.Element {
   const router = useRouter();
-  const { files, loading, refreshFiles, handleDelete, handleBulkDelete, deleting } = useFiles('converter');
+  const { files, loading, refreshFiles, handleBulkDelete, deleting, handleDelete } = useFiles('converter');
   const { show: showAlert, confirm: confirmAlert } = useAlert();
-  const [searchQuery, setSearchQuery] = React.useState('');
+  
   const [uploadRulesModal, setUploadRulesModal] = React.useState<{ isOpen: boolean, type: 'file' | 'folder' | 'zip' }>({ isOpen: false, type: 'file' });
   
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const folderInputRef = React.useRef<HTMLInputElement>(null);
   const zipInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Status and result management
+  // Status and result management (kept local as it's ephemeral/session-based)
   const [processingStates, setProcessingStates] = React.useState<Record<string, 'pending' | 'converting' | 'done' | 'error'>>({});
   const [convertedFiles, setConvertedFiles] = React.useState<Record<string, Blob>>({});
-  const [selectedFileIds, setSelectedFileIds] = React.useState<Set<string>>(new Set());
   const [isBatchProcessing, setIsBatchProcessing] = React.useState(false);
-  const [isSelectionMode, setIsSelectionMode] = React.useState(false);
-  const [sortBy, setSortBy] = React.useState<'name' | 'time' | 'size'>('time');
-  const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc');
 
-  // Persistence logic for selection
-  const isInitialized = React.useRef(false);
+  // Modular Hooks (Guidelines 4 & 6)
+  const { 
+    filteredMdFiles, 
+    searchQuery, 
+    setSearchQuery, 
+    sortBy, 
+    setSortBy, 
+    sortOrder, 
+    setSortOrder 
+  } = useConverterFiles(files);
 
-  React.useEffect(() => {
-    const savedSelectionIds = localStorage.getItem('converter_selected_ids');
-    const savedSelectionMode = localStorage.getItem('converter_selection_mode');
-    
-    if (savedSelectionIds) {
-      try {
-        const ids = JSON.parse(savedSelectionIds);
-        if (Array.isArray(ids)) {
-          setSelectedFileIds(new Set(ids));
-        }
-      } catch (e) {
-        console.error('Failed to parse saved selection IDs', e);
-      }
-    }
-    
-    if (savedSelectionMode === 'true') {
-      setIsSelectionMode(true);
-    }
-    
-    // Mark as initialized AFTER loading from localStorage
-    isInitialized.current = true;
-  }, []);
-
-  React.useEffect(() => {
-    if (!isInitialized.current) { return; }
-    localStorage.setItem('converter_selected_ids', JSON.stringify(Array.from(selectedFileIds)));
-  }, [selectedFileIds]);
-
-  React.useEffect(() => {
-    if (!isInitialized.current) { return; }
-    localStorage.setItem('converter_selection_mode', String(isSelectionMode));
-  }, [isSelectionMode]);
-
-  // Grouping logic
-  const filteredMdFiles = React.useMemo(() => {
-    return files
-      .filter(f => 
-        !f.id.startsWith('default-') && 
-        f.batchId !== 'sample-document' && 
-        f.batchId !== 'sample-project' &&
-        (f.originalName.toLowerCase().endsWith('.md') || f.mimeType === 'text/markdown')
-      )
-      .filter(f => 
-        f.originalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (f.relativePath && f.relativePath.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
-      .sort((a, b) => {
-        let comparison = 0;
-        if (sortBy === 'name') {
-          comparison = a.originalName.localeCompare(b.originalName);
-        } else if (sortBy === 'size') {
-          comparison = a.size - b.size;
-        } else {
-          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        }
-        return sortOrder === 'desc' ? -comparison : comparison;
-      });
-  }, [files, searchQuery, sortBy, sortOrder]);
+  const {
+    selectedIds: selectedFileIds,
+    isSelectionMode,
+    toggleSelectionMode,
+    toggleId: toggleSelection,
+    selectAll,
+    clearSelection
+  } = useSelection('converter');
 
   // Derived state for the "Converted" column (matching filtered set)
   const completedResults = React.useMemo(() => {
@@ -175,30 +132,11 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     );
   }, [filteredMdFiles, processingStates, convertedFiles]);
 
-  const toggleSelectionMode = () => {
-    setIsSelectionMode(!isSelectionMode);
-    if (isSelectionMode) {
-      setSelectedFileIds(new Set());
-    }
-  };
-
-  const toggleSelection = (id: string) => {
-    setSelectedFileIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
   const toggleSelectAll = () => {
     if (selectedFileIds.size === filteredMdFiles.length && filteredMdFiles.length > 0) {
-      setSelectedFileIds(new Set());
+      clearSelection();
     } else {
-      setSelectedFileIds(new Set(filteredMdFiles.map(f => f.id)));
+      selectAll(filteredMdFiles.map(f => f.id));
     }
   };
 
@@ -216,8 +154,8 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     }
     
     setIsBatchProcessing(false);
-    setSelectedFileIds(new Set());
-    setIsSelectionMode(false);
+    clearSelection();
+    toggleSelectionMode(); // Exit selection mode after batch action
   };
 
   const handleBatchDelete = async () => {
@@ -233,8 +171,8 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     if (!confirmed) { return; }
 
     await handleBulkDelete(Array.from(selectedFileIds));
-    setSelectedFileIds(new Set());
-    setIsSelectionMode(false);
+    clearSelection();
+    toggleSelectionMode(); // Exit selection mode after batch action
   };
 
   const handleConvertFile = async (file: AppFile) => {
