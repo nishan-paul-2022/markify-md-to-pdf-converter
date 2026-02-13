@@ -70,7 +70,7 @@ file: File (required)
   "file": {
     "id": "clx123...",
     "filename": "uuid.md",
-    "originalName": "document.md",
+    "originalName": "file.md",
     "url": "/uploads/user-id/uuid.md",
     "size": 1024,
     "mimeType": "text/markdown",
@@ -128,7 +128,7 @@ const data = await response.json();
 ```bash
 curl -X POST http://localhost:3000/api/files \
   -H "Cookie: next-auth.session-token=..." \
-  -F "file=@document.md"
+  -F "file=@file.md"
 ```
 
 ### List Files
@@ -148,7 +148,7 @@ curl -X POST http://localhost:3000/api/files \
     {
       "id": "clx123...",
       "filename": "uuid.md",
-      "originalName": "document.md",
+      "originalName": "file.md",
       "mimeType": "text/markdown",
       "size": 1024,
       "url": "/uploads/user-id/uuid.md",
@@ -187,7 +187,7 @@ const data = await response.json();
   "file": {
     "id": "clx123...",
     "filename": "uuid.md",
-    "originalName": "document.md",
+    "originalName": "file.md",
     "mimeType": "text/markdown",
     "size": 1024,
     "url": "/uploads/user-id/uuid.md",
@@ -518,7 +518,7 @@ Example webhook payload:
   "data": {
     "fileId": "clx123...",
     "userId": "clx456...",
-    "filename": "document.md",
+    "filename": "file.md",
     "size": 1024
   }
 }

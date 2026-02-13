@@ -55,7 +55,7 @@ export const SourceSegment: React.FC<SourceSegmentProps> = ({ onUploadClick }) =
             </div>
             <div className="flex-grow text-left">
               <p className="text-[12px] leading-none font-black tracking-wider text-slate-400 uppercase transition-colors group-hover/btn:text-indigo-300">
-                Upload Project
+                Upload Folder
               </p>
             </div>
           </Button>

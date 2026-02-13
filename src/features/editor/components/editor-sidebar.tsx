@@ -198,7 +198,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
               isSelectionMode
                 ? fileTree.filter(
                     (node) =>
-                      node.batchId !== 'sample-document' && node.batchId !== 'sample-project',
+                      node.batchId !== 'sample-file' && node.batchId !== 'sample-folder',
                   )
                 : fileTree
             }

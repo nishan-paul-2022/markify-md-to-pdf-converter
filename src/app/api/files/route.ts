@@ -138,10 +138,10 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     }
 
     const { id } = validation.data;
-    // Protection for default project and document
+    // Protection for default folder and file
     if (id.startsWith('default-') || validation.data.batchId === 'no-batch') {
       return NextResponse.json(
-        { error: 'Changing default project or document is not allowed' },
+        { error: 'Changing default folder or file is not allowed' },
         { status: 403 },
       );
     }

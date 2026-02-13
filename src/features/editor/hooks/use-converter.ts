@@ -113,7 +113,7 @@ export function useConverter(
     if (tempFilename.trim()) {
       setFilename(`${tempFilename.trim()}.md`);
     } else {
-      setFilename('document.md');
+      setFilename('file.md');
     }
     setIsEditing(false);
   }, [tempFilename, setFilename, setIsEditing]);
@@ -348,8 +348,8 @@ export function useConverter(
     return files
       .filter(
         (f) =>
-          f.batchId !== 'sample-document' &&
-          f.batchId !== 'sample-project' &&
+          f.batchId !== 'sample-file' &&
+          f.batchId !== 'sample-folder' &&
           !f.id.startsWith('default-'),
       )
       .map((f) => f.id);
@@ -399,7 +399,7 @@ export function useConverter(
       const text = await FilesService.getContent(DEFAULT_MARKDOWN_PATH);
 
       handleContentChange(text);
-      setFilename('document.md');
+      setFilename('file.md');
       setSelectedFileId(null);
       setIsReset(true);
       setTimeout(() => setIsReset(false), 2000);

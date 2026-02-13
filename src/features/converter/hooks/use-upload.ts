@@ -154,9 +154,9 @@ export function useUpload() {
     const api = getAlert();
     if (api) {
       const confirmed = await api.confirm({
-        title: 'Upload Project Folder',
+        title: 'Upload Folder',
         message:
-          "You are about to upload a project folder. For the best experience, ensure your Markdown files are at the root level and any images are placed in a subfolder named 'images/'.",
+          "You are about to upload a folder. For the best experience, ensure your Markdown files are at the root level and any images are placed in a subfolder named 'images/'.",
         confirmText: 'Select Folder',
         cancelText: 'Cancel',
         variant: 'info',

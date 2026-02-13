@@ -15,7 +15,7 @@ export default async function SignInPage({
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-3xl font-bold tracking-tight">Welcome to Markify</CardTitle>
           <CardDescription className="text-base">
-            Sign in to access your markdown documents and PDF conversions
+            Sign in to access your markdown files and PDF conversions
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

@@ -67,12 +67,12 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
   const sortNodes = (nodes: FileTreeNode[]) => {
     nodes.sort((a, b) => {
       // Priority sorting:
-      // 1. Default items (sample-document, sample-project)
+      // 1. Default items (sample-file, sample-folder)
       // 2. Folders
       // 3. Alphabetical
 
-      const isDefaultA = a.batchId === 'sample-document' || a.batchId === 'sample-project';
-      const isDefaultB = b.batchId === 'sample-document' || b.batchId === 'sample-project';
+      const isDefaultA = a.batchId === 'sample-file' || a.batchId === 'sample-folder';
+      const isDefaultB = b.batchId === 'sample-file' || b.batchId === 'sample-folder';
 
       if (isDefaultA && !isDefaultB) {
         return -1;
@@ -81,12 +81,12 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
         return 1;
       }
 
-      // If both are defaults, sample-document goes before sample-project (or vice versa, but let's keep it consistent)
+      // If both are defaults, sample-file goes before sample-folder (or vice versa, but let's keep it consistent)
       if (isDefaultA && isDefaultB) {
-        if (a.batchId === 'sample-document' && b.batchId === 'sample-project') {
+        if (a.batchId === 'sample-file' && b.batchId === 'sample-folder') {
           return -1;
         }
-        if (a.batchId === 'sample-project' && b.batchId === 'sample-document') {
+        if (a.batchId === 'sample-folder' && b.batchId === 'sample-file') {
           return 1;
         }
       }

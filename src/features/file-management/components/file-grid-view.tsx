@@ -130,7 +130,7 @@ export function FileGridView({
                 <div className="flex flex-col items-center gap-2">
                   <FileText className="h-12 w-12 text-blue-500/50 transition-transform group-hover:scale-110" />
                   <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                    MD Document
+                    MD File
                   </span>
                 </div>
               )}

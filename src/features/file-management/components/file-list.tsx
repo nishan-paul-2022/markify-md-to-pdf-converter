@@ -58,7 +58,7 @@ export default function FileList(): React.JSX.Element {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold tracking-tight">Project Artifacts</h3>
+        <h3 className="text-lg font-semibold tracking-tight">Folder Artifacts</h3>
 
         <div className="flex items-center rounded-lg border bg-slate-100 p-1 dark:bg-slate-800">
           <Button

@@ -2,8 +2,8 @@
  * Enforces lowercase kebab-case on a string.
  * Replaces spaces and special characters with hyphens and removes the file extension.
  *
- * @param name - The name to standardize (e.g., "Sample Document.md")
- * @returns The standardized name (e.g., "sample-document")
+ * @param name - The name to standardize (e.g., "Sample File.md")
+ * @returns The standardized name (e.g., "sample-file")
  */
 export function generateStandardName(name: string): string {
   // 1. Remove the file extension (last occurrence of a dot and everything after it)

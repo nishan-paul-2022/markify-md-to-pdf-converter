@@ -17,8 +17,8 @@ export function useConverterFiles(files: AppFile[]) {
       .filter(
         (f) =>
           !f.id.startsWith('default-') &&
-          f.batchId !== 'sample-document' &&
-          f.batchId !== 'sample-project' &&
+          f.batchId !== 'sample-file' &&
+          f.batchId !== 'sample-folder' &&
           (f.originalName.toLowerCase().endsWith('.md') || f.mimeType === 'text/markdown'),
       )
       .filter(

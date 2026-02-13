@@ -72,7 +72,7 @@ export function FileUploadView({
           <div className="text-center">
             <p className="font-bold">Folder</p>
             <p className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
-              Project Dir
+              Folder Root
             </p>
           </div>
         </Button>
@@ -99,9 +99,9 @@ export function FileUploadView({
           <div className="mb-4 flex h-16 w-16 rotate-3 items-center justify-center rounded-2xl bg-white shadow-sm dark:bg-gray-800">
             <Upload className="h-8 w-8 text-gray-200" />
           </div>
-          <h3 className="text-sm font-semibold text-gray-400">Ready for Project Import</h3>
+          <h3 className="text-sm font-semibold text-gray-400">Ready for Folder Import</h3>
           <p className="mt-1 max-w-[200px] text-xs text-gray-400">
-            Use the buttons above to select your files or project folder
+            Use the buttons above to select your files or folder
           </p>
         </div>
       )}

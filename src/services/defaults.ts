@@ -17,7 +17,7 @@ async function getFilesRecursively(
   dir: string,
   baseDir: string,
   batchId: string,
-  projectName: string,
+  folderName: string,
 ): Promise<DefaultFile[]> {
   const entries = await readdir(dir, { withFileTypes: true });
   const files: DefaultFile[] = [];
@@ -29,10 +29,10 @@ async function getFilesRecursively(
 
     const fullPath = join(dir, entry.name);
     const relativeToPublic = fullPath.split('public')[1];
-    const relativeToProject = fullPath.split(baseDir)[1].replace(/^\//, '');
+    const relativeToFolder = fullPath.split(baseDir)[1].replace(/^\//, '');
 
     if (entry.isDirectory()) {
-      const subFiles = await getFilesRecursively(fullPath, baseDir, batchId, projectName);
+      const subFiles = await getFilesRecursively(fullPath, baseDir, batchId, folderName);
       files.push(...subFiles);
     } else {
       const ext = entry.name.split('.').pop()?.toLowerCase() || '';
@@ -40,17 +40,17 @@ async function getFilesRecursively(
 
       // Strict Structure Validation Logic
       // 1. Root Level: Only .md files allowed
-      if (!relativeToProject.includes('/')) {
+      if (!relativeToFolder.includes('/')) {
         if (ext !== 'md') {
           continue;
         }
       }
       // 2. Subfolder Level: Must be "images/" and contain only images
       else {
-        const parts = relativeToProject.split('/');
+        const parts = relativeToFolder.split('/');
 
         // Only allow 1 level deep (images/file.png)
-        // However, relativeToProject for "content-4/images/img.png" might be just "images/img.png" if baseDir is correct
+        // However, relativeToFolder for "content-4/images/img.png" might be just "images/img.png" if baseDir is correct
 
         if (parts.length > 2) {
           continue;
@@ -77,15 +77,15 @@ async function getFilesRecursively(
       }
 
       files.push({
-        id: `default-${batchId}-${relativeToProject.replace(/\//g, '-')}`,
+        id: `default-${batchId}-${relativeToFolder.replace(/\//g, '-')}`,
         filename: entry.name,
         originalName: entry.name,
         mimeType,
         size: stats.size,
         url: relativeToPublic.replace(/\\/g, '/'),
-        relativePath: projectName
-          ? `${projectName}/${relativeToProject}`.replace(/\\/g, '/')
-          : relativeToProject.replace(/\\/g, '/'),
+        relativePath: folderName
+          ? `${folderName}/${relativeToFolder}`.replace(/\\/g, '/')
+          : relativeToFolder.replace(/\\/g, '/'),
         batchId: batchId,
         createdAt: stats.birthtime.toISOString(),
       });
@@ -101,12 +101,12 @@ export async function getDefaultFiles(): Promise<DefaultFile[]> {
   const content1Dir = join(publicDir, 'content-1');
   const content4Dir = join(publicDir, 'content-4');
 
-  const files1 = await getFilesRecursively(content1Dir, content1Dir, 'sample-document', '');
+  const files1 = await getFilesRecursively(content1Dir, content1Dir, 'sample-file', '');
   const files4 = await getFilesRecursively(
     content4Dir,
     content4Dir,
-    'sample-project',
-    'sample-project',
+    'sample-folder',
+    'sample-folder',
   );
 
   return [...files1, ...files4];

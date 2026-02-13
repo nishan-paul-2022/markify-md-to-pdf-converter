@@ -506,7 +506,7 @@ export function FileTree({
                               }}
                               className="gap-2 text-xs text-red-400 focus:text-red-400"
                             >
-                              <Trash2 className="h-3.5 w-3.5" /> Delete Project
+                              <Trash2 className="h-3.5 w-3.5" /> Delete Folder
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem

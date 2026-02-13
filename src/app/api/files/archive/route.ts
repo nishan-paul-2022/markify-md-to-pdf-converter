@@ -172,7 +172,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           }
           validFiles.push(file);
         }
-        // Option B: A project's root file (e.g., FolderA/note.md)
+        // Option B: A folder's root file (e.g., FolderA/note.md)
         else {
           if (!isMd) {
             return NextResponse.json(
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           validFiles.push(file);
         }
       }
-      // Rule 3: Depth 3 level (e.g., Project/images/file.png)
+      // Rule 3: Depth 3 level (e.g., Folder/images/file.png)
       else if (effectiveParts.length === 3) {
         if (effectiveParts[1].toLowerCase() !== 'images') {
           return NextResponse.json(
