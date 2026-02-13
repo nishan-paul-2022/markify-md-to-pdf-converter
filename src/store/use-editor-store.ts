@@ -1,6 +1,6 @@
 import type { Metadata } from '@/constants/default-content';
 import { DEFAULT_METADATA } from '@/constants/default-content';
-import type { AppFile } from '@/hooks/use-files';
+import type { AppFile } from '@/features/file-management/hooks/use-files';
 
 import { create } from 'zustand';
 

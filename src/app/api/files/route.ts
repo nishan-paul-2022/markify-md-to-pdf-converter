@@ -7,8 +7,8 @@ import {
   BulkDeleteSchema, 
   FileRenameSchema, 
   FileUploadSchema 
-} from '@/lib/schemas/file.schema';
-import { ServerFilesService } from '@/lib/services/server/files-service';
+} from '@/schemas/file-schema';
+import { ServerFilesService } from '@/services/files-service';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
-import { PdfService } from '@/lib/services/pdf-service';
+import { PdfService } from '@/services/pdf-service';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {

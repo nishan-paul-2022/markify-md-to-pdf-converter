@@ -1,4 +1,4 @@
-import type { GroupMember,Metadata } from '@/lib/schemas/file.schema';
+import type { GroupMember,Metadata } from '@/schemas/file-schema';
 export type { GroupMember,Metadata };
 
 /**

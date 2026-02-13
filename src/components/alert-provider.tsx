@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/cn';
 
 import { AlertTriangle, CheckCircle2, Info, X } from 'lucide-react';
 export interface AlertOptions {
