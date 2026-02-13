@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import type { File as AppFile } from '@/hooks/use-files';
+import type { AppFile } from '@/hooks/use-files';
 import { cn } from '@/lib/utils';
 
 import { ChevronLeft, ChevronRight, Download, Maximize2, Minimize2, X } from 'lucide-react';

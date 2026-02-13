@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import type { File as AppFile } from '@/hooks/use-files';
+import type { AppFile } from '@/hooks/use-files';
 import { useFiles } from '@/hooks/use-files';
 import { cn } from '@/lib/utils';
 

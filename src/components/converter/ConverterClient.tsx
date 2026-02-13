@@ -13,7 +13,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
 import { useConverterFiles } from '@/hooks/use-converter-files';
 // Hooks
-import type { File as AppFile } from '@/hooks/use-files';
+import type { AppFile } from '@/hooks/use-files';
 import { useFiles } from '@/hooks/use-files';
 import { useSelection } from '@/hooks/use-selection';
 import { formatConverterDate, formatFileSize } from '@/lib/formatters';

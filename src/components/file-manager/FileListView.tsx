@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { File } from '@/hooks/use-files';
+import type { AppFile as File } from '@/hooks/use-files';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 

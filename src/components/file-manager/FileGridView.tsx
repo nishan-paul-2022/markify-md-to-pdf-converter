@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { File } from '@/hooks/use-files';
+import type { AppFile as File } from '@/hooks/use-files';
 import { cn } from '@/lib/utils';
 
 import { Download, Eye, FileText, Lock, MoreVertical, PencilLine, Trash2 } from 'lucide-react';

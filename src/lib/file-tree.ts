@@ -1,4 +1,4 @@
-import type { File as AppFile } from '@/hooks/use-files';
+import type { AppFile } from '@/hooks/use-files';
 
 export interface FileTreeNode {
   id: string;

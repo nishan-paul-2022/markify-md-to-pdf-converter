@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import type { File as AppFile } from '@/hooks/use-files';
+import type { AppFile } from '@/hooks/use-files';
 import { cn } from '@/lib/utils';
 
 import {

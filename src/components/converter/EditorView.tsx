@@ -19,7 +19,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useConverter } from '@/hooks/use-converter';
-import type { File as AppFile } from '@/hooks/use-files';
+import type { AppFile } from '@/hooks/use-files';
+import { FilesService } from '@/lib/api/files.service';
 import type { FileTreeNode } from '@/lib/file-tree';
 import { buildFileTree } from '@/lib/file-tree';
 import { formatDateTime } from '@/lib/formatters';
@@ -251,23 +252,9 @@ export function EditorView({
         const batchId = self.crypto.randomUUID();
 
         try {
-          const uploadPromises = newFiles.map(async ({ file, path }) => {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('batchId', batchId);
-            formData.append('relativePath', path);
-            formData.append('source', 'editor');
-
-            const response = await fetch('/api/files', {
-              method: 'POST',
-              body: formData,
-            });
-
-            if (response.ok) {
-              return await response.json();
-            }
-            return null;
-          });
+          const uploadPromises = newFiles.map(({ file, path }) =>
+            FilesService.upload(file, batchId, path, 'editor')
+          );
 
           await Promise.all(uploadPromises);
 

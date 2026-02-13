@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import type { File as AppFile } from '@/hooks/use-files';
+import type { AppFile } from '@/hooks/use-files';
 import { useQueryState, useSearchQuery } from '@/hooks/use-query-state';
 
 /**
