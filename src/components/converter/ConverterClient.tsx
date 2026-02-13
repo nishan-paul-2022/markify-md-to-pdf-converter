@@ -19,7 +19,12 @@ import {
   Square,
   MinusSquare,
   MousePointer2,
-  X
+  X,
+  SortAsc,
+  Clock,
+  HardDrive,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import UserNav from '@/components/auth/UserNav';
@@ -32,6 +37,14 @@ import {
 } from "@/components/ui/tooltip";
 import { useAlert } from "@/components/AlertProvider";
 import { UploadRulesModal } from '@/components/converter/UploadRulesModal';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 
 
 
@@ -62,6 +75,8 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
   const [selectedFileIds, setSelectedFileIds] = React.useState<Set<string>>(new Set());
   const [isBatchProcessing, setIsBatchProcessing] = React.useState(false);
   const [isSelectionMode, setIsSelectionMode] = React.useState(false);
+  const [sortBy, setSortBy] = React.useState<'name' | 'time' | 'size'>('time');
+  const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc');
 
   // Persistence logic for selection
   const isInitialized = React.useRef(false);
@@ -112,8 +127,18 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         f.originalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (f.relativePath && f.relativePath.toLowerCase().includes(searchQuery.toLowerCase()))
       )
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [files, searchQuery]);
+      .sort((a, b) => {
+        let comparison = 0;
+        if (sortBy === 'name') {
+          comparison = a.originalName.localeCompare(b.originalName);
+        } else if (sortBy === 'size') {
+          comparison = a.size - b.size;
+        } else {
+          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        }
+        return sortOrder === 'desc' ? -comparison : comparison;
+      });
+  }, [files, searchQuery, sortBy, sortOrder]);
 
   // Derived state for the "Converted" column
   const completedResults = React.useMemo(() => {
@@ -539,7 +564,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             <div className="flex items-center gap-4 flex-nowrap">
               <div className="flex items-center gap-2 whitespace-nowrap">
                 <Layers className="w-3.5 h-3.5" />
-                <span>Processing Engine</span>
+                <span>FILES</span>
                 {filteredMdFiles.length > 0 && (
                   <span className="ml-2 text-[9px] bg-indigo-400/10 border border-indigo-400/20 px-2 py-0.5 rounded-full text-indigo-300/80 leading-none">{filteredMdFiles.length}</span>
                 )}
@@ -547,6 +572,62 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
               
               {!loading && filteredMdFiles.length > 0 && (
                 <div className="flex items-center gap-2 flex-nowrap">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:border-indigo-500/30 hover:bg-indigo-500/5 hover:text-slate-300 transition-all cursor-pointer h-8 group">
+                        <SortAsc className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+                        <span className="text-[9px] font-black uppercase tracking-wider">
+                          {sortBy === 'name' ? 'BY NAME' : sortBy === 'size' ? 'BY SIZE' : 'BY TIME'}
+                        </span>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-slate-900/95 border-white/10 backdrop-blur-xl">
+                      <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 py-2">Sort Files</DropdownMenuLabel>
+                      <DropdownMenuSeparator className="bg-white/5" />
+                      <DropdownMenuItem 
+                        onClick={() => setSortBy('time')}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
+                          sortBy === 'time' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
+                        )}
+                      >
+                        <Clock className="w-4 h-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Most Recent</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSortBy('name')}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
+                          sortBy === 'name' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
+                        )}
+                      >
+                        <SortAsc className="w-4 h-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Alphabetical</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSortBy('size')}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
+                          sortBy === 'size' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-white/5"
+                        )}
+                      >
+                        <HardDrive className="w-4 h-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">File Size</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <button 
+                    onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                    className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:border-indigo-500/30 hover:bg-indigo-500/5 hover:text-slate-300 transition-all cursor-pointer group"
+                  >
+                    {sortOrder === 'asc' ? (
+                      <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
+                    ) : (
+                      <ArrowDown className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5" />
+                    )}
+                  </button>
+
                   <button 
                     onClick={toggleSelectionMode}
                     className={cn(
