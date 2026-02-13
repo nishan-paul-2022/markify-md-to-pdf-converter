@@ -14,7 +14,12 @@ import {
   CheckCircle2,
   FileCode,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  CheckSquare,
+  Square,
+  MinusSquare,
+  MousePointer2,
+  X
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import UserNav from '@/components/auth/UserNav';
@@ -54,6 +59,45 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
   // Status and result management
   const [processingStates, setProcessingStates] = React.useState<Record<string, 'pending' | 'converting' | 'done' | 'error'>>({});
   const [convertedFiles, setConvertedFiles] = React.useState<Record<string, Blob>>({});
+  const [selectedFileIds, setSelectedFileIds] = React.useState<Set<string>>(new Set());
+  const [isBatchProcessing, setIsBatchProcessing] = React.useState(false);
+  const [isSelectionMode, setIsSelectionMode] = React.useState(false);
+
+  // Persistence logic for selection
+  const isInitialized = React.useRef(false);
+
+  React.useEffect(() => {
+    const savedSelectionIds = localStorage.getItem('converter_selected_ids');
+    const savedSelectionMode = localStorage.getItem('converter_selection_mode');
+    
+    if (savedSelectionIds) {
+      try {
+        const ids = JSON.parse(savedSelectionIds);
+        if (Array.isArray(ids)) {
+          setSelectedFileIds(new Set(ids));
+        }
+      } catch (e) {
+        console.error('Failed to parse saved selection IDs', e);
+      }
+    }
+    
+    if (savedSelectionMode === 'true') {
+      setIsSelectionMode(true);
+    }
+    
+    // Mark as initialized AFTER loading from localStorage
+    isInitialized.current = true;
+  }, []);
+
+  React.useEffect(() => {
+    if (!isInitialized.current) { return; }
+    localStorage.setItem('converter_selected_ids', JSON.stringify(Array.from(selectedFileIds)));
+  }, [selectedFileIds]);
+
+  React.useEffect(() => {
+    if (!isInitialized.current) { return; }
+    localStorage.setItem('converter_selection_mode', String(isSelectionMode));
+  }, [isSelectionMode]);
 
   // Grouping logic
   const filteredMdFiles = React.useMemo(() => {
@@ -75,6 +119,51 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
   const completedResults = React.useMemo(() => {
     return files.filter(f => processingStates[f.id] === 'done' || convertedFiles[f.id]);
   }, [files, processingStates, convertedFiles]);
+
+  const toggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    if (isSelectionMode) {
+      setSelectedFileIds(new Set());
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    setSelectedFileIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedFileIds.size === filteredMdFiles.length && filteredMdFiles.length > 0) {
+      setSelectedFileIds(new Set());
+    } else {
+      setSelectedFileIds(new Set(filteredMdFiles.map(f => f.id)));
+    }
+  };
+
+  const handleBatchConvert = async () => {
+    if (selectedFileIds.size === 0) { return; }
+    
+    setIsBatchProcessing(true);
+    const idsToConvert = Array.from(selectedFileIds);
+    
+    for (const id of idsToConvert) {
+      const file = filteredMdFiles.find(f => f.id === id);
+      if (file && processingStates[id] !== 'done' && processingStates[id] !== 'converting') {
+        await handleConvertFile(file);
+      }
+    }
+    
+    setIsBatchProcessing(false);
+    setSelectedFileIds(new Set());
+    setIsSelectionMode(false);
+  };
 
   const handleConvertFile = async (file: AppFile) => {
     setProcessingStates(prev => ({ ...prev, [file.id]: 'converting' }));
@@ -427,15 +516,73 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
         {/* SEGMENT 2: PROCESSING (Management / Batches) */}
         <section className="flex-grow flex flex-col gap-4 overflow-hidden">
-          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-indigo-400/80">
-            <div className="flex items-center gap-2">
-              <Layers className="w-3.5 h-3.5" />
-              <h2>Processing Engine</h2>
-              {filteredMdFiles.length > 0 && (
-                <span className="ml-2 text-[9px] bg-indigo-400/10 border border-indigo-400/20 px-2 py-0.5 rounded-full text-indigo-300/80">{filteredMdFiles.length}</span>
+          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-indigo-400/80 h-10">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Layers className="w-3.5 h-3.5" />
+                <h2>Processing Engine</h2>
+                {filteredMdFiles.length > 0 && (
+                  <span className="ml-2 text-[9px] bg-indigo-400/10 border border-indigo-400/20 px-2 py-0.5 rounded-full text-indigo-300/80">{filteredMdFiles.length}</span>
+                )}
+              </div>
+              
+              {!loading && filteredMdFiles.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={toggleSelectionMode}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all group cursor-pointer",
+                      isSelectionMode 
+                        ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20" 
+                        : "bg-white/5 border-white/5 text-slate-400 hover:border-indigo-500/30 hover:bg-indigo-500/5 hover:text-slate-300"
+                    )}
+                  >
+                    {isSelectionMode ? (
+                      <X className="w-3.5 h-3.5" />
+                    ) : (
+                      <MousePointer2 className="w-3.5 h-3.5" />
+                    )}
+                    <span className="text-[9px] font-black uppercase tracking-wider">
+                      {isSelectionMode ? 'CANCEL' : 'SELECT'}
+                    </span>
+                  </button>
+
+                  {isSelectionMode && (
+                    <button 
+                      onClick={toggleSelectAll}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20 transition-all group animate-in fade-in slide-in-from-left-2 cursor-pointer"
+                    >
+                      {selectedFileIds.size === filteredMdFiles.length ? (
+                        <CheckSquare className="w-3.5 h-3.5 text-indigo-400" />
+                      ) : selectedFileIds.size > 0 ? (
+                        <MinusSquare className="w-3.5 h-3.5 text-indigo-400" />
+                      ) : (
+                        <Square className="w-3.5 h-3.5" />
+                      )}
+                      <span className="text-[9px] font-black uppercase tracking-wider">
+                        {selectedFileIds.size === filteredMdFiles.length ? 'DESELECT ALL' : 'SELECT ALL'}
+                      </span>
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 
+            {isSelectionMode && selectedFileIds.size > 0 && (
+              <Button 
+                size="sm"
+                onClick={handleBatchConvert}
+                disabled={isBatchProcessing}
+                className="h-8 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 gap-2 shadow-lg shadow-indigo-500/20 animate-in fade-in slide-in-from-right-4"
+              >
+                {isBatchProcessing ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Zap className="w-3.5 h-3.5 fill-current" />
+                )}
+                <span>Deploy ({selectedFileIds.size})</span>
+              </Button>
+            )}
           </div>
 
           <div className="flex-grow bg-indigo-400/[0.03] border border-indigo-400/10 rounded-[2.5rem] p-4 flex flex-col overflow-hidden relative group/engine backdrop-blur-xl">
@@ -446,10 +593,27 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                 <div 
                   key={file.id} 
                   style={{ animationDelay: `${index * 0.05}s` }}
-                  className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 hover:border-blue-500/30 transition-all group/card shadow-2xl relative overflow-hidden animate-card-in shrink-0"
+                  className={cn(
+                    "bg-slate-900/40 border border-white/5 rounded-2xl p-4 hover:border-blue-500/30 transition-all group/card shadow-2xl relative overflow-hidden animate-card-in shrink-0",
+                    selectedFileIds.has(file.id) && "border-blue-500/50 bg-blue-500/[0.03]"
+                  )}
                 >
                   <div className="flex items-center justify-between relative z-10 gap-3">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {/* Selection Checkbox */}
+                      {isSelectionMode && (
+                        <button 
+                          onClick={() => toggleSelection(file.id)}
+                          className="flex items-center justify-center text-slate-500 hover:text-blue-400 transition-all shrink-0 animate-in fade-in zoom-in-50 pr-2 cursor-pointer"
+                        >
+                          {selectedFileIds.has(file.id) ? (
+                            <CheckSquare className="w-5 h-5 text-blue-400" />
+                          ) : (
+                            <Square className="w-5 h-5 opacity-40 group-hover/card:opacity-100" />
+                          )}
+                        </button>
+                      )}
+
                       <div className="w-14 h-14 rounded-2xl flex items-center justify-center border border-white/10 bg-white/5 text-blue-400/80 transition-all group-hover/card:scale-105 group-hover/card:border-blue-500/30 shrink-0 shadow-inner">
                         <FileCode className="w-7 h-7" />
                       </div>
@@ -463,9 +627,9 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-3 shrink-0">
-                       {/* Delete Button */}
-                       <Button 
+                    <div className="flex items-center gap-3 shrink-0 animate-in fade-in zoom-in-95 duration-300">
+                      {/* Delete Button */}
+                      <Button 
                         size="icon"
                         variant="ghost"
                         onClick={() => handleDelete(file.id)}
