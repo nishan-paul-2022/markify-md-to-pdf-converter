@@ -28,6 +28,7 @@ import type { File as AppFile } from '@/hooks/use-files';
 import type {FileTreeNode } from '@/lib/file-tree';
 import { buildFileTree } from '@/lib/file-tree';
 import { formatDateTime } from '@/lib/formatters';
+import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 
 import { Check, ChevronsDown, ChevronsUp, Copy, Download, Eye, FileArchive, FileCode, FolderOpen, Layers,ListChecks, MoreVertical, RotateCcw, Trash2, Upload, X } from 'lucide-react';
@@ -41,7 +42,7 @@ interface EditorViewProps {
   };
   files: AppFile[];
   filesLoading: boolean;
-  handleFileDelete: (id: string | string[]) => void;
+  handleFileDelete: (id: string | string[]) => Promise<void> | void;
   handleFileRename: (id: string, newName: string, type: "file" | "folder", batchId?: string, oldPath?: string) => Promise<void>;
   onFileSelect: (node: FileTreeNode) => void;
   refreshFiles: () => Promise<void>;
@@ -182,7 +183,7 @@ export function EditorView({
     });
 
     if (confirmed) {
-      handleFileDelete(Array.from(selectedIds));
+      void handleFileDelete(Array.from(selectedIds));
       setSelectedIds(new Set());
       setIsSelectionMode(false);
     }
@@ -222,7 +223,7 @@ export function EditorView({
     e.stopPropagation();
     setIsDragging(false);
 
-    const items = Array.from(e.dataTransfer.items || []);
+    const items = Array.from(e.dataTransfer.items);
     if (items.length === 0) {return;}
 
     const newFiles: { file: File; path: string }[] = [];
@@ -292,7 +293,7 @@ export function EditorView({
 
         await refreshFiles();
       } catch (err) {
-        console.error("Drop upload error:", err);
+        logger.error("Drop upload error:", err);
       } finally {
         setIsLoading(false);
       }
@@ -300,7 +301,7 @@ export function EditorView({
   }, [refreshFiles, handleContentChange, setFilename, setIsLoading]);
 
   React.useEffect(() => {
-    console.log('Sidebar state changed to:', isSidebarOpen);
+    logger.debug('Sidebar state changed to:', isSidebarOpen);
   }, [isSidebarOpen]);
 
   const fileTree = React.useMemo(() => {
@@ -323,7 +324,7 @@ export function EditorView({
         if (batchFiles.length > 0 && batchFiles.every(f => selectedIds.has(f.id))) {
           count++;
         }
-      } else if (node.type === 'file') {
+      } else {
         if (selectedIds.has(node.id)) {
           count++;
         }
@@ -339,7 +340,7 @@ export function EditorView({
       triggerFileUpload();
     } else if (type === 'folder') {
       triggerFolderUpload();
-    } else if (type === 'zip') {
+    } else {
       triggerZipUpload();
     }
   };

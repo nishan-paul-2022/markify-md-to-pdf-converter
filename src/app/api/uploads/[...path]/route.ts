@@ -1,6 +1,8 @@
 import type { NextRequest} from "next/server";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
+
 import fs from "fs";
 import { lookup } from "mime-types";
 import { join } from "path";
@@ -11,7 +13,7 @@ export async function GET(
 ): Promise<NextResponse> {
   const { path: routePath } = await params;
 
-  if (!routePath || routePath.length === 0) {
+  if (routePath.length === 0) {
     return new NextResponse("Not Found", { status: 404 });
   }
 
@@ -25,16 +27,16 @@ export async function GET(
   // Note: routePath will be ["user-id", "batch-id", "filename.png"] or similar
   // We assume the route is /api/uploads/[...path]
 
-  console.log('🔍 Uploads API - Requested path:', routePath);
+  logger.debug('🔍 Uploads API - Requested path:', routePath);
 
   // Construct absolute path to file
   const uploadsDir = join(process.cwd(), "public", "uploads");
   const filePath = join(uploadsDir, ...routePath);
 
-  console.log('📂 Uploads API - Looking for file at:', filePath);
+  logger.debug('📂 Uploads API - Looking for file at:', filePath);
 
   if (!fs.existsSync(filePath)) {
-    console.error(`❌ File not found: ${filePath}`);
+    logger.error(`❌ File not found: ${filePath}`);
     return new NextResponse("File not found", { status: 404 });
   }
 
@@ -49,7 +51,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error serving file:", error);
+    logger.error("Error serving file:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }

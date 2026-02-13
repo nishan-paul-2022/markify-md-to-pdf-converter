@@ -33,6 +33,7 @@ export default tsEslint.config(
       "public/",
       "node_modules/",
       "**/dist/",
+      "*.mjs",
     ],
   },
 

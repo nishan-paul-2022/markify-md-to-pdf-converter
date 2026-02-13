@@ -175,11 +175,11 @@ export function FileGridView({
                   value={renameValue}
                   onChange={(e) => setRenameValue(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {handleRenameSubmit(file);}
+                    if (e.key === "Enter") {void handleRenameSubmit(file);}
                     if (e.key === "Escape") {handleRenameCancel();}
                   }}
                   onBlur={() => {
-                    if (!isRenaming) {handleRenameSubmit(file);}
+                    if (!isRenaming) {void handleRenameSubmit(file);}
                   }}
                 />
               ) : (

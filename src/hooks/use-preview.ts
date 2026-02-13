@@ -1,5 +1,7 @@
 import { useCallback, useEffect,useRef, useState } from 'react';
 
+import { logger } from "@/lib/logger";
+
 export type ViewMode = 'live' | 'preview';
 export type ZoomMode = 'fit-page' | 'fit-width' | 'custom';
 
@@ -60,7 +62,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
           setPdfBlobUrl(url);
           setLastRenderedSignature(JSON.stringify({ content, metadata }));
         })
-        .catch((err: unknown) => console.error(err))
+        .catch((err: unknown) => logger.error("PDF generation failed:", err))
         .finally(() => setIsPdfLoading(false));
     }
   }, [viewMode, onGeneratePdf, pdfBlobUrl, content, metadata]);
@@ -101,8 +103,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
       let currentPageBucket: string[] = [];
       const children = Array.from(stagingRef.current.children);
 
-      for (let i = 0; i < children.length; i++) {
-        const child = children[i] as HTMLElement;
+      for (const child of children as HTMLElement[]) {
         if (child.classList.contains('page-break-marker') || child.classList.contains('page-break')) {
           if (currentPageBucket.length > 0) {
             pages.push(currentPageBucket.join(''));
@@ -195,7 +196,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
       const behavior = isPdfJustReady ? 'auto' : 'smooth';
       const timer = setTimeout(() => {
         scrollToPage(clampedTarget, behavior);
-        if (!isModeSwitch || (isModeSwitch && isPdfReady)) {
+        if (!isModeSwitch || isPdfReady) {
           transitionTargetPageRef.current = null;
         }
       }, 100);
@@ -323,7 +324,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     } else {
       // Restore cursor position when blocking invalid input
       requestAnimationFrame(() => {
-        if (input && cursorPos !== null) {
+        if (cursorPos !== null) {
           input.setSelectionRange(cursorPos - 1, cursorPos - 1);
         }
       });
@@ -347,7 +348,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     } else {
       // Restore cursor position when blocking invalid input
       requestAnimationFrame(() => {
-        if (input && cursorPos !== null) {
+        if (cursorPos !== null) {
           input.setSelectionRange(cursorPos - 1, cursorPos - 1);
         }
       });

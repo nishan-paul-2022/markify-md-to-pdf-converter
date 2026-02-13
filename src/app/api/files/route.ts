@@ -2,6 +2,7 @@ import type { NextRequest} from "next/server";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getDefaultFiles } from "@/lib/server/defaults";
 
@@ -16,21 +17,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const session = await auth();
 
-    console.log('🔐 File upload - Auth check:', {
+    logger.info('🔐 File upload - Auth check:', {
       hasSession: !!session,
       hasUser: !!session?.user,
-      userId: session?.user?.id
+      userId: session?.user.id
     });
 
-    if (!session?.user?.id) {
-      console.error('❌ File upload REJECTED - No authentication');
+    const userId = session?.user.id;
+    if (!userId) {
+      logger.error('❌ File upload REJECTED - No authentication');
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    console.log('✅ File upload - User authenticated:', session.user.id);
+    logger.info('✅ File upload - User authenticated:', userId);
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
@@ -69,7 +71,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const isMarkdown = file.name.endsWith(".md") || file.type === "text/markdown";
 
     if (!allowedTypes.includes(file.type) && !isMarkdown) {
-      console.log(`❌ Upload rejected - invalid file type: ${file.type} for file: ${file.name}`);
+      logger.info(`❌ Upload rejected - invalid file type: ${file.type} for file: ${file.name}`);
       return NextResponse.json(
         { error: "Upload failed — only .md files are allowed here." },
         { status: 400 }
@@ -131,13 +133,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // If relativePath exists, we can use it, but for storage convenience we still use UUID
     // However, if we want to preserve the structure on disk for easier Markdown processing:
     const storageKey = batchId
-      ? `uploads/${session.user.id}/${batchId}/${relativePath || file.name}`
-      : `uploads/${session.user.id}/${uniqueFilename}`;
+      ? `uploads/${userId}/${batchId}/${relativePath || file.name}`
+      : `uploads/${userId}/${uniqueFilename}`;
 
     // Create upload directory if it doesn't exist
     const relativeStorageDir = batchId
-      ? join("uploads", session.user.id, batchId)
-      : join("uploads", session.user.id);
+      ? join("uploads", userId, batchId)
+      : join("uploads", userId);
 
     const uploadDir = join(process.cwd(), "public", relativeStorageDir);
 
@@ -153,8 +155,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const buffer = Buffer.from(bytes);
     const filePath = join(process.cwd(), "public", storageKey);
 
-    console.log('💾 Saving file to disk:', filePath);
-    console.log('📦 Buffer size:', buffer.length);
+    logger.info('💾 Saving file to disk:', filePath);
+    logger.info('📦 Buffer size:', buffer.length);
     await writeFile(filePath, buffer);
 
     // Verify file existence immediately
@@ -162,9 +164,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // proper check using fs stat
       const { stat } = await import('fs/promises');
       const stats = await stat(filePath);
-      console.log('✅ File saved successfully. Size on disk:', stats.size);
+      logger.info('✅ File saved successfully. Size on disk:', stats.size);
     } catch (verErr) {
-      console.error('❌ CRITICAL: File does not exist after write!', filePath, verErr);
+      logger.error('❌ CRITICAL: File does not exist after write!', { filePath, error: verErr });
       throw new Error(`File write verified failed: ${filePath}`);
     }
 
@@ -173,7 +175,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
       fileRecord = await prisma.file.create({
         data: {
-          userId: session.user.id,
+          userId,
           batchId,
           filename: uniqueFilename,
           originalName: file.name,
@@ -185,9 +187,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           metadata: source ? { source } : undefined,
         },
       });
-      console.log('✅ File metadata saved to database');
+      logger.info('✅ File metadata saved to database');
     } catch (dbError) {
-      console.error('❌ DATABASE SAVE FAILED:', dbError);
+      logger.error('❌ DATABASE SAVE FAILED:', dbError);
       // Create a mock record for response so the UI doesn't break immediately,
       // but the user will need to fix their session/database for persistence.
       fileRecord = {
@@ -218,7 +220,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
   } catch (error: unknown) {
-    console.error("File upload error detailed:", error);
+    logger.error("File upload error detailed:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
       { error: errorMessage },
@@ -231,7 +233,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const session = await auth();
 
-    if (!session?.user?.id) {
+    const userId = session?.user.id;
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -247,7 +250,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const [files, total, defaults] = await Promise.all([
       prisma.file.findMany({
         where: {
-          userId: session.user.id,
+          userId,
           ...(source ? {
             metadata: {
               path: ["source"],
@@ -274,7 +277,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       }),
       prisma.file.count({
         where: {
-          userId: session.user.id,
+          userId,
           ...(source ? {
             metadata: {
               path: ["source"],
@@ -296,10 +299,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     });
   } catch (error: unknown) {
-    console.error("❌ File fetch error detailed:", error);
+    logger.error("❌ File fetch error detailed:", error);
     if (error instanceof Error) {
-      console.error("Message:", error.message);
-      console.error("Stack:", error.stack);
+      logger.error("Message:", error.message);
+      logger.error("Stack:", error.stack);
     }
     return NextResponse.json(
       { error: "Failed to fetch files", details: error instanceof Error ? error.message : String(error) },
@@ -312,7 +315,8 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   try {
     const session = await auth();
 
-    if (!session?.user?.id) {
+    const userId = session?.user.id;
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -332,7 +336,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     const files = await prisma.file.findMany({
       where: {
         id: { in: ids },
-        userId: session.user.id,
+        userId,
       },
     });
 
@@ -344,7 +348,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
         const filePath = join(process.cwd(), "public", file.storageKey);
         await unlink(filePath);
       } catch (error: unknown) {
-        console.error(`Error deleting file from disk: ${file.storageKey}`, error);
+        logger.error(`Error deleting file from disk: ${file.storageKey}`, error);
       }
     });
 
@@ -354,7 +358,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     await prisma.file.deleteMany({
       where: {
         id: { in: files.map(f => f.id) },
-        userId: session.user.id,
+        userId,
       },
     });
 
@@ -363,7 +367,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       message: `${files.length} files deleted successfully`,
     });
   } catch (error: unknown) {
-    console.error("Bulk deletion error:", error);
+    logger.error("Bulk deletion error:", error);
     return NextResponse.json(
       { error: "Failed to delete files" },
       { status: 500 }
@@ -375,7 +379,8 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
   try {
     const session = await auth();
 
-    if (!session?.user?.id) {
+    const userId = session?.user.id;
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -410,7 +415,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       // Rename all files in this folder by updating their relativePath
       const files = await prisma.file.findMany({
         where: {
-          userId: session.user.id,
+          userId,
           batchId: batchId,
           relativePath: {
             startsWith: oldPath
@@ -453,7 +458,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     } else {
       // Single file rename
       const file = await prisma.file.findUnique({
-        where: { id, userId: session.user.id }
+        where: { id, userId }
       });
 
       if (!file) {
@@ -482,7 +487,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: true });
     }
   } catch (error: unknown) {
-    console.error("Rename error:", error);
+    logger.error("Rename error:", error);
     return NextResponse.json(
       { error: "Failed to rename" },
       { status: 500 }

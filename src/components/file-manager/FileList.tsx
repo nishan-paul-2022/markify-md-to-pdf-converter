@@ -31,8 +31,10 @@ export default function FileList(): React.JSX.Element {
   // Initialize from localStorage safely
   const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => {
     if (typeof window !== 'undefined') {
-      const savedMode = localStorage.getItem('markify-view-mode') as 'list' | 'grid';
-      return savedMode || 'grid';
+      const savedMode = localStorage.getItem('markify-view-mode');
+      if (savedMode === 'list' || savedMode === 'grid') {
+        return savedMode;
+      }
     }
     return 'grid';
   });

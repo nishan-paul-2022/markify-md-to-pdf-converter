@@ -30,7 +30,7 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
 
   // Find the Landing Page section
   // It starts with # Landing Page and ends at the next main heading (#) or horizontal rule (---)
-  const landingPageMatch = markdown.match(/^#\s+Landing\s+Page\s*\n([\s\S]*?)(?=\n#\s+|(?:\r?\n){2}---|\Z)/im);
+  const landingPageMatch = markdown.match(/^#\s+Landing\s+Page\s*\n([\s\S]*?)(?=\n#\s+|(?:\r?\n){2}---|$)/im);
 
   if (!landingPageMatch) {
     return metadata;
@@ -66,8 +66,8 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
       'Submission Date': 'date'
     };
 
-    const metadataKey = keyMap[key];
-    if (metadataKey && value) {
+    if (key in keyMap) {
+      const metadataKey = keyMap[key];
       (metadata as Record<string, unknown>)[metadataKey] = value;
     }
   }
@@ -106,7 +106,7 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
  */
 export function removeLandingPageSection(markdown: string): string {
   // More robust removal that handles different termination markers
-  return markdown.replace(/^#\s+Landing\s+Page\s*\n[\s\S]*?(?=\n#\s+[^#]|\n---|\Z)/im, '').trim();
+  return markdown.replace(/^#\s+Landing\s+Page\s*\n[\s\S]*?(?=\n#\s+[^#]|\n---|$)/im, '').trim();
 }
 
 export const DEFAULT_METADATA: Metadata = {};

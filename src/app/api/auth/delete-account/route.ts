@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 import { rm } from "fs/promises";
@@ -10,7 +11,7 @@ export async function DELETE(): Promise<NextResponse> {
   try {
     const session = await auth();
 
-    if (!session?.user?.id) {
+    if (!session?.user.id) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -23,9 +24,9 @@ export async function DELETE(): Promise<NextResponse> {
     try {
       const userUploadsDir = join(process.cwd(), "public", "uploads", userId);
       await rm(userUploadsDir, { recursive: true, force: true });
-      console.log(`✅ Deleted all files for user: ${userId}`);
+      logger.info(`✅ Deleted all files for user: ${userId}`);
     } catch (error) {
-      console.error(`❌ Error deleting user directory: ${userId}`, error);
+      logger.error(`❌ Error deleting user directory: ${userId}`, error);
       // Continue even if disk cleanup fails
     }
 
@@ -35,14 +36,14 @@ export async function DELETE(): Promise<NextResponse> {
       where: { id: userId }
     });
 
-    console.log(`✅ Permanently deleted account and all data for user: ${userId}`);
+    logger.info(`✅ Permanently deleted account and all data for user: ${userId}`);
 
     return NextResponse.json({
       success: true,
       message: "Account and all associated data permanently deleted"
     });
   } catch (error: unknown) {
-    console.error("Account deletion error:", error);
+    logger.error("Account deletion error:", error);
     return NextResponse.json(
       { error: "Failed to delete account permanently" },
       { status: 500 }

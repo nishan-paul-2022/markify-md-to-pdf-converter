@@ -26,6 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { logger } from "@/lib/logger";
 
 import { Loader2,LogOut, Trash2 } from "lucide-react";
 
@@ -39,7 +40,7 @@ interface UserNavProps {
 
 export default function UserNav({ user }: UserNavProps): React.JSX.Element {
   const pathname = usePathname();
-  const isEditor = pathname?.startsWith("/editor");
+  const isEditor = pathname.startsWith("/editor");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -52,14 +53,14 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
 
       if (response.ok) {
         // Redirect to landing page and sign out
-        signOut({ callbackUrl: "/" });
+        await signOut({ callbackUrl: "/" });
       } else {
         const data = await response.json();
         alert(data.error || "Failed to delete account");
         setIsDeleting(false);
       }
     } catch (error) {
-      console.error("Error deleting account:", error);
+      logger.error("Error deleting account:", error);
       alert("An unexpected error occurred");
       setIsDeleting(false);
     }
@@ -115,7 +116,7 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
           <div className="py-1">
             <DropdownMenuItem
               className="py-3 px-3 rounded-lg focus:bg-red-500/10 text-red-500/80 focus:text-red-500 cursor-pointer transition-colors"
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={async () => { await signOut({ callbackUrl: "/" }); }}
             >
               <LogOut className="mr-3 h-4 w-4" />
               <span className="text-xs font-black uppercase tracking-[0.15em]">Log out</span>
@@ -151,7 +152,7 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault();
-                handleDeleteAccount();
+                void handleDeleteAccount();
               }}
               disabled={isDeleting}
               className="bg-red-600 hover:bg-red-500 text-white border-none rounded-xl uppercase text-[10px] font-black tracking-widest flex items-center justify-center gap-2 w-36 h-11"

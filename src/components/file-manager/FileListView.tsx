@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { File } from "@/hooks/use-files";
+import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
 import { Download, FileText, Image as ImageIcon, Loader2, Lock,PencilLine, Trash2 } from "lucide-react";
@@ -73,7 +74,7 @@ export function FileListView({
       await handleRename(file.id, finalName, "file");
       handleRenameCancel();
     } catch (error) {
-      console.error("Rename failed:", error);
+      logger.error("Rename failed:", error);
     } finally {
       setIsRenaming(false);
     }
@@ -166,11 +167,11 @@ export function FileListView({
                           value={renameValue}
                           onChange={(e) => setRenameValue(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === "Enter") {handleRenameSubmit(file);}
-                            if (e.key === "Escape") {handleRenameCancel();}
+                            if (e.key === "Enter") { void handleRenameSubmit(file); }
+                            if (e.key === "Escape") { handleRenameCancel(); }
                           }}
                           onBlur={() => {
-                            if (!isRenaming) {handleRenameSubmit(file);}
+                            if (!isRenaming) { void handleRenameSubmit(file); }
                           }}
                         />
                       </div>

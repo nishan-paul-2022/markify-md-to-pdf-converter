@@ -2,6 +2,7 @@ import type { NextRequest} from "next/server";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 import { unlink } from "fs/promises";
@@ -15,7 +16,8 @@ export async function DELETE(
     const { id: fileId } = await params;
     const session = await auth();
 
-    if (!session?.user?.id) {
+    const userId = session?.user.id;
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -34,7 +36,7 @@ export async function DELETE(
       );
     }
 
-    if (file.userId !== session.user.id) {
+    if (file.userId !== userId) {
       return NextResponse.json(
         { error: "Forbidden" },
         { status: 403 }
@@ -46,7 +48,7 @@ export async function DELETE(
       const filePath = join(process.cwd(), "public", file.storageKey);
       await unlink(filePath);
     } catch (error: unknown) {
-      console.error("Error deleting file from disk:", error);
+      logger.error("Error deleting file from disk:", error);
       // Continue with database deletion even if file doesn't exist on disk
     }
 
@@ -60,7 +62,7 @@ export async function DELETE(
       message: "File deleted successfully",
     });
   } catch (error: unknown) {
-    console.error("File deletion error:", error);
+    logger.error("File deletion error:", error);
     return NextResponse.json(
       { error: "Failed to delete file" },
       { status: 500 }
@@ -76,7 +78,8 @@ export async function GET(
     const { id: fileId } = await params;
     const session = await auth();
 
-    if (!session?.user?.id) {
+    const userId = session?.user.id;
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -106,7 +109,7 @@ export async function GET(
       );
     }
 
-    if (file.userId !== session.user.id) {
+    if (file.userId !== userId) {
       return NextResponse.json(
         { error: "Forbidden" },
         { status: 403 }
@@ -115,7 +118,7 @@ export async function GET(
 
     return NextResponse.json({ file });
   } catch (error: unknown) {
-    console.error("File fetch error:", error);
+    logger.error("File fetch error:", error);
     return NextResponse.json(
       { error: "Failed to fetch file" },
       { status: 500 }

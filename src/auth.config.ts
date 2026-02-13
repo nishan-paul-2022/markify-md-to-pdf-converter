@@ -22,12 +22,13 @@ export default {
   },
   callbacks: {
     async session({ session, token }) {
-      if (token?.sub && session.user) {
+      if (token.sub) {
         session.user.id = token.sub;
       }
       return session;
     },
     async jwt({ token, user }) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (user) {
         token.sub = user.id;
       }

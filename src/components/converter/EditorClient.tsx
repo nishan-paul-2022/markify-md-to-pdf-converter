@@ -6,6 +6,7 @@ import { DEFAULT_MARKDOWN_PATH } from '@/constants/default-content';
 import { useConverter } from '@/hooks/use-converter';
 import { useFiles } from '@/hooks/use-files';
 import type { FileTreeNode } from '@/lib/file-tree';
+import { logger } from '@/lib/logger';
 
 interface EditorClientProps {
   user: {
@@ -50,7 +51,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         }
       }
     } catch (error) {
-      console.error('Failed to load file:', error);
+      logger.error('Failed to load file:', error);
     }
   }, [converterState]);
 
@@ -61,7 +62,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       if (fileIdFromUrl) {
         const targetFile = files.find(f => f.id === fileIdFromUrl);
         if (targetFile) {
-          loadFileContent(targetFile);
+          void loadFileContent(targetFile);
           return;
         }
       }
@@ -73,7 +74,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         if (lastFileId) {
            const targetFile = files.find(f => f.id === lastFileId);
            if (targetFile) {
-             loadFileContent(targetFile);
+             void loadFileContent(targetFile);
              return;
            }
         }
@@ -116,9 +117,9 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
 
   const handleUnifiedDelete = useCallback((id: string | string[]) => {
     if (Array.isArray(id)) {
-      handleBulkDelete(id);
+      void handleBulkDelete(id);
     } else {
-      handleDelete(id);
+      void handleDelete(id);
     }
   }, [handleDelete, handleBulkDelete]);
 
@@ -185,19 +186,19 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
           }
         }
       } catch (error) {
-        console.error('Failed to load file content:', error);
+        logger.error('Failed to load file content:', error);
       }
     }
   }, [converterState, files]);
 
   const handleFileUploadWithRefresh = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     await converterState.handleFileUpload(e);
-    refreshFiles();
+    void refreshFiles();
   }, [converterState, refreshFiles]);
 
   const handleFolderUploadWithRefresh = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     await converterState.handleFolderUpload(e);
-    refreshFiles();
+    void refreshFiles();
   }, [converterState, refreshFiles]);
 
   return (

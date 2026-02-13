@@ -2,6 +2,7 @@ import type { NextRequest} from "next/server";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 import path7za from "7zip-bin";
@@ -30,7 +31,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   let tempDir = "";
   try {
     const session = await auth();
-    if (!session?.user?.id) {
+    const userId = session?.user.id;
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
       await execPromise(`"${path7zaBinary}" x "${archivePath}" -o"${extractDir}" -y`);
     } catch (extractError) {
-      console.error("Extraction error:", extractError);
+      logger.error("Extraction error:", extractError);
       return NextResponse.json({ error: "Failed to extract archive. Ensure it is a valid ZIP, 7Z, RAR, or TAR file." }, { status: 400 });
     }
 
@@ -171,7 +173,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // 6. Save valid files
     const uploadResults = [];
-    const userDir = join(process.cwd(), "public", "uploads", session.user.id, batchId);
+    const userDir = join(process.cwd(), "public", "uploads", userId, batchId);
     await mkdir(userDir, { recursive: true });
 
     for (const file of validFiles) {
@@ -179,7 +181,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
        const actualParts = file.relativePath.split('/');
        const savedRelPath = hasWrapper ? actualParts.slice(1).join('/') : file.relativePath;
 
-       const storageKey = `uploads/${session.user.id}/${batchId}/${savedRelPath}`;
+       const storageKey = `uploads/${userId}/${batchId}/${savedRelPath}`;
        const destinationPath = join(process.cwd(), "public", storageKey);
 
        // Ensure subdirectories exist
@@ -196,7 +198,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
        const fileRecord = await prisma.file.create({
          data: {
-           userId: session.user.id,
+           userId,
            batchId,
            filename: randomUUID() + '.' + (file.name.split('.').pop() || 'file'),
            originalName: file.name,
@@ -218,7 +220,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
   } catch (error: unknown) {
-    console.error("Archive upload error:", error);
+    logger.error("Archive upload error:", error);
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   } finally {
     // 7. Cleanup temp directory
@@ -226,7 +228,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       try {
         await rm(tempDir, { recursive: true, force: true });
       } catch (e) {
-        console.error("Cleanup error:", e);
+        logger.error("Cleanup error:", e);
       }
     }
   }

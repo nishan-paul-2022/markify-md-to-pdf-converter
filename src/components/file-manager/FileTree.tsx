@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { FileTreeNode } from "@/lib/file-tree";
+import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
 import { Check,ChevronDown, ChevronRight, ChevronUp, ExternalLink, FileText, Folder, ImageIcon, LayoutGrid, List, Lock, MoreVertical, PencilLine, Trash2 } from "lucide-react";
@@ -175,7 +176,7 @@ export function FileTree({
       );
       handleRenameCancel();
     } catch (error) {
-      console.error("Rename failed:", error);
+      logger.error("Rename failed:", error);
     } finally {
       setIsRenaming(false);
     }
@@ -306,11 +307,11 @@ export function FileTree({
                       value={renameValue}
                       onChange={(e) => setRenameValue(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") {handleRenameSubmit(node);}
-                        if (e.key === "Escape") {handleRenameCancel();}
+                        if (e.key === "Enter") { void handleRenameSubmit(node); }
+                        if (e.key === "Escape") { handleRenameCancel(); }
                       }}
                       onBlur={() => {
-                        if (!isRenaming) {handleRenameSubmit(node);}
+                        if (!isRenaming) { void handleRenameSubmit(node); }
                       }}
                     />
                   </div>
@@ -380,7 +381,7 @@ export function FileTree({
                           )}
                           {!isDefaultFolder && folderFileIds.length > 0 && level === 0 && (
                             <DropdownMenuItem
-                              onClick={() => handleDeleteClick(node, true)}
+                              onClick={() => { void handleDeleteClick(node, true); }}
                               className="gap-2 text-xs text-red-400 focus:text-red-400"
                             >
                               <Trash2 className="h-3.5 w-3.5" /> Delete Project
@@ -403,7 +404,7 @@ export function FileTree({
                 )}>
                   {isGridMode ? (
                     node.children.map(child => {
-                      const isImg = child.type === 'file' && (child.file?.mimeType?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(child.name));
+                      const isImg = child.type === 'file' && (child.file?.mimeType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(child.name));
                       const isChildSelected = selectedFileId === child.id;
 
                       return (
@@ -477,11 +478,11 @@ export function FileTree({
                   value={renameValue}
                   onChange={(e) => setRenameValue(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {handleRenameSubmit(node);}
-                    if (e.key === "Escape") {handleRenameCancel();}
+                    if (e.key === "Enter") { void handleRenameSubmit(node); }
+                    if (e.key === "Escape") { handleRenameCancel(); }
                   }}
                   onBlur={() => {
-                    if (!isRenaming) {handleRenameSubmit(node);}
+                    if (!isRenaming) { void handleRenameSubmit(node); }
                   }}
                 />
               </div>
@@ -540,7 +541,7 @@ export function FileTree({
                       )}
                       {!node.id.startsWith("default-") && level === 0 && (
                         <DropdownMenuItem
-                          onClick={() => handleDeleteClick(node, false)}
+                          onClick={() => { void handleDeleteClick(node, false); }}
                           className="gap-2 text-xs text-red-400 focus:text-red-400"
                         >
                           <Trash2 className="h-3.5 w-3.5" /> Delete

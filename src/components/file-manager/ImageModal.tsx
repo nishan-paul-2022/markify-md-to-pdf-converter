@@ -54,13 +54,11 @@ export function ImageModal({
   useEffect(() => {
     if (thumbnailsRef.current) {
       const activeBtn = thumbnailsRef.current.querySelector('[data-active="true"]') as HTMLElement;
-      if (activeBtn) {
-        activeBtn.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
-        });
-      }
+      activeBtn.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
     }
   }, [activeImage.id]);
 
@@ -70,8 +68,6 @@ export function ImageModal({
       thumbnailsRef.current.scrollLeft += e.deltaY;
     }
   };
-
-  if (!activeImage) {return null;}
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-slate-950 animate-in fade-in duration-300">

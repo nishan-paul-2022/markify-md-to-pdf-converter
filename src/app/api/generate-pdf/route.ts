@@ -2,6 +2,7 @@ import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { auth } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 import { PdfService } from '@/lib/services/pdf.service';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -9,7 +10,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const session = await auth();
 
     // Auth Check (Guideline 2)
-    if (!session?.user?.id) {
+    const userId = session?.user.id;
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -19,7 +21,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const { pdfBuffer, pdfFileRecord } = await PdfService.processPdfPipeline({
       markdown,
       metadata,
-      userId: session.user.id,
+      userId,
       basePath,
       saveToServer,
       sourceFileId
@@ -40,7 +42,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
 
   } catch (error: unknown) {
-    console.error('PDF Generation Route Error:', error);
+    logger.error('PDF Generation Route Error:', error);
     return NextResponse.json({
       error: error instanceof Error ? error.message : "Internal Server Error"
     }, { status: 500 });
