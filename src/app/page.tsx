@@ -1,15 +1,16 @@
 import { auth, signIn } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowRight, FileText, Layout, Share2, Sparkles } from "lucide-react";
+import UserNav from "@/components/auth/UserNav";
+
 
 export default async function LandingPage(): Promise<React.JSX.Element> {
   const session = await auth();
 
-  if (session?.user) {
-    redirect("/editor");
-  }
+// Redirection removed to allow logged-in users to access home page
+
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden selection:bg-blue-500/30">
@@ -23,33 +24,41 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
 
       {/* Navigation */}
       <header className="relative z-50 flex items-center justify-between px-6 lg:px-12 h-20 border-b border-white/5 backdrop-blur-md bg-slate-950/50">
-        <div 
+        <Link 
+          href="/"
           className="flex items-center gap-3 cursor-pointer group/logo"
-          onClick={() => {
-            if (window.location.hash) {
-              window.location.hash = '';
-            } else {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-          }}
         >
           <div className="w-10 h-10 flex items-center justify-center transition-transform group-hover/logo:scale-110">
             <Image src="/brand-logo.svg" alt="Markify" width={32} height={32} priority className="drop-shadow-xl" />
           </div>
           <span className="text-xl font-bold tracking-tight group-hover:text-blue-400 transition-colors">Markify</span>
-        </div>
+        </Link>
         <div className="hidden md:flex items-center gap-8">
           <a href="#features" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Features</a>
           <a href="#showcase" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Showcase</a>
         </div>
-        <form action={async () => {
-          "use server"
-          await signIn("google")
-        }}>
-          <Button variant="outline" className="rounded-full px-6 border-white/10 hover:bg-white/5 transition-all">
-            Log In
-          </Button>
-        </form>
+        
+        <div className="flex items-center gap-4">
+          {session?.user ? (
+            <>
+              <Link href="/editor">
+                <Button variant="ghost" className="hidden md:flex rounded-full px-6 text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+                  Go to Editor
+                </Button>
+              </Link>
+              <UserNav user={session.user} />
+            </>
+          ) : (
+            <form action={async () => {
+              "use server"
+              await signIn("google")
+            }}>
+              <Button variant="outline" className="rounded-full px-6 border-white/10 hover:bg-white/5 transition-all">
+                Log In
+              </Button>
+            </form>
+          )}
+        </div>
       </header>
 
       {/* Hero Section */}
@@ -70,15 +79,24 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <form action={async () => {
-              "use server"
-              await signIn("google")
-            }}>
-              <Button size="lg" className="h-14 px-8 rounded-2xl bg-white text-slate-950 hover:bg-slate-200 transition-all text-base font-bold group">
-                Continue with Google
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </form>
+            {session?.user ? (
+              <Link href="/editor">
+                <Button size="lg" className="h-14 px-8 rounded-2xl bg-white text-slate-950 hover:bg-slate-200 transition-all text-base font-bold group">
+                  Back to Editor
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            ) : (
+              <form action={async () => {
+                "use server"
+                await signIn("google")
+              }}>
+                <Button size="lg" className="h-14 px-8 rounded-2xl bg-white text-slate-950 hover:bg-slate-200 transition-all text-base font-bold group">
+                  Continue with Google
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </form>
+            )}
             <p className="text-xs text-slate-500 mt-4 sm:mt-0 font-medium">
               Join 10,000+ creators and students today
             </p>
