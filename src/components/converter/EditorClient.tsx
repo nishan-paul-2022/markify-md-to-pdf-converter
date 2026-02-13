@@ -222,7 +222,6 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
     [converterState, files],
   );
 
-
   return (
     <EditorView
       user={user}

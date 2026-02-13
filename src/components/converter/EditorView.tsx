@@ -79,7 +79,7 @@ export function EditorView({
   const router = useRouter();
   const { confirm } = useAlert();
   const converter = useConverter();
-  
+
   // Destructure for easier access in JSX
   const {
     rawContent,
@@ -766,7 +766,7 @@ export function EditorView({
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCopy();
+                            void handleCopy();
                           }}
                           className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
                         >
@@ -790,7 +790,7 @@ export function EditorView({
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleReset();
+                            void handleReset();
                           }}
                           className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
                         >
