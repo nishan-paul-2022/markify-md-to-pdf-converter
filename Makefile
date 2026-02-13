@@ -1,82 +1,72 @@
-.PHONY: build up down restart logs ps db-push db-migrate db-studio db-seed dev install setup clean help
+.PHONY: kill-port setup clean dev up down restart ps logs db-push db-migrate db-studio db-seed help
 
-# Variables
-APP_NAME = markify-app
-DB_NAME = markify-db
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
 
-# Default target
-all: help
+APP_NAME = $(APP_CONTAINER_NAME)
+DB_NAME = $(DB_CONTAINER_NAME)
 
-# --- Docker Commands ---
+kill-port:
+	@echo "Stopping any process on port 3000..."
+	@fuser -k 3000/tcp || true
 
-# Build and start all services
-up:
-	docker compose up -d --build
-	@echo "Services are running. Access app at http://localhost:3000"
-
-# Stop and remove all containers, networks, and images
-down:
-	docker compose down
-
-# Restart services
-restart:
-	docker compose restart
-
-# View logs for the application
-logs:
-	docker compose logs -f app
-
-# Show running containers
-ps:
-	docker compose ps
-
-# --- Database / Prisma Commands ---
-
-# Sync database schema with Prisma (use for initial setup/dev)
-db-push:
-	docker exec $(APP_NAME) npx prisma db push
-
-# Run Prisma migrations (use for production-like flow)
-db-migrate:
-	docker exec $(APP_NAME) npx prisma migrate dev
-
-# Open Prisma Studio (access at http://localhost:5555)
-db-studio:
-	docker exec -it $(APP_NAME) npx prisma studio --port 5555 --browser none
-
-# Run database seed
-db-seed:
-	docker exec $(APP_NAME) npx prisma db seed
-
-# --- Development Commands ---
-
-# Run local development server (non-docker)
-dev:
-	npm run dev
-
-# Install local dependencies
-install:
+setup: kill-port
 	npm install
+	$(MAKE) up
+	$(MAKE) db-push
 
-# Full setup flow
-setup: install up db-push
-	@echo "Setup complete! App is ready."
-
-# --- Quality & Cleanup ---
-
-# Clean up docker images and volumes
-clean:
+clean: kill-port
 	docker compose down -v
 	docker rmi $(APP_NAME) || true
 
-# Help command
+dev: kill-port
+	docker compose up -d db
+	npm run dev
+
+up: kill-port
+	docker compose up -d
+
+build: kill-port
+	docker compose up -d --build
+
+down: kill-port
+	docker compose down
+
+restart: kill-port
+	docker compose restart
+
+ps:
+	docker compose ps
+
+logs:
+	docker compose logs -f app
+
+db-push:
+	docker exec $(APP_NAME) npx prisma db push
+
+db-migrate:
+	docker exec $(APP_NAME) npx prisma migrate dev
+
+db-studio:
+	docker exec -it $(APP_NAME) npx prisma studio --port 5555 --browser none
+
+db-seed:
+	docker exec $(APP_NAME) npx prisma db seed
+
 help:
-	@echo "Available commands:"
-	@echo "  make up          - Build and start services in Docker"
-	@echo "  make down        - Stop and remove Docker services"
-	@echo "  make logs        - Follow app logs in Docker"
-	@echo "  make db-push     - Sync DB schema using Prisma"
-	@echo "  make db-studio   - Open Prisma Studio"
-	@echo "  make dev         - Run Next.js dev server locally"
-	@echo "  make setup       - Full install and docker setup"
-	@echo "  make clean       - Remove all Docker artifacts including volumes"
+	@echo "  kill-port    - Stop any process on port 3000"
+	@echo "  setup        - Full install and docker setup"
+	@echo "  clean        - Remove all Docker artifacts including volumes"
+	@echo "  dev          - Run Next.js dev server locally (with DB in Docker)"
+	@echo "  up           - Start services in Docker (uses existing images)"
+	@echo "  down         - Stop and remove Docker services"
+	@echo "  build        - Force rebuild and start services (for dependency/Docker changes)"
+	@echo "  restart      - Restart Docker services"
+	@echo "  ps           - Show running containers"
+	@echo "  logs         - Follow app logs in Docker"
+	@echo "  db-push      - Sync DB schema (no migrations)"
+	@echo "  db-migrate   - Run Prisma migrations"
+	@echo "  db-studio    - Open Prisma Studio"
+	@echo "  db-seed      - Run database seed"

@@ -1,23 +1,20 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
+import { addTimestampToName, generateStandardName } from '@/lib/utils/naming';
+import { validateUploadStructure, extractImageReferences } from '@/lib/services/upload-validator';
+import { getAlert } from '@/components/AlertProvider';
+import { File as AppFile } from './use-files';
 
 const MAX_FILENAME_LENGTH = 30;
 
 const getBaseName = (name: string): string => {
-  return name.replace(/\.md$/i, '');
+  return generateStandardName(name);
 };
 
 const getTimestampedFilename = (name: string, ext: string): string => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  
-  const dateTimeString = `${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
-  return `${getBaseName(name)}-${dateTimeString}.${ext}`;
+  const baseName = generateStandardName(name);
+  const timestampedName = addTimestampToName(baseName);
+  return `${timestampedName}.${ext}`;
 };
 
 export function useConverter() {
@@ -38,15 +35,19 @@ export function useConverter() {
   const [basePath, setBasePath] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
+  const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [isPdfDownloaded, setIsPdfDownloaded] = useState(false);
+  const [activeImage, setActiveImage] = useState<AppFile | null>(null);
+  const [imageGallery, setImageGallery] = useState<AppFile[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderInputRef = useRef<HTMLInputElement | null>(null);
+  const zipInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) {return;}
 
     const handleScroll = () => {
       setIsEditorAtTop(textarea.scrollTop < 20);
@@ -88,7 +89,7 @@ export function useConverter() {
   }, []);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading) {return;}
 
     const timer = setTimeout(() => {
       const parsedMetadata = parseMetadataFromMarkdown(rawContent);
@@ -168,23 +169,107 @@ export function useConverter() {
     }
   }, [generatePdfBlob, filename]);
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setFilename(file.name);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result;
-        if (typeof text === 'string') {
-          handleContentChange(text);
-          const now = new Date();
-          setUploadTime(now);
-          setLastModifiedTime(now);
-          setIsUploaded(true);
-          setTimeout(() => setIsUploaded(false), 2000);
+  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      console.log('📤 File upload triggered, count:', files.length);
+
+      // Process files for renaming (Case 1/2 logic)
+      // Modification: User requested NO renaming. Keep original names.
+      const fileList = Array.from(files);
+
+      const mdFile = fileList.find(f => f.name.endsWith('.md'));
+      
+      // 1. Immediate local preview for the first .md file if found
+      if (mdFile) {
+        setFilename(mdFile.name);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target?.result;
+          if (typeof text === 'string') {
+            handleContentChange(text);
+          }
+        };
+        reader.readAsText(mdFile);
+      }
+
+      // 2. Upload files to server
+      setIsLoading(true);
+      const batchId = self.crypto.randomUUID();
+      
+      try {
+        const uploadPromises = fileList.map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('batchId', batchId);
+          formData.append('relativePath', file.name);
+          formData.append('source', 'editor');
+          
+          const response = await fetch('/api/files', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            let errorMsg = "Upload failed";
+            try {
+              const errorJson = JSON.parse(errorText);
+              errorMsg = errorJson.error || errorMsg;
+            } catch {
+              errorMsg = errorText || errorMsg;
+            }
+            console.error(`❌ Upload failed for ${file.name}:`, response.status, errorMsg);
+            return { error: errorMsg, file: file.name };
+          }
+          
+          return await response.json();
+        });
+
+        const results = await Promise.all(uploadPromises);
+        const successfulResults = results.filter(r => r && !('error' in r));
+        const failedResults = results.filter(r => r && ('error' in r));
+
+        if (failedResults.length > 0) {
+          const api = getAlert();
+          // Just take the first error message directly as returned by the server
+          const msg = (failedResults[0] as { error: string }).error;
+            
+          if (api) {
+            api.show({ title: 'Upload Failed', message: msg, variant: 'destructive' });
+          } else {
+            alert(msg);
+          }
         }
-      };
-      reader.readAsText(file);
+
+        console.log('✅ Upload complete. Successful results:', successfulResults.length);
+
+        // Set selectedFileId if an MD file was uploaded
+        const mdResult = successfulResults.find(r => r.file && r.file.originalName.endsWith('.md'));
+        if (mdResult && mdResult.file) {
+          setSelectedFileId(mdResult.file.id);
+        }
+
+        // If we found an MD file, set the base path if possible
+        if (mdResult && mdResult.file && mdResult.file.url) {
+          const fileUrl = mdResult.file.url;
+          const lastSlashIndex = fileUrl.lastIndexOf('/');
+          if (lastSlashIndex !== -1) {
+            const dirPath = fileUrl.substring(0, lastSlashIndex);
+            setBasePath(dirPath.startsWith('/api') ? dirPath : '/api' + dirPath);
+          }
+        }
+
+        const now = new Date();
+        setUploadTime(now);
+        setLastModifiedTime(now);
+        setIsUploaded(true);
+        setTimeout(() => setIsUploaded(false), 2000);
+      } catch (error) {
+        console.error("Error uploading files:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   }, [handleContentChange]);
 
@@ -193,26 +278,52 @@ export function useConverter() {
     console.log('📂 Folder upload triggered, files:', files?.length);
     
     if (files && files.length > 0) {
-      const mdFile = Array.from(files).find(f => f.name.endsWith('.md'));
-      
-      if (!mdFile) {
-        alert("The selected folder must contain at least one .md file.");
+      const inputFiles = Array.from(files);
+
+      // Validate folder structure: root must have .md; only subfolder allowed is images/
+      const markdownFiles = inputFiles.filter(f => f.name.toLowerCase().endsWith('.md'));
+      const referencedImages = new Set<string>();
+      await Promise.all(markdownFiles.map(async (mdFile) => {
+        try {
+          const text = await mdFile.text();
+          extractImageReferences(text).forEach(ref => referencedImages.add(ref));
+        } catch (err) {
+          console.error(`Failed to read markdown ${mdFile.name}:`, err);
+        }
+      }));
+      const validation = validateUploadStructure(inputFiles, referencedImages);
+      if (!validation.valid) {
+        const msg = validation.error ?? 'Invalid folder structure. Upload blocked.';
+        const api = getAlert();
+      if (api) {
+        api.show({ title: 'Invalid Folder', message: msg, variant: 'destructive' });
+      } else {
+        alert(msg);
+      }
+        event.target.value = '';
         return;
       }
 
-      console.log('📄 Found markdown file:', mdFile.name);
-      console.log('📦 Total files to upload:', files.length);
+      const processedFiles = validation.filteredFiles;
+      console.log(`UseConverter: Uploading folder (validated).`);
 
-      // 1. Immediate local preview
-      setFilename(mdFile.name);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result;
-        if (typeof text === 'string') {
-          handleContentChange(text);
-        }
-      };
-      reader.readAsText(mdFile);
+      const mdFile = processedFiles.find(f => f.name.endsWith('.md'));
+      
+      console.log(mdFile ? `📄 Found markdown file: ${mdFile.name}` : 'ℹ️ No markdown file found, uploading other assets.');
+      console.log('📦 Total files to upload:', processedFiles.length);
+
+      // 1. Immediate local preview (if MD exists)
+      if (mdFile) {
+        setFilename(mdFile.name);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target?.result;
+          if (typeof text === 'string') {
+            handleContentChange(text);
+          }
+        };
+        reader.readAsText(mdFile);
+      }
 
       // 2. Upload files to server
       setIsLoading(true);
@@ -222,14 +333,15 @@ export function useConverter() {
       
       try {
         // Upload files in parallel
-        const uploadPromises = Array.from(files).map(async (file, index) => {
+        const uploadPromises = processedFiles.map(async (file, index) => {
           const formData = new FormData();
           formData.append('file', file);
           formData.append('batchId', batchId);
           // Use webkitRelativePath for folder structure, fallback to name
           formData.append('relativePath', file.webkitRelativePath || file.name);
+          formData.append('source', 'editor');
           
-          console.log(`📤 Uploading file ${index + 1}/${files.length}:`, file.name);
+          console.log(`📤 Uploading file ${index + 1}/${processedFiles.length}:`, file.name);
           
           try {
             const response = await fetch('/api/files', {
@@ -239,8 +351,15 @@ export function useConverter() {
             
             if (!response.ok) {
               const errorText = await response.text();
-              console.error(`❌ Upload failed for ${file.name}:`, response.status, errorText);
-              return null;
+              let errorMsg = "Upload failed";
+              try {
+                const errorJson = JSON.parse(errorText);
+                errorMsg = errorJson.error || errorMsg;
+              } catch {
+                errorMsg = errorText || errorMsg;
+              }
+              console.error(`❌ Upload failed for ${file.name}:`, response.status, errorMsg);
+              return { error: errorMsg, file: file.name };
             }
             
             const result = await response.json();
@@ -253,23 +372,44 @@ export function useConverter() {
         });
 
         const results = await Promise.all(uploadPromises);
+        const successfulResults = results.filter(r => r && !('error' in r));
+        const failedResults = results.filter(r => r && ('error' in r));
         
-        console.log('📊 Upload complete. Successful uploads:', results.filter(r => r !== null).length);
+        if (failedResults.length > 0) {
+          const api = getAlert();
+          const firstError = (failedResults[0] as { error: string }).error;
+          const msg = failedResults.length === 1 
+            ? firstError
+            : firstError;
+            
+          if (api) {
+            api.show({ title: 'Invalid Folder', message: msg, variant: 'destructive' });
+          } else {
+            alert(msg);
+          }
+        }
         
-        // Find the uploaded markdown file result to determine the correct base path for images
-        // We look for a result where the original name matches our selected mdFile
-        const mdResult = results.find(r => 
-          r && r.file && (
+        console.log('📊 Upload complete. Successful uploads:', successfulResults.length);
+
+        // Find and select the main MD file
+        const folderMdResult = successfulResults.find(r => 
+          r && r.file && mdFile && (
             r.file.originalName === mdFile.name || 
             (r.file.relativePath && r.file.relativePath.endsWith(mdFile.name))
           )
         );
         
-        console.log('🔍 Searching for MD result for:', mdFile.name);
-        console.log('📊 Successful results:', results.filter(r => r !== null).length);
+        if (folderMdResult && folderMdResult.file) {
+          setSelectedFileId(folderMdResult.file.id);
+        }
         
-        if (mdResult && mdResult.file && mdResult.file.url) {
-            const fileUrl = mdResult.file.url;
+
+        if (mdFile) {
+          console.log('🔍 Searching for MD result for:', mdFile.name);
+        }
+        
+        if (folderMdResult && folderMdResult.file && folderMdResult.file.url) {
+            const fileUrl = folderMdResult.file.url;
             console.log('📄 Found Markdown file URL:', fileUrl);
             
             // Extract the directory path (remove the filename)
@@ -310,10 +450,10 @@ export function useConverter() {
         setLastModifiedTime(now);
         setIsUploaded(true);
         setTimeout(() => setIsUploaded(false), 2000);
-      } catch (error) {
-        console.error("Error uploading folder batch:", error);
-        // We don't alert here because the local preview might still work for text
-      } finally {
+    } catch (error) {
+      console.error("Error uploading folder batch:", error);
+      // We don't alert here because the local preview might still work for text
+    } finally {
         setIsLoading(false);
       }
     }
@@ -327,6 +467,107 @@ export function useConverter() {
     folderInputRef.current?.click();
   }, []);
 
+  const triggerZipUpload = useCallback((): void => {
+    zipInputRef.current?.click();
+  }, []);
+
+  const handleZipUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+      const files = event.target.files;
+      if (!files || files.length === 0) {return;}
+
+      const archiveFiles = Array.from(files);
+      
+      // Support ZIP, 7Z, RAR, and TAR formats
+      const unsupportedFiles = archiveFiles.filter(f => !f.name.match(/\.(zip|7z|rar|tar|tar\.gz|tgz)$/i));
+      
+      if (unsupportedFiles.length > 0) {
+        const api = getAlert();
+        const msg = `Upload failed — only ZIP, 7Z, RAR, or TAR archives are allowed. Unsupported: ${unsupportedFiles.map(f => f.name).join(', ')}`;
+        if (api) {
+          api.show({ title: 'Invalid File', message: msg, variant: 'destructive' });
+        } else {
+          alert(msg);
+        }
+        event.target.value = '';
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const uploadPromises = archiveFiles.map(async (archiveFile) => {
+          const formData = new FormData();
+          formData.append('file', archiveFile);
+          formData.append('source', 'editor');
+          
+          const response = await fetch('/api/files/archive', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(result.error || `Archive processing failed for ${archiveFile.name}`);
+          }
+          return result;
+        });
+
+        const results = await Promise.all(uploadPromises);
+        
+        // aggregate all extracted files from all successful results
+        interface ExtractedFile {
+          originalName: string;
+          url: string;
+          id: string;
+        }
+        let allExtractedFiles: ExtractedFile[] = [];
+        results.forEach(res => {
+          if (res.files) {
+            allExtractedFiles = [...allExtractedFiles, ...res.files];
+          }
+        });
+
+        // Find and select the first MD file for preview among ALL extracted files
+        const mdFileResult = allExtractedFiles.find((f) => f.originalName.endsWith('.md'));
+        
+        if (mdFileResult) {
+          // Load the content of the first MD file for preview
+          const contentRes = await fetch(mdFileResult.url);
+          if (contentRes.ok) {
+            const text = await contentRes.text();
+            handleContentChange(text);
+          }
+          setFilename(mdFileResult.originalName);
+          setSelectedFileId(mdFileResult.id);
+          
+          // Set base path for images (using the first MD file's directory)
+          if (mdFileResult.url) {
+            const fileUrl = mdFileResult.url;
+            const lastSlashIndex = fileUrl.lastIndexOf('/');
+            if (lastSlashIndex !== -1) {
+              const directoryPath = fileUrl.substring(0, lastSlashIndex);
+              setBasePath(directoryPath.startsWith('/api/') ? directoryPath : `/api${directoryPath}`);
+            }
+          }
+        }
+
+        const now = new Date();
+        setUploadTime(now);
+        setLastModifiedTime(now);
+        setIsUploaded(true);
+        setTimeout(() => setIsUploaded(false), 2000);
+      } catch (error) {
+        console.error("Error processing archive(s):", error);
+        const api = getAlert();
+        const msg = error instanceof Error ? error.message : 'An error occurred while processing the archives.';
+        if (api) {
+          api.show({ title: 'Processing Failed', message: msg, variant: 'destructive' });
+        }
+      } finally {
+        setIsLoading(false);
+        event.target.value = '';
+      }
+  }, [handleContentChange]);
+
   const handleReset = useCallback(async (): Promise<void> => {
     try {
       const res = await fetch(DEFAULT_MARKDOWN_PATH);
@@ -334,8 +575,16 @@ export function useConverter() {
       
       handleContentChange(text);
       setFilename('document.md');
+      setSelectedFileId(null);
       setUploadTime(null);
       setLastModifiedTime(new Date());
+
+      // Reset base path for default content
+      const lastSlashIndex = DEFAULT_MARKDOWN_PATH.lastIndexOf('/');
+      if (lastSlashIndex !== -1) {
+        setBasePath(DEFAULT_MARKDOWN_PATH.substring(0, lastSlashIndex));
+      }
+
       setIsReset(true);
       setTimeout(() => setIsReset(false), 2000);
     } catch (err: unknown) {
@@ -403,8 +652,10 @@ export function useConverter() {
     isCopied,
     isDownloaded,
     isPdfDownloaded,
+    selectedFileId,
     fileInputRef,
     folderInputRef,
+    zipInputRef,
     textareaRef,
     stats,
     setActiveTab,
@@ -415,8 +666,10 @@ export function useConverter() {
     handleContentChange,
     handleFileUpload,
     handleFolderUpload,
+    handleZipUpload,
     triggerFileUpload,
     triggerFolderUpload,
+    triggerZipUpload,
     handleReset,
     handleCopy,
     handleDownloadMd,
@@ -424,6 +677,14 @@ export function useConverter() {
     generatePdfBlob,
     scrollToStart,
     scrollToEnd,
+    setFilename,
+    setSelectedFileId,
+    setIsLoading,
+    setBasePath,
+    activeImage,
+    setActiveImage,
+    imageGallery,
+    setImageGallery,
     MAX_FILENAME_LENGTH,
     getBaseName
   };

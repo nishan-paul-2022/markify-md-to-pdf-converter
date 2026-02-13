@@ -78,7 +78,7 @@ const IndividualCoverPage = ({ metadata }: CoverPageProps): React.JSX.Element =>
 };
 
 const GroupCoverPage = ({ metadata }: CoverPageProps): React.JSX.Element => {
-  if (!metadata) return <></>;
+  if (!metadata) {return <></>;}
 
   return (
     <div className="pdf-page relative bg-[#020617] overflow-hidden flex flex-col items-center text-center p-0 mx-auto shrink-0 shadow-2xl"
@@ -208,7 +208,7 @@ const GroupCoverPage = ({ metadata }: CoverPageProps): React.JSX.Element => {
 };
 
 export const CoverPage = ({ metadata }: CoverPageProps): React.JSX.Element | null => {
-  if (!metadata) return null;
+  if (!metadata) {return null;}
 
   const isGroupSubmission = metadata.groupMembers && metadata.groupMembers.length > 0;
 

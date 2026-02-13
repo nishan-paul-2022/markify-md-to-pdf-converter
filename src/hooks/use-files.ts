@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { getAlert } from "@/components/AlertProvider";
 
 export interface File {
   id: string;
@@ -8,6 +9,8 @@ export interface File {
   mimeType: string;
   size: number;
   url: string;
+  relativePath?: string;
+  batchId?: string;
   createdAt: string;
 }
 
@@ -21,7 +24,7 @@ interface FileListResponse {
   };
 }
 
-export function useFiles() {
+export function useFiles(source?: string) {
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,17 +34,33 @@ export function useFiles() {
   const fetchFiles = useCallback(async (): Promise<void> => {
     setLoading(true);
     try {
-      const response = await fetch("/api/files");
-      if (!response.ok) throw new Error("Failed to fetch files");
+      const queryParams = new URLSearchParams({ limit: "100" });
+      if (source) {
+        queryParams.append("source", source);
+      }
+      const response = await fetch(`/api/files?${queryParams.toString()}`);
+      if (!response.ok) {
+        let errorDetail = "";
+        try {
+          const errorData = await response.json();
+          errorDetail = errorData.details || errorData.error || "";
+        } catch {
+          // Fallback if not JSON
+        }
+        throw new Error(errorDetail || `Failed to fetch files (Status: ${response.status})`);
+      }
       
       const data: FileListResponse = await response.json();
+      console.log(`📂 Fetched ${data.files.length} files from API (source: ${source || 'all'})`);
+      
       setFiles(data.files);
     } catch (error: unknown) {
       console.error("Error fetching files:", error);
+      setFiles([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [source]);
 
   useEffect(() => {
     fetchFiles();
@@ -63,12 +82,81 @@ export function useFiles() {
       router.refresh();
     } catch (error: unknown) {
       console.error("Delete error:", error);
-      alert(error instanceof Error ? error.message : "Failed to delete file");
+      const msg = error instanceof Error ? error.message : "Failed to delete file";
+      const api = getAlert();
+      if (api) {
+        api.show({ title: "Delete failed", message: msg, variant: "destructive" });
+      } else {
+        alert(msg);
+      }
     } finally {
       setDeleting(false);
       setDeleteId(null);
     }
   }, [router]);
+
+  const handleBulkDelete = useCallback(async (ids: string[]): Promise<void> => {
+    setDeleting(true);
+    try {
+      const response = await fetch("/api/files", {
+        method: "DELETE",
+        body: JSON.stringify({ ids }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to delete files");
+      }
+
+      setFiles((prev) => prev.filter((file) => !ids.includes(file.id)));
+      router.refresh();
+    } catch (error: unknown) {
+      console.error("Bulk delete error:", error);
+      const msg = error instanceof Error ? error.message : "Failed to delete files";
+      const api = getAlert();
+      if (api) {
+        api.show({ title: "Delete failed", message: msg, variant: "destructive" });
+      } else {
+        alert(msg);
+      }
+    } finally {
+      setDeleting(false);
+      setDeleteId(null);
+    }
+  }, [router]);
+
+  const handleRename = useCallback(async (
+    id: string, 
+    newName: string, 
+    type: "file" | "folder", 
+    batchId?: string, 
+    oldPath?: string
+  ): Promise<void> => {
+    try {
+      const response = await fetch("/api/files", {
+        method: "PATCH",
+        body: JSON.stringify({ id, type, newName, batchId, oldPath }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to rename");
+      }
+
+      await fetchFiles();
+      router.refresh();
+    } catch (error: unknown) {
+      console.error("Rename error:", error);
+      const msg = error instanceof Error ? error.message : "Failed to rename";
+      const api = getAlert();
+      if (api) {
+        api.show({ title: "Rename failed", message: msg, variant: "destructive" });
+      } else {
+        alert(msg);
+      }
+      throw error;
+    }
+  }, [fetchFiles, router]);
 
   return {
     files,
@@ -77,6 +165,8 @@ export function useFiles() {
     deleting,
     setDeleteId,
     handleDelete,
+    handleBulkDelete,
+    handleRename,
     refreshFiles: fetchFiles
   };
 }
