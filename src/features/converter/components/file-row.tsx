@@ -50,12 +50,15 @@ export const FileRow: React.FC<FileRowProps> = ({
   formatDate,
   formatSize,
 }) => {
+  const isProcessing = processingState === 'converting';
+  const isDone = processingState === 'done';
+  const isError = processingState === 'error';
+
   const hasOutput = !!(
     hasLocalBlob ||
-    processingState === 'done' ||
+    isDone ||
     (file.metadata && file.metadata.generatedPdfUrl)
   );
-  const isProcessing = processingState === 'converting';
 
   return (
     <div
@@ -186,81 +189,93 @@ export const FileRow: React.FC<FileRowProps> = ({
         </div>
       </div>
 
-      {/* Output File Card (Only if output exists or is converting) */}
-      {(hasOutput || isProcessing) && (
-        <div
-          className={cn(
-            'group/output animate-in slide-in-from-right-8 relative flex w-[340px] items-center justify-between overflow-hidden rounded-3xl border bg-emerald-500/[0.03] p-5 shadow-xl transition-all duration-500 hover:bg-emerald-500/[0.06]',
-            processingState === 'error'
-              ? 'border-red-500/20 bg-red-500/[0.02]'
-              : 'border-emerald-500/10 hover:border-emerald-500/30',
-          )}
-        >
-          <div className="relative z-10 flex min-w-0 items-center gap-4">
-            <div
-              className={cn(
-                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-                isProcessing
-                  ? 'bg-amber-500/10 text-amber-500'
-                  : processingState === 'error'
-                    ? 'bg-red-500/10 text-red-500'
-                    : 'bg-emerald-500/10 text-emerald-400 transition-transform group-hover/output:scale-110',
-              )}
-            >
-              {isProcessing ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : processingState === 'error' ? (
-                <AlertCircle className="h-5 w-5" />
-              ) : (
-                <FileDown className="h-5 w-5" />
-              )}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    'text-[9px] font-black tracking-widest uppercase',
-                    isProcessing
-                      ? 'text-amber-500'
-                      : processingState === 'error'
-                        ? 'text-red-500'
-                        : 'text-emerald-500',
-                  )}
-                >
-                  {isProcessing ? 'Processing' : processingState === 'error' ? 'Failed' : 'Ready'}
-                </span>
-                {hasOutput && !isProcessing && (
-                  <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                )}
-              </div>
-              <p className="mt-0.5 truncate text-xs font-bold text-slate-300">
-                {file.originalName.replace(/\.md$/i, '')}.pdf
-              </p>
-            </div>
+      {/* Output File Card (Always visible for every file) */}
+      <div
+        className={cn(
+          'group/output animate-in slide-in-from-right-8 relative flex w-[340px] items-center justify-between overflow-hidden rounded-3xl border transition-all duration-500 shadow-xl',
+          isProcessing
+            ? 'border-amber-500/20 bg-amber-500/[0.02] hover:bg-amber-500/[0.04]'
+            : isError
+              ? 'border-red-500/20 bg-red-500/[0.02] hover:bg-red-500/[0.04]'
+              : isDone || hasOutput
+                ? 'border-emerald-500/10 bg-emerald-500/[0.03] hover:border-emerald-500/30 hover:bg-emerald-500/[0.06]'
+                : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.04] opacity-40 hover:opacity-60',
+        )}
+      >
+        <div className="relative z-10 flex min-w-0 items-center gap-4">
+          <div
+            className={cn(
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+              isProcessing
+                ? 'bg-amber-500/10 text-amber-500'
+                : isError
+                  ? 'bg-red-500/10 text-red-500'
+                  : isDone || hasOutput
+                    ? 'bg-emerald-500/10 text-emerald-400 transition-transform group-hover/output:scale-110'
+                    : 'bg-white/5 text-slate-500',
+            )}
+          >
+            {isProcessing ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : isError ? (
+              <AlertCircle className="h-5 w-5" />
+            ) : (
+              <FileDown className="h-5 w-5" />
+            )}
           </div>
-
-          {!isProcessing && hasOutput && (
-            <div className="relative z-10 shrink-0">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => onDownload(file, 'pdf')}
-                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 shadow-lg shadow-emerald-500/10 transition-all hover:bg-emerald-500 hover:text-white active:scale-90"
-                  >
-                    <Download className="h-4.5 w-4.5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent
-                  side="top"
-                  className="border-slate-800 bg-slate-900 text-xs text-emerald-400"
-                >
-                  Download PDF
-                </TooltipContent>
-              </Tooltip>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span
+                className={cn(
+                  'text-[9px] font-black tracking-widest uppercase',
+                  isProcessing
+                    ? 'text-amber-500'
+                    : isError
+                      ? 'text-red-500'
+                      : isDone || hasOutput
+                        ? 'text-emerald-500'
+                        : 'text-slate-500',
+                )}
+              >
+                {isProcessing
+                  ? 'Processing'
+                  : isError
+                    ? 'Failed'
+                    : isDone || hasOutput
+                      ? 'Ready'
+                      : 'Silent'}
+              </span>
+              {(isDone || hasOutput) && !isProcessing && (
+                <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+              )}
             </div>
-          )}
+            <p className="mt-0.5 truncate text-xs font-bold text-slate-300">
+              {file.originalName.replace(/\.md$/i, '')}.pdf
+            </p>
+          </div>
         </div>
-      )}
+
+        {!isProcessing && (isDone || hasOutput) && (
+          <div className="relative z-10 shrink-0">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onDownload(file, 'pdf')}
+                  className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 shadow-lg shadow-emerald-500/10 transition-all hover:bg-emerald-500 hover:text-white active:scale-90"
+                >
+                  <Download className="h-4.5 w-4.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                className="border-slate-800 bg-slate-900 text-xs text-emerald-400"
+              >
+                Download PDF
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
