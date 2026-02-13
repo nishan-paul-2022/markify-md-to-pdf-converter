@@ -4,6 +4,10 @@ import { marked } from 'marked';
 import fs from 'fs';
 import path from 'path';
 import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import { writeFile, mkdir } from "fs/promises";
+import { randomUUID } from "crypto";
+import { join } from "path";
 
 // Helper to embed images as base64
 async function processHtmlImages(html: string, basePath?: string): Promise<string> {
@@ -72,23 +76,108 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const session = await auth();
     
     // Auth Check
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { markdown, metadata, basePath } = await req.json();
+    const { markdown, metadata, basePath, saveToServer, sourceFileId } = await req.json();
 
     // Process markdown to HTML for PDF engine
-    // We use marked here as it's simpler for plain HTML generation on server
     const processedMarkdown = markdown.replace(/\\pagebreak|<!-- pagebreak -->/g, '<div class="page-break-marker"></div>');
     let htmlContent = await marked.parse(processedMarkdown);
     
     // Process images to embed them
     htmlContent = await processHtmlImages(htmlContent, basePath);
 
-    // In a real app, you'd add the cover page and diagrams here
+    // Generate PDF
     const pdfBuffer = await generatePdf(htmlContent, metadata);
 
+    // If saving is requested and we have a source file ID
+    if (saveToServer && sourceFileId) {
+      // 1. Fetch Source File Info
+      const sourceFile = await prisma.file.findUnique({
+        where: { id: sourceFileId, userId: session.user.id }
+      });
+
+      if (sourceFile) {
+        // 2. Prepare Storage Path
+        const batchId = sourceFile.batchId || 'no-batch';
+        const pdfFilename = sourceFile.originalName.replace(/\.md$/i, '') + '.pdf';
+        const uniqueFilename = `${randomUUID()}.pdf`;
+        
+        // Use same folder structure as source if possible
+        const relativeStorageDir = join("uploads", session.user.id, batchId);
+        const uploadDir = join(process.cwd(), "public", relativeStorageDir);
+        await mkdir(uploadDir, { recursive: true });
+
+        const storageKey = `${relativeStorageDir}/${uniqueFilename}`; // Forward slashes for URL consistency
+        const systemFilePath = join(process.cwd(), "public", storageKey);
+
+        // 3. Write PDF to Disk
+        await writeFile(systemFilePath, pdfBuffer);
+
+        // 4. Create PDF File Record
+        const pdfFile = await prisma.file.create({
+          data: {
+            userId: session.user.id,
+            batchId: batchId,
+            filename: uniqueFilename,
+            originalName: pdfFilename,
+            relativePath: sourceFile.relativePath ? sourceFile.relativePath.replace(/\.md$/i, '.pdf') : pdfFilename,
+            mimeType: 'application/pdf',
+            size: pdfBuffer.length,
+            storageKey: storageKey,
+            url: `/api/${storageKey}`,
+            metadata: {
+              sourceFileId: sourceFile.id,
+              isGenerated: true,
+              generatedFrom: 'converter'
+            }
+          }
+        });
+
+        // 5. Update Source File Metadata to link to PDF
+        // We accumulate metadata, don't overwrite if it exists and is an object
+        const currentMetadata = (sourceFile.metadata as Record<string, unknown>) || {};
+        await prisma.file.update({
+          where: { id: sourceFile.id },
+          data: {
+            metadata: {
+              ...currentMetadata,
+              generatedPdfId: pdfFile.id,
+              generatedPdfUrl: pdfFile.url,
+              lastConvertedAt: new Date().toISOString()
+            }
+          }
+        });
+
+        // Return the saved file info along with the PDF blob
+        // We return the binary PDF as usual, but with headers indicating success/id?
+        // Actually, cleaner to return JSON if saveToServer is true?
+        // But the client expects a Blob usually. 
+        // Let's stick to returning the Blob, but maybe add headers, 
+        // OR better: The client handles this.
+        
+        // WAIT: If we return JSON here, existing logic in client (response.blob()) might break if it expects a blob immediately.
+        // But the client code for 'saveToServer' is new. 
+        // Let's make it so if saveToServer is true, we return JSON with the file info AND the blob in base64? 
+        // Or just return JSON with the URL, and let client fetch it?
+        
+        // Actually, easiest is to return the PDF blob as before, but include the new File ID in headers.
+        
+        return new NextResponse(new Uint8Array(pdfBuffer), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="${pdfFilename}"`,
+            'X-Generated-Pdf-Id': pdfFile.id,
+            'X-Generated-Pdf-Url': pdfFile.url || ''
+          },
+        });
+      }
+    }
+
+    // Default behavior (no save, just stream)
     return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
@@ -96,6 +185,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         'Content-Disposition': 'attachment; filename="report.pdf"',
       },
     });
+
   } catch (error: unknown) {
     console.error('PDF Generation Error:', error);
     if (error instanceof Error) {

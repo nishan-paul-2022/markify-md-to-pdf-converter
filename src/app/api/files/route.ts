@@ -264,6 +264,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           url: true,
           batchId: true,
           relativePath: true,
+          metadata: true,
           createdAt: true,
           updatedAt: true,
         },

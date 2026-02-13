@@ -166,7 +166,11 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
   // Derived state for the "Converted" column (matching filtered set)
   const completedResults = React.useMemo(() => {
-    return filteredMdFiles.filter(f => processingStates[f.id] === 'done' || convertedFiles[f.id]);
+    return filteredMdFiles.filter(f => 
+      processingStates[f.id] === 'done' || 
+      convertedFiles[f.id] || 
+      (f.metadata && f.metadata.generatedPdfUrl)
+    );
   }, [filteredMdFiles, processingStates, convertedFiles]);
 
   const toggleSelectionMode = () => {
@@ -255,7 +259,9 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         body: JSON.stringify({
           markdown: contentWithoutLandingPage,
           basePath: basePath.startsWith('/api') ? basePath : `/api${basePath}`,
-          metadata: parsedMetadata // Use parsed metadata directly to match Editor logic
+          metadata: parsedMetadata, // Use parsed metadata directly to match Editor logic
+          saveToServer: true,
+          sourceFileId: file.id
         }),
       });
 
@@ -264,6 +270,10 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       const blob = await response.blob();
       setConvertedFiles(prev => ({ ...prev, [file.id]: blob }));
       setProcessingStates(prev => ({ ...prev, [file.id]: 'done' }));
+      
+      // Refresh files to get the updated metadata (generatedPdfUrl) from the server
+      await refreshFiles();
+      
       return true;
     } catch (error) {
       console.error('Conversion error:', error);
@@ -282,7 +292,20 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       document.body.removeChild(a);
     } else {
       const blob = convertedFiles[file.id];
-      if (!blob) { return; }
+      const pdfUrl = file.metadata?.generatedPdfUrl;
+
+      if (!blob && !pdfUrl) { return; }
+      
+      if (pdfUrl && !blob) {
+         // Download from server URL
+         const a = document.createElement('a');
+         a.href = pdfUrl as string;
+         a.download = `${generateStandardName(file.originalName)}.pdf`;
+         document.body.appendChild(a);
+         a.click();
+         document.body.removeChild(a);
+         return;
+      }
       
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -305,16 +328,35 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     if (completedResults.length === 0) {return;}
     
     // Prepare files for archiving
-    const filesToArchive = completedResults.map(file => {
-      const blob = convertedFiles[file.id];
+    const filesToArchive = await Promise.all(completedResults.map(async file => {
+      let blob = convertedFiles[file.id];
+      
+      // If no local blob but we have a server URL, we need to fetch it to zip it
+      if (!blob && file.metadata?.generatedPdfUrl) {
+        try {
+          const pdfUrl = file.metadata.generatedPdfUrl;
+          if (typeof pdfUrl === 'string') {
+              const res = await fetch(pdfUrl);
+              if (res.ok) {
+                blob = await res.blob();
+              }
+          }
+        } catch (e) {
+          console.error(`Failed to fetch PDF for archive: ${file.originalName}`, e);
+        }
+      }
+
       if (!blob) {return null;}
       return {
         name: `${generateStandardName(file.originalName)}.pdf`,
         blob: blob
       };
-    }).filter(Boolean) as { name: string, blob: Blob }[];
+    }));
+    
+    // Filter out nulls
+    const validFiles = filesToArchive.filter(Boolean) as { name: string, blob: Blob }[]; 
 
-    if (filesToArchive.length === 0) {return;}
+    if (validFiles.length === 0) {return;}
 
     try {
       let content: Blob;
@@ -324,13 +366,13 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         const zip = new JSZip();
         const folder = zip.folder("converted_pdfs");
         if (folder) {
-          filesToArchive.forEach(f => folder.file(f.name, f.blob));
+          validFiles.forEach(f => folder.file(f.name, f.blob));
         }
         content = await zip.generateAsync({ type: "blob" });
         filename += '.zip';
       } else {
         // TAR format
-        content = await createTar(filesToArchive);
+        content = await createTar(validFiles);
         filename += '.tar';
       }
 
@@ -895,7 +937,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
               {!loading && filteredMdFiles.length > 0 ? (
                 <>
                   {filteredMdFiles.map((file, index) => {
-                    const hasOutput = convertedFiles[file.id] || processingStates[file.id] === 'done';
+                    const hasOutput = convertedFiles[file.id] || processingStates[file.id] === 'done' || (file.metadata && file.metadata.generatedPdfUrl);
                     const isProcessing = processingStates[file.id] === 'converting';
 
                     return (

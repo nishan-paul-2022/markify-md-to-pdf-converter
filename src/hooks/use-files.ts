@@ -11,6 +11,7 @@ export interface File {
   url: string;
   relativePath?: string;
   batchId?: string;
+  metadata?: Record<string, unknown>;
   createdAt: string;
 }
 
