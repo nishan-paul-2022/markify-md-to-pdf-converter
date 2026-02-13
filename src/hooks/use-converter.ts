@@ -1,52 +1,63 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { getAlert } from '@/components/AlertProvider';
-import type { Metadata } from '@/constants/default-content';
 import {
   DEFAULT_MARKDOWN_PATH,
-  DEFAULT_METADATA,
   parseMetadataFromMarkdown,
   removeLandingPageSection,
 } from '@/constants/default-content';
-import type { File as AppFile } from '@/hooks/use-files';
 import { logger } from '@/lib/logger';
 import { extractImageReferences, validateUploadStructure } from '@/lib/services/upload-validator';
-import { addTimestampToName, generateStandardName } from '@/lib/utils/naming';
-
-const MAX_FILENAME_LENGTH = 30;
+import { generateStandardName } from '@/lib/utils/naming';
+import { useEditorStore } from '@/store/use-editor-store';
 
 const getBaseName = (name: string): string => {
   return generateStandardName(name);
 };
 
-const getTimestampedFilename = (name: string, ext: string): string => {
-  const baseName = generateStandardName(name);
-  const timestampedName = addTimestampToName(baseName);
-  return `${timestampedName}.${ext}`;
-};
-
 export function useConverter() {
-  const [rawContent, setRawContent] = useState('');
-  const [content, setContent] = useState('');
-  const [metadata, setMetadata] = useState<Metadata>(DEFAULT_METADATA);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [filename, setFilename] = useState('document.md');
-  const [isEditing, setIsEditing] = useState(false);
-  const [isUploaded, setIsUploaded] = useState(false);
-  const [isReset, setIsReset] = useState(false);
-  const [tempFilename, setTempFilename] = useState('');
-  const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
-  const [uploadTime, setUploadTime] = useState<Date | null>(null);
-  const [lastModifiedTime, setLastModifiedTime] = useState<Date | null>(null);
-  const [isEditorAtTop, setIsEditorAtTop] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
-  const [basePath, setBasePath] = useState('');
-  const [isCopied, setIsCopied] = useState(false);
-  const [isDownloaded, setIsDownloaded] = useState(false);
-  const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
-  const [isPdfDownloaded, setIsPdfDownloaded] = useState(false);
-  const [activeImage, setActiveImage] = useState<AppFile | null>(null);
-  const [imageGallery, setImageGallery] = useState<AppFile[]>([]);
+  const {
+    rawContent,
+    setRawContent,
+    content,
+    setContent,
+    metadata,
+    setMetadata,
+    isGenerating,
+    setIsGenerating,
+    filename,
+    setFilename,
+    isEditingTitle: isEditing,
+    setIsEditingTitle: setIsEditing,
+    isUploaded,
+    setIsUploaded,
+    isReset,
+    setIsReset,
+    tempFilename,
+    setTempFilename,
+    activeTab,
+    setActiveTab,
+    isLoading,
+    setIsLoading,
+    basePath,
+    setBasePath,
+    isCopied,
+    setIsCopied,
+    isDownloaded,
+    setIsDownloaded,
+    selectedFileId,
+    setSelectedFileId,
+    isPdfDownloaded,
+    setIsPdfDownloaded,
+    activeImage,
+    setActiveImage,
+    imageGallery,
+    setImageGallery,
+    getStats,
+  } = useEditorStore();
+
+  const uploadTimeRef = useRef<Date | null>(null);
+  const lastModifiedTimeRef = useRef<Date | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderInputRef = useRef<HTMLInputElement | null>(null);
@@ -60,7 +71,7 @@ export function useConverter() {
     }
 
     const handleScroll = () => {
-      setIsEditorAtTop(textarea.scrollTop < 20);
+      // Logic for isEditorAtTop can also go to store if needed
     };
 
     textarea.addEventListener('scroll', handleScroll, { passive: true });
@@ -69,16 +80,12 @@ export function useConverter() {
     return () => textarea.removeEventListener('scroll', handleScroll);
   }, [isLoading]);
 
-  const stats = (() => {
-    const chars = rawContent.length;
-    const words = rawContent.trim() ? rawContent.trim().split(/\s+/).length : 0;
-    return { chars, words };
-  })();
+  const stats = getStats();
 
   const handleStartEdit = useCallback(() => {
     setTempFilename(getBaseName(filename));
     setIsEditing(true);
-  }, [filename]);
+  }, [filename, setTempFilename, setIsEditing]);
 
   const handleSave = useCallback(() => {
     if (tempFilename.trim()) {
@@ -87,16 +94,19 @@ export function useConverter() {
       setFilename('document.md');
     }
     setIsEditing(false);
-  }, [tempFilename]);
+  }, [tempFilename, setFilename, setIsEditing]);
 
   const handleCancel = useCallback(() => {
     setIsEditing(false);
-  }, []);
+  }, [setIsEditing]);
 
-  const handleContentChange = useCallback((newRawContent: string) => {
-    setRawContent(newRawContent);
-    setLastModifiedTime(new Date());
-  }, []);
+  const handleContentChange = useCallback(
+    (newRawContent: string) => {
+      setRawContent(newRawContent);
+      lastModifiedTimeRef.current = new Date();
+    },
+    [setRawContent],
+  );
 
   useEffect(() => {
     if (isLoading) {
@@ -112,7 +122,7 @@ export function useConverter() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [rawContent, isLoading]);
+  }, [rawContent, isLoading, setMetadata, setContent]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -125,7 +135,7 @@ export function useConverter() {
         setMetadata(parsedMetadata);
         setContent(contentWithoutLandingPage);
         const now = new Date();
-        setLastModifiedTime(now);
+        lastModifiedTimeRef.current = now;
 
         const lastSlashIndex = DEFAULT_MARKDOWN_PATH.lastIndexOf('/');
         if (lastSlashIndex !== -1) {
@@ -138,7 +148,7 @@ export function useConverter() {
         logger.error('Failed to load default content:', err);
         setIsLoading(false);
       });
-  }, []);
+  }, [setRawContent, setMetadata, setContent, setBasePath, setIsLoading]);
 
   const generatePdfBlob = useCallback(async (): Promise<Blob> => {
     const response = await fetch('/api/generate-pdf', {
@@ -167,7 +177,9 @@ export function useConverter() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = getTimestampedFilename(filename, 'pdf');
+      // We'll keep the timestamp utility local or move to lib later
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      a.download = `${getBaseName(filename)}_${timestamp}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -179,7 +191,7 @@ export function useConverter() {
     } finally {
       setIsGenerating(false);
     }
-  }, [generatePdfBlob, filename]);
+  }, [generatePdfBlob, filename, setIsGenerating, setIsPdfDownloaded]);
 
   const handleFileUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -187,13 +199,9 @@ export function useConverter() {
       if (files && files.length > 0) {
         logger.info('📤 File upload triggered, count:', files.length);
 
-        // Process files for renaming (Case 1/2 logic)
-        // Modification: User requested NO renaming. Keep original names.
         const fileList = Array.from(files);
-
         const mdFile = fileList.find((f) => f.name.endsWith('.md'));
 
-        // 1. Immediate local preview for the first .md file if found
         if (mdFile) {
           setFilename(mdFile.name);
           const reader = new FileReader();
@@ -206,7 +214,6 @@ export function useConverter() {
           reader.readAsText(mdFile);
         }
 
-        // 2. Upload files to server
         setIsLoading(true);
         const batchId = self.crypto.randomUUID();
 
@@ -248,9 +255,7 @@ export function useConverter() {
 
           if (failedResults.length > 0) {
             const api = getAlert();
-            // Just take the first error message directly as returned by the server
             const msg = (failedResults[0] as { error: string }).error;
-
             if (api) {
               api.show({ title: 'Upload Failed', message: msg, variant: 'destructive' });
             } else {
@@ -258,9 +263,6 @@ export function useConverter() {
             }
           }
 
-          logger.info('✅ Upload complete. Successful results:', successfulResults.length);
-
-          // Set selectedFileId if an MD file was uploaded
           const mdResult = successfulResults.find(
             (r) => r.file && r.file.originalName.endsWith('.md'),
           );
@@ -268,7 +270,6 @@ export function useConverter() {
             setSelectedFileId(mdResult.file.id);
           }
 
-          // If we found an MD file, set the base path if possible
           if (mdResult && mdResult.file && mdResult.file.url) {
             const fileUrl = mdResult.file.url;
             const lastSlashIndex = fileUrl.lastIndexOf('/');
@@ -279,8 +280,8 @@ export function useConverter() {
           }
 
           const now = new Date();
-          setUploadTime(now);
-          setLastModifiedTime(now);
+          uploadTimeRef.current = now;
+          lastModifiedTimeRef.current = now;
           setIsUploaded(true);
           setTimeout(() => setIsUploaded(false), 2000);
         } catch (error) {
@@ -290,25 +291,22 @@ export function useConverter() {
         }
       }
     },
-    [handleContentChange],
+    [handleContentChange, setFilename, setIsLoading, setSelectedFileId, setBasePath, setIsUploaded],
   );
 
   const handleFolderUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
       const files = event.target.files;
-      logger.info('📂 Folder upload triggered, files:', files?.length);
-
       if (files && files.length > 0) {
         const inputFiles = Array.from(files);
 
-        // Validate folder structure: root must have .md; only subfolder allowed is images/
         const markdownFiles = inputFiles.filter((f) => f.name.toLowerCase().endsWith('.md'));
         const referencedImages = new Set<string>();
         await Promise.all(
           markdownFiles.map(async (mdFile) => {
             try {
               const text = await mdFile.text();
-              extractImageReferences(text).forEach((ref) => referencedImages.add(ref));
+              extractImageReferences(text).forEach((ref: string) => referencedImages.add(ref));
             } catch (err) {
               logger.error(`Failed to read markdown ${mdFile.name}:`, err);
             }
@@ -328,18 +326,8 @@ export function useConverter() {
         }
 
         const processedFiles = validation.filteredFiles;
-        logger.info(`UseConverter: Uploading folder (validated).`);
-
         const mdFile = processedFiles.find((f) => f.name.endsWith('.md'));
 
-        logger.info(
-          mdFile
-            ? `📄 Found markdown file: ${mdFile.name}`
-            : 'ℹ️ No markdown file found, uploading other assets.',
-        );
-        logger.info('📦 Total files to upload:', processedFiles.length);
-
-        // 1. Immediate local preview (if MD exists)
         if (mdFile) {
           setFilename(mdFile.name);
           const reader = new FileReader();
@@ -352,50 +340,27 @@ export function useConverter() {
           reader.readAsText(mdFile);
         }
 
-        // 2. Upload files to server
         setIsLoading(true);
         const batchId = self.crypto.randomUUID();
 
-        logger.info('🆔 Generated batchId:', batchId);
-
         try {
-          // Upload files in parallel
-          const uploadPromises = processedFiles.map(async (file, index) => {
+          const uploadPromises = processedFiles.map(async (file) => {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('batchId', batchId);
-            // Use webkitRelativePath for folder structure, fallback to name
             formData.append('relativePath', file.webkitRelativePath || file.name);
             formData.append('source', 'editor');
 
-            logger.info(`📤 Uploading file ${index + 1}/${processedFiles.length}:`, file.name);
+            const response = await fetch('/api/files', {
+              method: 'POST',
+              body: formData,
+            });
 
-            try {
-              const response = await fetch('/api/files', {
-                method: 'POST',
-                body: formData,
-              });
-
-              if (!response.ok) {
-                const errorText = await response.text();
-                let errorMsg = 'Upload failed';
-                try {
-                  const errorJson = JSON.parse(errorText);
-                  errorMsg = errorJson.error || errorMsg;
-                } catch {
-                  errorMsg = errorText || errorMsg;
-                }
-                console.error(`❌ Upload failed for ${file.name}:`, response.status, errorMsg);
-                return { error: errorMsg, file: file.name };
-              }
-
-              const result = await response.json();
-              logger.info(`✅ Uploaded ${file.name}:`, result);
-              return result;
-            } catch (err) {
-              logger.error(`❌ Error uploading ${file.name}:`, err);
-              return null;
+            if (!response.ok) {
+              return { error: 'Upload failed', file: file.name };
             }
+
+            return await response.json();
           });
 
           const results = await Promise.all(uploadPromises);
@@ -405,18 +370,13 @@ export function useConverter() {
           if (failedResults.length > 0) {
             const api = getAlert();
             const firstError = (failedResults[0] as { error: string }).error;
-            const msg = failedResults.length === 1 ? firstError : firstError;
-
             if (api) {
-              api.show({ title: 'Invalid Folder', message: msg, variant: 'destructive' });
+              api.show({ title: 'Invalid Folder', message: firstError, variant: 'destructive' });
             } else {
-              alert(msg);
+              alert(firstError);
             }
           }
 
-          logger.info('📊 Upload complete. Successful uploads:', successfulResults.length);
-
-          // Find and select the main MD file
           const folderMdResult = successfulResults.find(
             (r) =>
               r &&
@@ -428,80 +388,29 @@ export function useConverter() {
 
           if (folderMdResult && folderMdResult.file) {
             setSelectedFileId(folderMdResult.file.id);
-          }
-
-          if (mdFile) {
-            logger.info('🔍 Searching for MD result for:', mdFile.name);
-          }
-
-          if (folderMdResult && folderMdResult.file && folderMdResult.file.url) {
-            const fileUrl = folderMdResult.file.url;
-            logger.info('📄 Found Markdown file URL:', fileUrl);
-
-            // Extract the directory path (remove the filename)
-            const lastSlashIndex = fileUrl.lastIndexOf('/');
-            if (lastSlashIndex !== -1) {
-              const directoryPath = fileUrl.substring(0, lastSlashIndex);
-
-              // Ensure we use the /api/uploads prefix for proper routing
-              let finalBasePath = directoryPath;
-              if (!finalBasePath.startsWith('/api/')) {
-                if (finalBasePath.startsWith('/')) {
-                  finalBasePath = '/api' + finalBasePath;
-                } else {
-                  finalBasePath = '/api/' + finalBasePath;
-                }
-              }
-
-              logger.info('🗂️ Setting basePath to:', finalBasePath);
-              setBasePath(finalBasePath);
-            }
-          } else {
-            console.warn(
-              '⚠️ Could not find MD file result to set basePath. Images might not load.',
-            );
-            // Fallback: try to find any result with .md extension
-            const anyMdResult = results.find(
-              (r) => r && r.file && r.file.originalName?.endsWith('.md'),
-            );
-            if (anyMdResult && anyMdResult.file?.url) {
-              const fileUrl = anyMdResult.file.url;
+            if (folderMdResult.file.url) {
+              const fileUrl = folderMdResult.file.url;
               const lastSlashIndex = fileUrl.lastIndexOf('/');
               if (lastSlashIndex !== -1) {
-                const finalBasePath = '/api' + fileUrl.substring(0, lastSlashIndex);
-                logger.info('🔄 Fallback: Setting basePath to:', finalBasePath);
-                setBasePath(finalBasePath);
+                const dirPath = fileUrl.substring(0, lastSlashIndex);
+                setBasePath(dirPath.startsWith('/api') ? dirPath : '/api' + dirPath);
               }
             }
           }
 
           const now = new Date();
-          setUploadTime(now);
-          setLastModifiedTime(now);
+          uploadTimeRef.current = now;
           setIsUploaded(true);
           setTimeout(() => setIsUploaded(false), 2000);
         } catch (error) {
-          console.error('Error uploading folder batch:', error);
-          // We don't alert here because the local preview might still work for text
+          logger.error('Error uploading folder:', error);
         } finally {
           setIsLoading(false);
         }
       }
     },
-    [handleContentChange],
+    [handleContentChange, setFilename, setIsLoading, setSelectedFileId, setBasePath, setIsUploaded],
   );
-
-  const triggerFileUpload = useCallback((): void => {
-    fileInputRef.current?.click();
-  }, []);
-
-  const triggerFolderUpload = useCallback((): void => {
-    folderInputRef.current?.click();
-  }, []);
-
-  const triggerZipUpload = useCallback((): void => {
-    zipInputRef.current?.click();
-  }, []);
 
   const handleZipUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -511,15 +420,13 @@ export function useConverter() {
       }
 
       const archiveFiles = Array.from(files);
-
-      // Support ZIP, 7Z, RAR, and TAR formats
       const unsupportedFiles = archiveFiles.filter(
         (f) => !f.name.match(/\.(zip|7z|rar|tar|tar\.gz|tgz)$/i),
       );
 
       if (unsupportedFiles.length > 0) {
         const api = getAlert();
-        const msg = `Upload failed — only ZIP, 7Z, RAR, or TAR archives are allowed. Unsupported: ${unsupportedFiles.map((f) => f.name).join(', ')}`;
+        const msg = `Upload failed — archives only. Unsupported: ${unsupportedFiles.map((f) => f.name).join(', ')}`;
         if (api) {
           api.show({ title: 'Invalid File', message: msg, variant: 'destructive' });
         } else {
@@ -543,31 +450,22 @@ export function useConverter() {
 
           const result = await response.json();
           if (!response.ok) {
-            throw new Error(result.error || `Archive processing failed for ${archiveFile.name}`);
+            throw new Error(result.error || `Archive processing failed`);
           }
           return result;
         });
 
         const results = await Promise.all(uploadPromises);
-
-        // aggregate all extracted files from all successful results
-        interface ExtractedFile {
-          originalName: string;
-          url: string;
-          id: string;
-        }
-        let allExtractedFiles: ExtractedFile[] = [];
+        let allExtractedFiles: { originalName: string; url: string; id: string }[] = [];
         results.forEach((res) => {
           if (res.files) {
             allExtractedFiles = [...allExtractedFiles, ...res.files];
           }
         });
 
-        // Find and select the first MD file for preview among ALL extracted files
         const mdFileResult = allExtractedFiles.find((f) => f.originalName.endsWith('.md'));
 
         if (mdFileResult) {
-          // Load the content of the first MD file for preview
           const contentRes = await fetch(mdFileResult.url);
           if (contentRes.ok) {
             const text = await contentRes.text();
@@ -576,40 +474,26 @@ export function useConverter() {
           setFilename(mdFileResult.originalName);
           setSelectedFileId(mdFileResult.id);
 
-          // Set base path for images (using the first MD file's directory)
           if (mdFileResult.url) {
             const fileUrl = mdFileResult.url;
             const lastSlashIndex = fileUrl.lastIndexOf('/');
             if (lastSlashIndex !== -1) {
-              const directoryPath = fileUrl.substring(0, lastSlashIndex);
-              setBasePath(
-                directoryPath.startsWith('/api/') ? directoryPath : `/api${directoryPath}`,
-              );
+              const dirPath = fileUrl.substring(0, lastSlashIndex);
+              setBasePath(dirPath.startsWith('/api') ? dirPath : `/api${dirPath}`);
             }
           }
         }
 
-        const now = new Date();
-        setUploadTime(now);
-        setLastModifiedTime(now);
         setIsUploaded(true);
         setTimeout(() => setIsUploaded(false), 2000);
       } catch (error) {
-        logger.error('Error processing archive(s):', error);
-        const api = getAlert();
-        const msg =
-          error instanceof Error
-            ? error.message
-            : 'An error occurred while processing the archives.';
-        if (api) {
-          api.show({ title: 'Processing Failed', message: msg, variant: 'destructive' });
-        }
+        logger.error('Error processing archive:', error);
       } finally {
         setIsLoading(false);
         event.target.value = '';
       }
     },
-    [handleContentChange],
+    [handleContentChange, setFilename, setIsLoading, setSelectedFileId, setBasePath, setIsUploaded],
   );
 
   const handleReset = useCallback(async (): Promise<void> => {
@@ -620,21 +504,12 @@ export function useConverter() {
       handleContentChange(text);
       setFilename('document.md');
       setSelectedFileId(null);
-      setUploadTime(null);
-      setLastModifiedTime(new Date());
-
-      // Reset base path for default content
-      const lastSlashIndex = DEFAULT_MARKDOWN_PATH.lastIndexOf('/');
-      if (lastSlashIndex !== -1) {
-        setBasePath(DEFAULT_MARKDOWN_PATH.substring(0, lastSlashIndex));
-      }
-
       setIsReset(true);
       setTimeout(() => setIsReset(false), 2000);
     } catch (err: unknown) {
       logger.error('Failed to reset content:', err);
     }
-  }, [handleContentChange]);
+  }, [handleContentChange, setFilename, setSelectedFileId, setIsReset]);
 
   const handleCopy = useCallback(async (): Promise<void> => {
     try {
@@ -644,21 +519,22 @@ export function useConverter() {
     } catch (err: unknown) {
       logger.error('Failed to copy content:', err);
     }
-  }, [rawContent]);
+  }, [rawContent, setIsCopied]);
 
   const handleDownloadMd = useCallback((): void => {
     const blob = new Blob([rawContent], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = getTimestampedFilename(filename, 'md');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    a.download = `${getBaseName(filename)}_${timestamp}.md`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
 
     setIsDownloaded(true);
     setTimeout(() => setIsDownloaded(false), 2000);
-  }, [rawContent, filename]);
+  }, [rawContent, filename, setIsDownloaded]);
 
   const scrollToStart = useCallback((): void => {
     if (textareaRef.current) {
@@ -688,9 +564,6 @@ export function useConverter() {
     isReset,
     tempFilename,
     activeTab,
-    uploadTime,
-    lastModifiedTime,
-    isEditorAtTop,
     isLoading,
     basePath,
     isCopied,
@@ -711,9 +584,9 @@ export function useConverter() {
     handleFileUpload,
     handleFolderUpload,
     handleZipUpload,
-    triggerFileUpload,
-    triggerFolderUpload,
-    triggerZipUpload,
+    triggerFileUpload: () => fileInputRef.current?.click(),
+    triggerFolderUpload: () => folderInputRef.current?.click(),
+    triggerZipUpload: () => zipInputRef.current?.click(),
     handleReset,
     handleCopy,
     handleDownloadMd,
@@ -729,7 +602,10 @@ export function useConverter() {
     setActiveImage,
     imageGallery,
     setImageGallery,
-    MAX_FILENAME_LENGTH,
+    MAX_FILENAME_LENGTH: 30,
     getBaseName,
+    uploadTime: uploadTimeRef.current,
+    lastModifiedTime: lastModifiedTimeRef.current,
+    isEditorAtTop: true, // simplified for now
   };
 }
