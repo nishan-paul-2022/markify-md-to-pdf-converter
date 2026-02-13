@@ -585,16 +585,16 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             )}
           </div>
 
-          <div className="flex-grow bg-indigo-400/[0.03] border border-indigo-400/10 rounded-[2.5rem] p-4 flex flex-col overflow-hidden relative group/engine backdrop-blur-xl">
+          <div className="flex-grow bg-indigo-400/[0.03] border border-indigo-400/10 rounded-[1.5rem] pl-4 py-4 pr-0 flex flex-col overflow-hidden relative group/engine backdrop-blur-xl">
              <div className="absolute inset-0 bg-gradient-to-b from-indigo-400/[0.05] to-transparent pointer-events-none" />
-             <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-4 pr-1 relative z-10">
+             <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-4 pr-0 relative z-10">
               {!loading && filteredMdFiles.length > 0 ? (
                 filteredMdFiles.map((file, index) => (
                 <div 
                   key={file.id} 
                   style={{ animationDelay: `${index * 0.05}s` }}
                   className={cn(
-                    "bg-slate-900/40 border border-white/5 rounded-2xl p-4 hover:border-blue-500/30 transition-all group/card shadow-2xl relative overflow-hidden animate-card-in shrink-0",
+                    "bg-slate-900/40 border border-white/5 rounded-2xl p-4 hover:border-blue-500/30 transition-all group/card shadow-2xl relative overflow-hidden animate-card-in shrink-0 mr-4",
                     selectedFileIds.has(file.id) && "border-blue-500/50 bg-blue-500/[0.03]"
                   )}
                 >
@@ -685,7 +685,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                 </div>
               ))
             ) : (
-              <div className="flex-grow border border-dashed border-white/5 rounded-[2.5rem] flex flex-col items-center justify-center opacity-40">
+              <div className="flex-grow border border-dashed border-white/5 rounded-[1.5rem] flex flex-col items-center justify-center opacity-40 mr-4">
                 <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500/50">Awaiting Ingestion</p>
               </div>
             )}
@@ -712,15 +712,15 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             )}
           </div>
 
-          <div className="flex-grow bg-emerald-400/[0.03] border border-emerald-400/10 rounded-[2.5rem] backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col p-4 relative group/results">
+          <div className="flex-grow bg-emerald-400/[0.03] border border-emerald-400/10 rounded-[1.5rem] backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col pl-4 py-4 pr-0 relative group/results">
             <div className="absolute inset-0 bg-gradient-to-tr from-emerald-400/[0.05] to-transparent pointer-events-none" />
-            <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-3 pr-1 relative z-10">
+            <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-3 pr-0 relative z-10">
               {completedResults.length > 0 ? (
                 completedResults.map((file, idx) => (
                   <div 
                     key={file.id} 
                     style={{ animationDelay: `${idx * 0.05}s` }}
-                    className="bg-slate-950/40 border border-white/5 rounded-2xl p-4 flex items-center justify-between group/result hover:border-emerald-500/20 transition-all animate-card-in"
+                    className="bg-slate-950/40 border border-white/5 rounded-2xl p-4 flex items-center justify-between group/result hover:border-emerald-500/20 transition-all animate-card-in mr-4"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-emerald-500/5 flex items-center justify-center text-emerald-500/80 group-hover/result:scale-110 transition-transform">
@@ -749,7 +749,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             </div>
 
             {completedResults.length > 1 && (
-              <div className="mt-4 pt-4 border-t border-white/5">
+              <div className="mt-4 pt-4 border-t border-white/5 mr-4">
                 <Button 
                   onClick={() => completedResults.forEach(f => handleDownloadFile(f, 'pdf'))}
                   className="w-full h-12 bg-white text-slate-950 hover:bg-emerald-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all shadow-xl"

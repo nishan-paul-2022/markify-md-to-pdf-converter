@@ -131,8 +131,8 @@
     cursor: default;
   }
   .custom-scrollbar::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 6px;
+    height: 6px;
     cursor: default;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
@@ -141,7 +141,6 @@
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: var(--border);
     border-radius: 9999px;
-    border: 3px solid transparent; /* Increased padding for sleeker look */
     background-clip: padding-box;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
