@@ -122,23 +122,6 @@ export const FileRow: React.FC<FileRowProps> = ({
         </div>
 
         <div className="relative z-10 flex shrink-0 items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => onDownload(file, 'md')}
-                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all hover:bg-white/10 hover:text-white"
-              >
-                <Download className="h-4 w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent
-              side="top"
-              className="border-slate-800 bg-slate-900 text-xs text-slate-300"
-            >
-              Download Markdown
-            </TooltipContent>
-          </Tooltip>
-
           {!isSelectionMode && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -160,32 +143,35 @@ export const FileRow: React.FC<FileRowProps> = ({
 
           <div className="mx-1 h-6 w-px bg-white/5" />
 
-          <Button
-            size="sm"
-            onClick={() => onConvert(file)}
-            disabled={isProcessing || isSelectionMode}
-            className={cn(
-              'flex h-9 items-center gap-2 rounded-xl px-4 text-[10px] font-black tracking-wider uppercase transition-all active:scale-95',
-              processingState === 'done'
-                ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white'
-                : processingState === 'error'
-                  ? 'border border-red-500/20 bg-red-500/10 text-red-400'
-                  : 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-600',
-            )}
-          >
-            {isProcessing ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : processingState === 'done' ? (
+          {isDone ? (
+            <div className="flex h-9 items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 text-[10px] font-black tracking-wider text-emerald-500/60 uppercase whitespace-nowrap">
               <CheckCircle className="h-3.5 w-3.5" />
-            ) : processingState === 'error' ? (
-              <AlertCircle className="h-3.5 w-3.5" />
-            ) : (
-              <Zap className="h-3.5 w-3.5 fill-current" />
-            )}
-            <span>
-              {isProcessing ? 'Converting...' : processingState === 'done' ? 'Update' : 'Convert'}
-            </span>
-          </Button>
+              <span>Finished</span>
+            </div>
+          ) : (
+            <Button
+              size="sm"
+              onClick={() => onConvert(file)}
+              disabled={isProcessing || isSelectionMode}
+              className={cn(
+                'flex h-9 min-w-[100px] items-center gap-2 rounded-xl px-4 text-[10px] font-black tracking-wider uppercase transition-all active:scale-95',
+                isProcessing
+                  ? 'bg-amber-500/20 text-amber-500'
+                  : isError
+                    ? 'border border-red-500/20 bg-red-500/10 text-red-400'
+                    : 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-600',
+              )}
+            >
+              {isProcessing ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : isError ? (
+                <AlertCircle className="h-3.5 w-3.5" />
+              ) : (
+                <Zap className="h-3.5 w-3.5 fill-current" />
+              )}
+              <span>{isProcessing ? 'Converting' : isError ? 'Retry' : 'Convert'}</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -271,8 +257,9 @@ export const FileRow: React.FC<FileRowProps> = ({
           </div>
         </div>
 
-        {!isProcessing && (isDone || hasOutput) && (
-          <div className="relative z-10 shrink-0 pr-5">
+        {/* Action slot - Fixed width to prevent shifting */}
+        <div className="relative z-10 flex h-full w-[80px] shrink-0 items-center justify-center pr-5">
+          {!isProcessing && (isDone || hasOutput) && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -289,8 +276,8 @@ export const FileRow: React.FC<FileRowProps> = ({
                 Download PDF
               </TooltipContent>
             </Tooltip>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
