@@ -18,6 +18,16 @@ export function formatDateTime(date: Date | null): string {
   }).replace(',', '');
 }
 
+export function formatConverterDate(date: string | Date): string {
+  return new Date(date).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  }).toUpperCase();
+}
+
 /**
  * Formats file size in bytes to human-readable string (e.g., "1.5 MB").
  * 
@@ -25,9 +35,9 @@ export function formatDateTime(date: Date | null): string {
  * @returns Formatted size string
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) {return "0 Bytes"}
-  const k = 1024
-  const sizes = ["Bytes", "KB", "MB", "GB"]
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i]
+  if (bytes === 0) { return '0 B'; }
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
