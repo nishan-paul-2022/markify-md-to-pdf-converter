@@ -620,7 +620,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       <div className="relative z-10 flex-grow overflow-hidden flex flex-row p-6 gap-6">
         
         {/* SEGMENT 1: SOURCE (Upload Hub) */}
-        <section className="w-[300px] h-full flex flex-col gap-4 shrink-0">
+        <section className="w-[260px] h-full flex flex-col gap-4 shrink-0">
           <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] text-amber-400/80 h-11 flex-none">
             <div className="flex items-center gap-2">
               <Upload className="w-3.5 h-3.5" />
@@ -678,8 +678,8 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         {/* INTEGRATED PIPELINE: PROCESSING (Cause) & RESULTS (Effect) */}
         <section className="flex-grow h-full flex flex-col gap-4 overflow-hidden">
           {/* Unified Header */}
-          <div className="flex items-center justify-between px-2 text-xs font-black uppercase tracking-[0.2em] h-11 flex-none">
-            <div className="flex items-center gap-6 flex-nowrap">
+          <div className="flex items-center justify-between px-4 text-xs font-black uppercase tracking-[0.2em] h-11 flex-none">
+            <div className="flex items-center gap-10 flex-nowrap">
               <div className="flex items-center gap-2 text-indigo-400/80 whitespace-nowrap">
                 <Layers className="w-3.5 h-3.5" />
                 <div className="flex items-baseline gap-2">
@@ -689,8 +689,6 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                   )}
                 </div>
               </div>
-
-
 
               <div className="flex items-center gap-2 text-emerald-400/80 whitespace-nowrap">
                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1071,7 +1069,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
                         {/* THE EFFECT: Output Result Card */}
                         <div className={cn(
-                          "w-[340px] flex items-center justify-between border rounded-3xl p-5 transition-all duration-700 relative overflow-hidden group/result shadow-xl shrink-0 h-[88px]",
+                          "w-[440px] flex items-center justify-between border rounded-3xl p-5 transition-all duration-700 relative overflow-hidden group/result shadow-xl shrink-0 h-[88px]",
                           hasOutput 
                             ? "bg-emerald-400/[0.04] border-emerald-400/20 hover:border-emerald-400/40 opacity-100" 
                             : "bg-slate-950/20 border-white/5 opacity-40 group-hover/row:opacity-60 grayscale"
