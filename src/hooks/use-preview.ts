@@ -227,6 +227,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
       }, 100);
       return () => clearTimeout(timer);
     }
+    return;
   }, [totalPages, viewMode, currentPage, scrollToPage, isPdfReady]);
 
   const calculateScale = useCallback(() => {

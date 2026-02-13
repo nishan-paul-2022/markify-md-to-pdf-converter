@@ -53,7 +53,7 @@ const PdfViewer = React.memo(function PdfViewer({
       className="flex flex-col gap-4"
       loading={null} // Handle loading in parent for better control
     >
-      {Array.from(new Array(numPages), (el, index) => (
+      {Array.from(new Array(numPages), (_el, index) => (
         <div
           key={`page_${index + 1}`}
           data-page-index={index}

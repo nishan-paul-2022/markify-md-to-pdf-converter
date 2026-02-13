@@ -8,7 +8,7 @@ import { lookup } from 'mime-types';
 import { join } from 'path';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },
 ): Promise<NextResponse> {
   const { path: routePath } = await params;
