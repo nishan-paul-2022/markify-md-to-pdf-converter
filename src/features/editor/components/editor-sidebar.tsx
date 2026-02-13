@@ -13,7 +13,6 @@ import {
   ListChecks, 
   PanelLeftClose, 
   RefreshCw, 
-  Search, 
   Trash2, 
   X 
 } from 'lucide-react';
@@ -24,7 +23,6 @@ interface EditorSidebarProps {
   isSelectionMode: boolean;
   setIsSelectionMode: (mode: boolean) => void;
   searchQuery: string;
-  setSearchQuery: (query: string) => void;
   filesLoading: boolean;
   refreshFiles: () => Promise<void>;
   fileTree: FileTreeNode[];
@@ -47,7 +45,6 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
   isSelectionMode,
   setIsSelectionMode,
   searchQuery,
-  setSearchQuery,
   filesLoading,
   refreshFiles,
   fileTree,
@@ -131,27 +128,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
         </div>
       </div>
 
-      <div className="p-3">
-        <div className="group relative">
-          <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-slate-200" />
-          <input
-            type="text"
-            placeholder="Search files"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-md border border-white/5 bg-slate-950/50 py-1.5 pr-10 pl-8 text-xs transition-all placeholder:text-slate-600 focus:border-white/10 focus:bg-slate-950 focus:outline-none"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="group absolute top-1/2 right-1.5 -translate-y-1/2 cursor-pointer rounded-full p-2 text-slate-500 transition-all hover:bg-white/10 hover:text-slate-200"
-              aria-label="Clear search"
-            >
-              <X className="h-3.5 w-3.5 transition-transform group-hover:scale-110" />
-            </button>
-          )}
-        </div>
-      </div>
+
 
       {/* Selection Toolbar - Replacing Default Items Area */}
       {isSelectionMode && (

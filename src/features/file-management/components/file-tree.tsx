@@ -90,43 +90,83 @@ export function FileTree({
     return initial;
   });
 
-  // Auto-expand folders based on search query
+  // Helper to check if a node matches (recursive)
+  const doesNodeMatch = React.useCallback((node: FileTreeNode, query: string): boolean => {
+    // 1. Strict Exclusion Rules (Always apply if query is present)
+    if (query) {
+      // Exclude 'images' folder and its contents
+      if (node.name === 'images' && node.type === 'folder') return false;
+      
+      // Exclude image files (by mimeType or extension)
+      if (node.type === 'file') {
+        if (node.file?.mimeType?.startsWith('image/')) return false;
+        if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(node.name)) return false;
+      }
+
+
+    } else {
+      // If no query, we generally show everything, 
+      // BUT if we wanted to enforce "searching is only for files", matches are irrelevant.
+      // However, doesNodeMatch is usually called when query exists.
+      return true;
+    }
+
+    // 2. Match Logic
+    const nameMatch = node.name.toLowerCase().includes(query.toLowerCase());
+    
+    // If it's a file, it must match name
+    if (node.type === 'file') {
+      return nameMatch;
+    }
+
+    // If it's a folder, it matches if:
+    // a) The folder name matches (User said "searching is only for files", but usually context helps. 
+    //    However, strict filtering "others hidden" implies looking for content.
+    //    Let's keep folder name matching effectively "expanding" it, but we need to see if children match.
+    //    If we assume "searching is only for files", maybe we ONLY return true if CHILDREN match?
+    //    "searching is only for files" -> strongly implies folder names shouldn't trigger a match unless content matches.
+    //    Let's try: Match if children match. OR if name matches? 
+    //    Let's stick to: Match if children match OR name matches (standard tree search).
+    
+    // Check children recursively
+    const childrenMatch = node.children?.some(child => doesNodeMatch(child, query)) ?? false;
+    
+    return nameMatch || childrenMatch;
+  }, []);
+
+  const filteredNodes = React.useMemo(() => {
+    if (!searchQuery) return nodes;
+    return nodes.filter(node => doesNodeMatch(node, searchQuery));
+  }, [nodes, searchQuery, doesNodeMatch]);
+
+  // Optimize expansion: Only calculate when searchQuery really changes
   React.useEffect(() => {
-    if (searchQuery) {
-      const foldersToExpand = new Set<string>();
+    if (!searchQuery) {
+      setExpandedFolders(new Set());
+      return;
+    }
 
-      const checkNode = (node: FileTreeNode): boolean => {
-        const nameMatch = node.name.toLowerCase().includes(searchQuery.toLowerCase());
-
-        if (node.type === 'file') {
-          return nameMatch;
-        }
-
-        // For folders, check if name matches or any children match
-        let childrenMatch = false;
-        if (node.children) {
-          for (const child of node.children) {
-            if (checkNode(child)) {
-              childrenMatch = true;
+    const newExpanded = new Set<string>();
+    
+    const collectExpanded = (nodes: FileTreeNode[]) => {
+      for (const node of nodes) {
+        // We only care about folders
+        if (node.type === 'folder') {
+          // If this node matches (meaning it contains matching files or matches itself), expand it
+          if (doesNodeMatch(node, searchQuery)) {
+            newExpanded.add(node.id);
+            // Recurse
+            if (node.children) {
+              collectExpanded(node.children);
             }
           }
         }
+      }
+    };
 
-        // Expand if folder itself matches or contains matching items
-        if (nameMatch || childrenMatch) {
-          foldersToExpand.add(node.id);
-          return true; // Return true to propagate up to parent
-        }
-
-        return false;
-      };
-
-      nodes.forEach(checkNode);
-      setExpandedFolders(foldersToExpand);
-    } else {
-      setExpandedFolders(new Set());
-    }
-  }, [searchQuery, nodes]);
+    collectExpanded(nodes);
+    setExpandedFolders(newExpanded);
+  }, [searchQuery, nodes, doesNodeMatch]);
 
   const toggleFolderGridMode = (id: string) => {
     setFolderGridModes((prev) => {
@@ -308,12 +348,15 @@ export function FileTree({
 
   return (
     <div className="flex flex-col">
-      {nodes.map((node) => {
+      {filteredNodes.map((node) => {
         const isExpanded = expandedFolders.has(node.id);
         const isSelected = selectedFileId === node.id;
         const isFolderActive = containsSelectedFile(node, selectedFileId);
         const isCurrentlyRenaming = renamingId === node.id;
         const isGridMode = node.name === 'images' && folderGridModes.has(node.id);
+        
+        // Pass strict searchQuery down to children to enforce hidden state
+        const childSearchQuery = searchQuery; 
 
         if (node.type === 'folder') {
           const folderFileIds = collectFileIds(node);
@@ -474,6 +517,13 @@ export function FileTree({
                           /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(child.name));
                       const isChildSelected = selectedFileId === child.id;
 
+                      // During search, images are hidden via logic, but we must check if this map needs filter
+                      // If we are in grid mode and searching, doesNodeMatch handles it in parent filter, 
+                      // but 'nodes.map' inside here is iterating raw children? 
+                      // NO, 'node' comes from 'filteredNodes', but 'node.children' is raw.
+                      // We must filter children here too if we want strict grid view filtering.
+                      if (searchQuery && !doesNodeMatch(child, searchQuery)) return null;
+
                       return (
                         <button
                           key={child.id}
@@ -521,7 +571,7 @@ export function FileTree({
                       selectedFileId={selectedFileId}
                       isSelectionMode={isSelectionMode}
                       selectedIds={selectedIds}
-                      searchQuery={searchQuery}
+                      searchQuery={childSearchQuery}
                       onToggleSelection={onToggleSelection}
                     />
                   )}
