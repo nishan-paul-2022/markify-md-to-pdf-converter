@@ -333,6 +333,8 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       },
     })
 
+    const { unlink } = await import("fs/promises")
+    
     // Delete files from disk
     const deletePromises = files.map(async (file) => {
       try {
@@ -343,7 +345,6 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       }
     })
 
-    const { unlink } = await import("fs/promises")
     await Promise.all(deletePromises)
 
     // Delete records from database

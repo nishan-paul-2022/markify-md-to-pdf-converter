@@ -1008,35 +1008,51 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                               <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">Delete source file</TooltipContent>
                             </Tooltip>
 
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  size="sm"
-                                  onClick={() => handleConvertFile(file)}
-                                  disabled={isProcessing}
-                                  className={cn(
-                                    "h-11 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-5 gap-2 active:scale-95 transition-all outline-none border-none",
-                                    hasOutput 
-                                      ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" 
-                                      : isProcessing
+                            {hasOutput ? (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    size="sm"
+                                    disabled
+                                    className="h-11 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-5 gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-default opacity-100"
+                                  >
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <span>Converted</span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
+                                  File has been converted to PDF
+                                </TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    size="sm"
+                                    onClick={() => handleConvertFile(file)}
+                                    disabled={isProcessing}
+                                    className={cn(
+                                      "h-11 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-5 gap-2 active:scale-95 transition-all outline-none border-none",
+                                      isProcessing
                                         ? "bg-indigo-600 text-white cursor-wait"
                                         : "bg-white text-slate-950 hover:bg-indigo-500 hover:text-white shadow-lg"
-                                  )}
-                                >
-                                  {isProcessing ? (
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                  ) : (
-                                    <Zap className={cn("w-3.5 h-3.5", !hasOutput && "fill-current")} />
-                                  )}
-                                  <span>
-                                    {isProcessing ? 'Processing...' : hasOutput ? 'Re-Convert' : 'Convert'}
-                                  </span>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
-                                {hasOutput ? 'Re-run PDF generation' : 'Start PDF conversion'}
-                              </TooltipContent>
-                            </Tooltip>
+                                    )}
+                                  >
+                                    {isProcessing ? (
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : (
+                                      <Zap className="w-3.5 h-3.5 fill-current" />
+                                    )}
+                                    <span>
+                                      {isProcessing ? 'Processing...' : 'Convert'}
+                                    </span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" className="bg-slate-900 border-slate-800 text-xs">
+                                  Start PDF conversion
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
                           </div>
 
                           {/* Individual Progress Bar */}
