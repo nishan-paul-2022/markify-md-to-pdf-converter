@@ -1,6 +1,14 @@
+import { Metadata } from "next";
 import { auth } from "@/lib/auth";
+
 import { redirect } from "next/navigation";
 import ConverterLoader from "@/components/converter/ConverterLoader";
+    
+export const metadata: Metadata = {
+  title: "Markify - Editor",
+  description: "Craft pixel-perfect Markdown documents",
+};
+
 
 export default async function EditorPage(): Promise<React.JSX.Element> {
   const session = await auth();
