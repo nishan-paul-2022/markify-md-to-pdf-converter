@@ -2,10 +2,11 @@ import { useCallback, useRef,useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { getAlert } from "@/components/AlertProvider";
+import { logger } from "@/lib/logger";
 import { extractImageReferences,validateUploadStructure } from "@/lib/services/upload-validator";
 
 const processFilesWithNaming = (filesToProcess: File[], uploadCase: number): File[] => {
-  console.log(`UseUpload: Processing ${filesToProcess.length} files for Case ${uploadCase}`);
+  logger.info(`UseUpload: Processing ${filesToProcess.length} files for Case ${uploadCase}`);
   return filesToProcess;
 };
 
@@ -19,7 +20,7 @@ export function useUpload() {
   const folderInputRef = useRef<HTMLInputElement | null>(null);
 
   const processUploadedFiles = useCallback(async (inputFiles: File[]) => {
-      console.log(`📦 Processing ${inputFiles.length} files...`);
+      logger.info(`📦 Processing ${inputFiles.length} files...`);
 
       // First, identify all markdown files to extract references in parallel
       const markdownFiles = inputFiles.filter(f => f.name.toLowerCase().endsWith('.md'));
@@ -31,11 +32,11 @@ export function useUpload() {
           const refs = extractImageReferences(content);
           refs.forEach(ref => referencedImages.add(ref));
         } catch (err) {
-          console.error(`Failed to read markdown ${mdFile.name}:`, err);
+          logger.error(`Failed to read markdown ${mdFile.name}:`, err);
         }
       }));
 
-      console.log(`🔍 Found ${referencedImages.size} unique image references in markdown.`);
+      logger.info(`🔍 Found ${referencedImages.size} unique image references in markdown.`);
 
       // Now validate and filter using the consolidated logic
       const validation = validateUploadStructure(inputFiles, referencedImages);
@@ -124,7 +125,7 @@ export function useUpload() {
       setUploadProgress(0);
       router.refresh();
     } catch (error: unknown) {
-      console.error("Upload error:", error);
+      logger.error("Upload error:", error);
       const msg = error instanceof Error ? error.message : "Failed to upload files";
       const api = getAlert();
       if (api) {

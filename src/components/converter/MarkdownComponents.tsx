@@ -1,6 +1,7 @@
 import React from 'react';
 
 import MermaidDiagram from '@/components/converter/MermaidDiagram';
+import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 
 interface MarkdownComponentsProps {
@@ -101,7 +102,7 @@ export const createMarkdownComponents = ({ basePath }: MarkdownComponentsProps) 
       imageSrc = cleanBasePath + imageSrc;
     }
 
-    console.log('🖼️ Image resolution:', { originalSrc, basePath, resolvedSrc: imageSrc });
+    logger.debug('🖼️ Image resolution:', { originalSrc, basePath, resolvedSrc: imageSrc });
 
     return (
       /* eslint-disable-next-line @next/next/no-img-element */

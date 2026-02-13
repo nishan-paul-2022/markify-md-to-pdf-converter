@@ -72,7 +72,7 @@ export default tsEslint.config(
       "@next/next/no-html-link-for-pages": "error",
 
       // --- General Code Quality ---
-      "no-console": ["error", { allow: ["warn", "error", "info"] }],
+      "no-console": ["error", { allow: ["warn", "error", "info", "debug"] }],
       "no-debugger": "error",
       "prefer-const": "error",
       "no-var": "error",

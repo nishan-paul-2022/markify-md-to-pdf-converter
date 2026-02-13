@@ -16,10 +16,11 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
 
   files.forEach((file) => {
     const batchId = file.batchId || 'no-batch';
+    const group = batchGroups.get(batchId) || [];
     if (!batchGroups.has(batchId)) {
-      batchGroups.set(batchId, []);
+      batchGroups.set(batchId, group);
     }
-    batchGroups.get(batchId)!.push(file);
+    group.push(file);
   });
 
   const root: FileTreeNode[] = [];

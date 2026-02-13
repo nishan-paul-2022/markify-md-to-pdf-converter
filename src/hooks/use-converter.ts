@@ -4,7 +4,8 @@ import { getAlert } from '@/components/AlertProvider';
 import type { Metadata} from '@/constants/default-content';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA,parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
 import type { File as AppFile } from '@/hooks/use-files';
-import { extractImageReferences,validateUploadStructure } from '@/lib/services/upload-validator';
+import { logger } from '@/lib/logger';
+import { extractImageReferences, validateUploadStructure } from '@/lib/services/upload-validator';
 import { addTimestampToName, generateStandardName } from '@/lib/utils/naming';
 
 const MAX_FILENAME_LENGTH = 30;
@@ -125,7 +126,7 @@ export function useConverter() {
         setIsLoading(false);
       })
       .catch((err: unknown) => {
-        console.error('Failed to load default content:', err);
+        logger.error('Failed to load default content:', err);
         setIsLoading(false);
       });
   }, []);
@@ -165,7 +166,7 @@ export function useConverter() {
       setIsPdfDownloaded(true);
       setTimeout(() => setIsPdfDownloaded(false), 2000);
     } catch (error: unknown) {
-      console.error('Error downloading PDF:', error);
+      logger.error('Error downloading PDF:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -174,7 +175,7 @@ export function useConverter() {
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      console.log('📤 File upload triggered, count:', files.length);
+      logger.info('📤 File upload triggered, count:', files.length);
 
       // Process files for renaming (Case 1/2 logic)
       // Modification: User requested NO renaming. Keep original names.
@@ -221,7 +222,7 @@ export function useConverter() {
             } catch {
               errorMsg = errorText || errorMsg;
             }
-            console.error(`❌ Upload failed for ${file.name}:`, response.status, errorMsg);
+            logger.error(`❌ Upload failed for ${file.name}:`, { status: response.status, message: errorMsg });
             return { error: errorMsg, file: file.name };
           }
 
@@ -244,7 +245,7 @@ export function useConverter() {
           }
         }
 
-        console.log('✅ Upload complete. Successful results:', successfulResults.length);
+        logger.info('✅ Upload complete. Successful results:', successfulResults.length);
 
         // Set selectedFileId if an MD file was uploaded
         const mdResult = successfulResults.find(r => r.file && r.file.originalName.endsWith('.md'));
@@ -268,7 +269,7 @@ export function useConverter() {
         setIsUploaded(true);
         setTimeout(() => setIsUploaded(false), 2000);
       } catch (error) {
-        console.error("Error uploading files:", error);
+        logger.error("Error uploading files:", error);
       } finally {
         setIsLoading(false);
       }
@@ -277,7 +278,7 @@ export function useConverter() {
 
   const handleFolderUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const files = event.target.files;
-    console.log('📂 Folder upload triggered, files:', files?.length);
+    logger.info('📂 Folder upload triggered, files:', files?.length);
 
     if (files && files.length > 0) {
       const inputFiles = Array.from(files);
@@ -290,7 +291,7 @@ export function useConverter() {
           const text = await mdFile.text();
           extractImageReferences(text).forEach(ref => referencedImages.add(ref));
         } catch (err) {
-          console.error(`Failed to read markdown ${mdFile.name}:`, err);
+          logger.error(`Failed to read markdown ${mdFile.name}:`, err);
         }
       }));
       const validation = validateUploadStructure(inputFiles, referencedImages);
@@ -307,12 +308,12 @@ export function useConverter() {
       }
 
       const processedFiles = validation.filteredFiles;
-      console.log(`UseConverter: Uploading folder (validated).`);
+      logger.info(`UseConverter: Uploading folder (validated).`);
 
       const mdFile = processedFiles.find(f => f.name.endsWith('.md'));
 
-      console.log(mdFile ? `📄 Found markdown file: ${mdFile.name}` : 'ℹ️ No markdown file found, uploading other assets.');
-      console.log('📦 Total files to upload:', processedFiles.length);
+      logger.info(mdFile ? `📄 Found markdown file: ${mdFile.name}` : 'ℹ️ No markdown file found, uploading other assets.');
+      logger.info('📦 Total files to upload:', processedFiles.length);
 
       // 1. Immediate local preview (if MD exists)
       if (mdFile) {
@@ -331,7 +332,7 @@ export function useConverter() {
       setIsLoading(true);
       const batchId = self.crypto.randomUUID();
 
-      console.log('🆔 Generated batchId:', batchId);
+      logger.info('🆔 Generated batchId:', batchId);
 
       try {
         // Upload files in parallel
@@ -343,7 +344,7 @@ export function useConverter() {
           formData.append('relativePath', file.webkitRelativePath || file.name);
           formData.append('source', 'editor');
 
-          console.log(`📤 Uploading file ${index + 1}/${processedFiles.length}:`, file.name);
+          logger.info(`📤 Uploading file ${index + 1}/${processedFiles.length}:`, file.name);
 
           try {
             const response = await fetch('/api/files', {
@@ -365,10 +366,10 @@ export function useConverter() {
             }
 
             const result = await response.json();
-            console.log(`✅ Uploaded ${file.name}:`, result);
+            logger.info(`✅ Uploaded ${file.name}:`, result);
             return result;
           } catch (err) {
-            console.error(`❌ Error uploading ${file.name}:`, err);
+            logger.error(`❌ Error uploading ${file.name}:`, err);
             return null;
           }
         });
@@ -391,7 +392,7 @@ export function useConverter() {
           }
         }
 
-        console.log('📊 Upload complete. Successful uploads:', successfulResults.length);
+        logger.info('📊 Upload complete. Successful uploads:', successfulResults.length);
 
         // Find and select the main MD file
         const folderMdResult = successfulResults.find(r =>
@@ -406,12 +407,12 @@ export function useConverter() {
         }
 
         if (mdFile) {
-          console.log('🔍 Searching for MD result for:', mdFile.name);
+          logger.info('🔍 Searching for MD result for:', mdFile.name);
         }
 
         if (folderMdResult && folderMdResult.file && folderMdResult.file.url) {
             const fileUrl = folderMdResult.file.url;
-            console.log('📄 Found Markdown file URL:', fileUrl);
+            logger.info('📄 Found Markdown file URL:', fileUrl);
 
             // Extract the directory path (remove the filename)
             const lastSlashIndex = fileUrl.lastIndexOf('/');
@@ -428,7 +429,7 @@ export function useConverter() {
                 }
               }
 
-              console.log('🗂️ Setting basePath to:', finalBasePath);
+              logger.info('🗂️ Setting basePath to:', finalBasePath);
               setBasePath(finalBasePath);
             }
         } else {
@@ -440,7 +441,7 @@ export function useConverter() {
             const lastSlashIndex = fileUrl.lastIndexOf('/');
             if (lastSlashIndex !== -1) {
               const finalBasePath = '/api' + fileUrl.substring(0, lastSlashIndex);
-              console.log('🔄 Fallback: Setting basePath to:', finalBasePath);
+              logger.info('🔄 Fallback: Setting basePath to:', finalBasePath);
               setBasePath(finalBasePath);
             }
           }
@@ -557,7 +558,7 @@ export function useConverter() {
         setIsUploaded(true);
         setTimeout(() => setIsUploaded(false), 2000);
       } catch (error) {
-        console.error("Error processing archive(s):", error);
+        logger.error("Error processing archive(s):", error);
         const api = getAlert();
         const msg = error instanceof Error ? error.message : 'An error occurred while processing the archives.';
         if (api) {
@@ -589,7 +590,7 @@ export function useConverter() {
       setIsReset(true);
       setTimeout(() => setIsReset(false), 2000);
     } catch (err: unknown) {
-      console.error('Failed to reset content:', err);
+      logger.error('Failed to reset content:', err);
     }
   }, [handleContentChange]);
 
@@ -599,7 +600,7 @@ export function useConverter() {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err: unknown) {
-      console.error('Failed to copy content:', err);
+      logger.error('Failed to copy content:', err);
     }
   }, [rawContent]);
 

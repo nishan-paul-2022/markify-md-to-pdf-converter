@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 import fs from 'fs';
 import path from 'path';
 import { chromium } from 'playwright';
@@ -24,18 +26,18 @@ export interface Metadata {
 export async function generatePdf(markdownHtml: string, metadata: Metadata): Promise<Buffer> {
   let browser;
   try {
-    console.log('🚀 Starting PDF generation...');
+    logger.info('🚀 Starting PDF generation...');
     browser = await chromium.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
-    console.log('✅ Browser launched successfully');
+    logger.info('✅ Browser launched successfully');
 
     const page = await browser.newPage();
 
     // Capture browser console logs for debugging
-    page.on('console', msg => console.log('Browser console:', msg.text()));
-    page.on('pageerror', error => console.error('Browser page error:', error));
+    page.on('console', msg => logger.debug('Browser console:', msg.text()));
+    page.on('pageerror', error => logger.error('Browser page error:', error));
 
     // Load images as base64
     const logoPath = path.join(process.cwd(), 'public', 'university-logo.png');
@@ -48,10 +50,10 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
       logoBase64 = fs.readFileSync(logoPath).toString('base64');
       bgBase64 = fs.readFileSync(bgPath).toString('base64');
     } catch (err: unknown) {
-      console.error('Error reading images:', err);
+      logger.error('Error reading images:', err);
     }
 
-    const hasMetadata = metadata && Object.keys(metadata).length > 0;
+    const hasMetadata = Object.keys(metadata).length > 0;
 
     // Exact same styling as PageTemplates.tsx but in CSS
     const style = `
@@ -693,11 +695,11 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
       </html>
     `;
 
-    console.log('📄 Setting page content...');
+    logger.info('📄 Setting page content...');
     await page.setContent(html, { waitUntil: 'networkidle' });
     await page.waitForTimeout(1000);
 
-    console.log('🖨️ Generating PDF...');
+    logger.info('🖨️ Generating PDF...');
     const pdf = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -710,15 +712,15 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
         </div>`
     });
 
-    console.log('✅ PDF generated successfully');
+    logger.info('✅ PDF generated successfully');
     return pdf;
   } catch (error) {
-    console.error('❌ Error in PDF generation:', error);
+    logger.error('❌ Error in PDF generation:', error);
     throw error;
   } finally {
     if (browser) {
       await browser.close();
-      console.log('🔒 Browser closed');
+      logger.info('🔒 Browser closed');
     }
   }
 }

@@ -2,6 +2,7 @@ import { useCallback,useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { getAlert } from "@/components/AlertProvider";
+import { logger } from "@/lib/logger";
 
 export interface File {
   id: string;
@@ -53,11 +54,11 @@ export function useFiles(source?: string) {
       }
 
       const data: FileListResponse = await response.json();
-      console.log(`📂 Fetched ${data.files.length} files from API (source: ${source || 'all'})`);
+      logger.info(`📂 Fetched ${data.files.length} files from API (source: ${source || 'all'})`);
 
       setFiles(data.files);
     } catch (error: unknown) {
-      console.error("Error fetching files:", error);
+      logger.error("Error fetching files:", error);
       setFiles([]);
     } finally {
       setLoading(false);
@@ -65,7 +66,7 @@ export function useFiles(source?: string) {
   }, [source]);
 
   useEffect(() => {
-    fetchFiles();
+    void fetchFiles();
   }, [fetchFiles]);
 
   const handleDelete = useCallback(async (id: string): Promise<void> => {
@@ -83,7 +84,7 @@ export function useFiles(source?: string) {
       setFiles((prev) => prev.filter((file) => file.id !== id));
       router.refresh();
     } catch (error: unknown) {
-      console.error("Delete error:", error);
+      logger.error("Delete error:", error);
       const msg = error instanceof Error ? error.message : "Failed to delete file";
       const api = getAlert();
       if (api) {
@@ -113,7 +114,7 @@ export function useFiles(source?: string) {
       setFiles((prev) => prev.filter((file) => !ids.includes(file.id)));
       router.refresh();
     } catch (error: unknown) {
-      console.error("Bulk delete error:", error);
+      logger.error("Bulk delete error:", error);
       const msg = error instanceof Error ? error.message : "Failed to delete files";
       const api = getAlert();
       if (api) {
@@ -148,7 +149,7 @@ export function useFiles(source?: string) {
       await fetchFiles();
       router.refresh();
     } catch (error: unknown) {
-      console.error("Rename error:", error);
+      logger.error("Rename error:", error);
       const msg = error instanceof Error ? error.message : "Failed to rename";
       const api = getAlert();
       if (api) {
