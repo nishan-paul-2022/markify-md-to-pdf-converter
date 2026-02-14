@@ -100,22 +100,25 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
           </DropdownMenuLabel>
 
           <DropdownMenuSeparator className="mx-1 bg-white/5" />
-          <div className="py-1">
+          <div className="p-1">
             <DropdownMenuItem
-              className="cursor-pointer rounded-lg px-3 py-3 text-red-500/80 transition-colors focus:bg-red-500/10 focus:text-red-500"
+              className="cursor-pointer rounded-lg px-3 py-3 text-slate-300 transition-colors focus:bg-white/5 focus:text-white"
               onClick={async () => {
                 await signOut({ callbackUrl: '/' });
               }}
             >
-              <LogOut className="mr-3 h-4 w-4" />
+              <LogOut className="mr-3 h-4 w-4 text-slate-500" />
               <span className="text-xs font-black tracking-[0.15em] uppercase">Log out</span>
             </DropdownMenuItem>
+          </div>
 
+          <DropdownMenuSeparator className="mx-1 bg-white/5" />
+          <div className="p-1">
             <DropdownMenuItem
-              className="mt-1 cursor-pointer rounded-lg px-3 py-3 text-red-600/60 transition-colors focus:bg-red-600/20 focus:text-red-500"
+              className="group cursor-pointer rounded-lg px-3 py-3 text-red-500/60 transition-colors focus:bg-red-500/10 focus:text-red-500"
               onClick={() => setShowDeleteConfirm(true)}
             >
-              <Trash2 className="mr-3 h-4 w-4" />
+              <Trash2 className="mr-3 h-4 w-4 text-red-500/40 transition-colors group-hover:text-red-500" />
               <span className="text-xs font-black tracking-[0.15em] uppercase">Delete account</span>
             </DropdownMenuItem>
           </div>
