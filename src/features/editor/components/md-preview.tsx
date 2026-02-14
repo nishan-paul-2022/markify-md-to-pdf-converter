@@ -143,7 +143,7 @@ const MdPreview = React.memo(
           <div
             ref={containerRef}
             className={cn(
-              'custom-scrollbar relative flex flex-grow justify-center overflow-x-auto overflow-y-scroll bg-slate-900/40',
+              'custom-scrollbar relative flex flex-grow justify-center overflow-x-auto overflow-y-auto bg-slate-900/40',
               previewState.zoomMode === 'fit-width' ? 'p-0' : 'p-4',
             )}
           >

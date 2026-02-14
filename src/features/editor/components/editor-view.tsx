@@ -110,10 +110,20 @@ export default function EditorView({
   } = useConverter(files, handleFileDelete);
 
   const fileTree = React.useMemo(() => buildFileTree(files), [files]);
+  
+  // Prevent page-level scrolling (Guidelines 1 & 4)
+  React.useEffect(() => {
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   return (
     <TooltipProvider delayDuration={0}>
-      <main className="selection:bg-primary/20 flex min-h-screen flex-col overflow-hidden bg-slate-900 font-sans text-slate-100 antialiased">
+      <main className="selection:bg-primary/20 flex h-screen flex-col overflow-hidden bg-slate-900 font-sans text-slate-100 antialiased">
         {/* Navigation Bar */}
         <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between border-b border-white/5 bg-slate-950/80 px-4 backdrop-blur-md">
           <div className="flex items-center gap-4">
