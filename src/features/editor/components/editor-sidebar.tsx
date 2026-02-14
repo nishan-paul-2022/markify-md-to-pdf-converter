@@ -5,7 +5,9 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { FileTree } from '@/features/file-management/components/file-tree';
+import { SortControl } from '@/features/file-management/components/sort-control';
 import type { FileTreeNode } from '@/features/file-management/utils/file-tree';
+import type { SortPreference } from '@/features/file-management/utils/file-sorting';
 import { cn } from '@/utils/cn';
 
 import { FolderOpen, ListChecks, PanelLeftClose, RefreshCw, Trash2, X } from 'lucide-react';
@@ -36,6 +38,8 @@ interface EditorSidebarProps {
   handleBulkDeleteClick: () => void;
   getSelectedCount: () => number;
   getAllDeletableFileIds: () => string[];
+  sortPreference: SortPreference;
+  onSortChange: (preference: SortPreference) => void;
 }
 
 export const EditorSidebar: React.FC<EditorSidebarProps> = ({
@@ -58,6 +62,8 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
   handleBulkDeleteClick,
   getSelectedCount,
   getAllDeletableFileIds,
+  sortPreference,
+  onSortChange,
 }) => {
   return (
     <aside
@@ -71,6 +77,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
           Explorer
         </span>
         <div className="flex items-center gap-1">
+          <SortControl sortPreference={sortPreference} onSortChange={onSortChange} />
           {!isSelectionMode && (
             <Tooltip>
               <TooltipTrigger asChild>

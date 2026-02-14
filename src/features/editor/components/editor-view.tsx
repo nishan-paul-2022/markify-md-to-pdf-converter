@@ -15,6 +15,12 @@ import MdPreview from '@/features/editor/components/md-preview';
 import { useConverter } from '@/features/editor/hooks/use-converter';
 import { ImageModal } from '@/features/file-management/components/image-modal';
 import type { AppFile } from '@/features/file-management/hooks/use-files';
+import {
+  loadSortPreference,
+  saveSortPreference,
+  sortFileTreeNodes,
+  type SortPreference,
+} from '@/features/file-management/utils/file-sorting';
 import { buildFileTree, type FileTreeNode } from '@/features/file-management/utils/file-tree';
 import { cn } from '@/utils/cn';
 
@@ -109,7 +115,21 @@ export default function EditorView({
     handleUploadModalConfirm,
   } = useConverter(files, handleFileDelete);
 
-  const fileTree = React.useMemo(() => buildFileTree(files), [files]);
+  // Sort preference state
+  const [sortPreference, setSortPreference] = React.useState<SortPreference>(() =>
+    loadSortPreference(),
+  );
+
+  const handleSortChange = React.useCallback((preference: SortPreference) => {
+    setSortPreference(preference);
+    saveSortPreference(preference);
+  }, []);
+
+  // Build and sort file tree
+  const fileTree = React.useMemo(() => {
+    const tree = buildFileTree(files);
+    return sortFileTreeNodes(tree, sortPreference);
+  }, [files, sortPreference]);
 
   // Prevent page-level scrolling (Guidelines 1 & 4)
   React.useEffect(() => {
@@ -230,7 +250,10 @@ export default function EditorView({
             handleBulkDeleteClick={handleBulkDeleteClick}
             getSelectedCount={getSelectedCount}
             getAllDeletableFileIds={getAllDeletableFileIds}
+            sortPreference={sortPreference}
+            onSortChange={handleSortChange}
           />
+
 
           <div className="relative flex flex-grow flex-col gap-0 overflow-hidden lg:flex-row">
             <div
