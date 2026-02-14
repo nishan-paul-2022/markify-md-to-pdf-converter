@@ -125,6 +125,9 @@ export default function EditorView({
     saveSortPreference(preference);
   }, []);
 
+  // Sort expanded state
+  const [isSortExpanded, setIsSortExpanded] = React.useState(false);
+
   // Build and sort file tree
   const fileTree = React.useMemo(() => {
     const tree = buildFileTree(files);
@@ -252,6 +255,8 @@ export default function EditorView({
             getAllDeletableFileIds={getAllDeletableFileIds}
             sortPreference={sortPreference}
             onSortChange={handleSortChange}
+            isSortExpanded={isSortExpanded}
+            setIsSortExpanded={setIsSortExpanded}
           />
 
 

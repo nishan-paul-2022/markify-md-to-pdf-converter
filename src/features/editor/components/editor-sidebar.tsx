@@ -5,9 +5,9 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { FileTree } from '@/features/file-management/components/file-tree';
-import { SortControl } from '@/features/file-management/components/sort-control';
-import type { FileTreeNode } from '@/features/file-management/utils/file-tree';
+import { SortPanel, SortToggle } from '@/features/file-management/components/sort-control';
 import type { SortPreference } from '@/features/file-management/utils/file-sorting';
+import type { FileTreeNode } from '@/features/file-management/utils/file-tree';
 import { cn } from '@/utils/cn';
 
 import { FolderOpen, ListChecks, PanelLeftClose, RefreshCw, Trash2, X } from 'lucide-react';
@@ -40,6 +40,8 @@ interface EditorSidebarProps {
   getAllDeletableFileIds: () => string[];
   sortPreference: SortPreference;
   onSortChange: (preference: SortPreference) => void;
+  isSortExpanded: boolean;
+  setIsSortExpanded: (expanded: boolean) => void;
 }
 
 export const EditorSidebar: React.FC<EditorSidebarProps> = ({
@@ -64,7 +66,16 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
   getAllDeletableFileIds,
   sortPreference,
   onSortChange,
+  isSortExpanded,
+  setIsSortExpanded,
 }) => {
+  // Close sort panel when selection mode opens
+  React.useEffect(() => {
+    if (isSelectionMode) {
+      setIsSortExpanded(false);
+    }
+  }, [isSelectionMode, setIsSortExpanded]);
+
   return (
     <aside
       className={cn(
@@ -77,7 +88,9 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
           Explorer
         </span>
         <div className="flex items-center gap-1">
-          <SortControl sortPreference={sortPreference} onSortChange={onSortChange} />
+          {!isSelectionMode && !isSortExpanded && (
+            <SortToggle onClick={() => setIsSortExpanded(true)} isOpen={isSortExpanded} />
+          )}
           {!isSelectionMode && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -133,6 +146,15 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
           </Tooltip>
         </div>
       </div>
+
+      {/* Sort Panel */}
+      {isSortExpanded && (
+        <SortPanel
+          sortPreference={sortPreference}
+          onSortChange={onSortChange}
+          onClose={() => setIsSortExpanded(false)}
+        />
+      )}
 
       {/* Selection Toolbar - Replacing Default Items Area */}
       {isSelectionMode && (
@@ -202,7 +224,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
         ) : (
           <FileTree
             nodes={
-              isSelectionMode
+              isSelectionMode || isSortExpanded
                 ? fileTree.filter(
                     (node) => node.batchId !== 'sample-file' && node.batchId !== 'sample-folder',
                   )
