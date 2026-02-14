@@ -509,11 +509,12 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
             {/* Batch Conversion Progress Indicator */}
             {isBatchProcessing && batchProgress.total > 0 && (
-              <div className="animate-in fade-in slide-in-from-top-2 relative overflow-hidden rounded-xl border border-white/5 bg-slate-900/40 px-5 py-3 backdrop-blur-sm">
-                <div className="flex items-center justify-between gap-6">
+              <div className="animate-in fade-in slide-in-from-top-2 flex items-center justify-center overflow-hidden rounded-xl border border-white/5 bg-slate-900/40 px-5 py-3.5 backdrop-blur-sm">
+                <div className="flex w-full items-center gap-6">
+                  {/* Left: Status */}
                   <div className="flex items-center gap-3">
                     <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-                    <div className="flex items-baseline gap-2">
+                    <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-slate-300">
                         Converting
                       </span>
@@ -522,8 +523,10 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="h-1 w-32 overflow-hidden rounded-full bg-white/5">
+                  
+                  {/* Right: Progress Bar - Simple fill from left to right */}
+                  <div className="flex flex-1 items-center">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
                       <div
                         className="h-full bg-slate-400 transition-all duration-300 ease-out"
                         style={{
@@ -531,9 +534,6 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                         }}
                       />
                     </div>
-                    <span className="text-xs font-medium text-slate-400 tabular-nums">
-                      {Math.round((batchProgress.current / batchProgress.total) * 100)}%
-                    </span>
                   </div>
                 </div>
               </div>
