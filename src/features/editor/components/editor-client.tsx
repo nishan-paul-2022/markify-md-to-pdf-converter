@@ -1,7 +1,11 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { DEFAULT_MARKDOWN_PATH } from '@/constants/default-content';
+import {
+  DEFAULT_MARKDOWN_PATH,
+  parseMetadataFromMarkdown,
+  removeLandingPageSection,
+} from '@/constants/default-content';
 import EditorView from '@/features/editor/components/editor-view';
 import { useConverter } from '@/features/editor/hooks/use-converter';
 import { useFiles } from '@/features/file-management/hooks/use-files';
@@ -46,6 +50,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
   // Helper to load file content
   const loadFileContent = useCallback(
     async (targetFile: (typeof files)[0]) => {
+      converterState.setIsLoading(true);
       try {
         const fileUrl = targetFile.url || '';
         const fetchUrl =
@@ -57,6 +62,13 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         if (response.ok) {
           const text = await response.text();
           converterState.handleContentChange(text);
+
+          // Update derived content immediately to avoid flash/delay
+          const parsedMetadata = parseMetadataFromMarkdown(text);
+          const contentWithoutLandingPage = removeLandingPageSection(text);
+          converterState.setMetadata(parsedMetadata);
+          converterState.setContent(contentWithoutLandingPage);
+
           converterState.setFilename(targetFile.originalName);
           converterState.setSelectedFileId(targetFile.id);
 
@@ -74,14 +86,22 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         }
       } catch (error) {
         logger.error('Failed to load file:', error);
+      } finally {
+        converterState.setIsLoading(false);
       }
     },
     [converterState],
   );
 
   // Initial selection of file (URL -> LocalStorage -> Default)
+  const initialLoadDone = useRef(false);
   useEffect(() => {
-    if (!filesLoading && files.length > 0 && !converterState.selectedFileId) {
+    if (filesLoading || files.length === 0) return;
+    if (initialLoadDone.current) return;
+
+    if (!converterState.selectedFileId) {
+      initialLoadDone.current = true;
+
       // 1. Check if we have a fileId in the URL
       if (fileIdFromUrl) {
         const targetFile = files.find((f) => f.id === fileIdFromUrl);
@@ -107,7 +127,9 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       // 3. Fallback to default file
       const defaultFile = files.find((f) => f.url === DEFAULT_MARKDOWN_PATH);
       if (defaultFile) {
-        converterState.setSelectedFileId(defaultFile.id);
+        void loadFileContent(defaultFile);
+      } else {
+        converterState.setIsLoading(false);
       }
     }
   }, [
@@ -188,6 +210,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         }
 
         try {
+          converterState.setIsLoading(true);
           const fileUrl = node.file.url || '';
           const fetchUrl =
             fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/')
@@ -198,6 +221,13 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
           if (response.ok) {
             const text = await response.text();
             converterState.handleContentChange(text);
+
+            // Update derived content immediately to avoid flash/delay
+            const parsedMetadata = parseMetadataFromMarkdown(text);
+            const contentWithoutLandingPage = removeLandingPageSection(text);
+            converterState.setMetadata(parsedMetadata);
+            converterState.setContent(contentWithoutLandingPage);
+
             converterState.setFilename(node.file.originalName);
             converterState.setSelectedFileId(node.file.id);
 
@@ -217,6 +247,8 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
           }
         } catch (error) {
           logger.error('Failed to load file content:', error);
+        } finally {
+          converterState.setIsLoading(false);
         }
       }
     },

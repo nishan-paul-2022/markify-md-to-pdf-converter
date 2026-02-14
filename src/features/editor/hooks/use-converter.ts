@@ -146,34 +146,7 @@ export function useConverter(
     return () => clearTimeout(timer);
   }, [rawContent, isLoading, setMetadata, setContent]);
 
-  useEffect(() => {
-    const fetchDefaultContent = async () => {
-      setIsLoading(true);
-      try {
-        const text = await FilesService.getContent(DEFAULT_MARKDOWN_PATH);
-        setRawContent(text);
 
-        const parsedMetadata = parseMetadataFromMarkdown(text);
-        const contentWithoutLandingPage = removeLandingPageSection(text);
-        setMetadata(parsedMetadata);
-        setContent(contentWithoutLandingPage);
-
-        const now = new Date();
-        lastModifiedTimeRef.current = now;
-
-        const lastSlashIndex = DEFAULT_MARKDOWN_PATH.lastIndexOf('/');
-        if (lastSlashIndex !== -1) {
-          setBasePath(DEFAULT_MARKDOWN_PATH.substring(0, lastSlashIndex));
-        }
-      } catch (err: unknown) {
-        logger.error('Failed to load default content:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    void fetchDefaultContent();
-  }, [setRawContent, setMetadata, setContent, setIsGenerating, setIsLoading, setBasePath]);
 
   const onFileSelect = useCallback(async (_id: string) => {
     // Simplified for brevity, usually involves FilesService.getContent
@@ -528,5 +501,7 @@ export function useConverter(
     uploadTime: uploadTimeRef.current,
     lastModifiedTime: lastModifiedTimeRef.current,
     isEditorAtTop: true, // simplified for now
+    setMetadata,
+    setContent,
   };
 }
