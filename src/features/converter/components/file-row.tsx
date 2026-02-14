@@ -21,7 +21,7 @@ interface FileRowProps {
   file: AppFile;
   index: number;
   isSelected: boolean;
-  isSelectionMode: boolean;
+  selectionMode: 'none' | 'conversion' | 'deletion';
   processingState: 'pending' | 'converting' | 'done' | 'error';
   hasLocalBlob: boolean;
   onToggleSelection: (id: string) => void;
@@ -41,7 +41,7 @@ export const FileRow = React.memo(
     file,
     index,
     isSelected,
-    isSelectionMode,
+    selectionMode,
     processingState,
     hasLocalBlob,
     onToggleSelection,
@@ -80,8 +80,10 @@ export const FileRow = React.memo(
               <div
                 className={cn(
                   'flex h-full w-full items-center justify-center rounded-2xl transition-all duration-300',
-                  isSelected || isSelectionMode
-                    ? 'scale-50 bg-indigo-500/0 text-transparent opacity-0'
+                  isSelected || selectionMode !== 'none'
+                    ? selectionMode === 'deletion'
+                      ? 'bg-red-500/10 text-red-400 opacity-50' // Deletion: Dim icon, don't hide
+                      : 'scale-50 bg-indigo-500/0 text-transparent opacity-0' // Conversion: Hide icon
                     : 'bg-white/5 text-slate-400 opacity-100 scale-100 group-hover/row:scale-50 group-hover/row:opacity-0',
                 )}
               >
@@ -96,12 +98,16 @@ export const FileRow = React.memo(
                 }}
                 className={cn(
                   'absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl transition-all duration-300',
-                  isSelected || isSelectionMode
+                  isSelected || selectionMode !== 'none'
                     ? 'translate-y-0 opacity-100 scale-100'
                     : 'translate-y-2 opacity-0 scale-50 group-hover/row:translate-y-0 group-hover/row:opacity-100 group-hover/row:scale-100',
                   isSelected
-                    ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                    : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-indigo-400',
+                    ? selectionMode === 'deletion'
+                      ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' // Deletion: Red
+                      : 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' // Conversion: Indigo
+                    : selectionMode === 'deletion'
+                      ? 'bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white'
+                      : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-indigo-400',
                 )}
                 aria-label={isSelected ? 'Deselect file' : 'Select file'}
               >
@@ -126,7 +132,7 @@ export const FileRow = React.memo(
           </div>
 
           <div className="relative z-10 flex shrink-0 items-center gap-2">
-            {!isSelectionMode && (
+            {selectionMode === 'none' && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
@@ -156,7 +162,7 @@ export const FileRow = React.memo(
               <Button
                 size="sm"
                 onClick={() => onConvert(file)}
-                disabled={isProcessing || isSelectionMode}
+                disabled={isProcessing || selectionMode !== 'none'}
                 className={cn(
                   'flex h-9 min-w-[100px] items-center gap-2 rounded-xl px-4 text-[10px] font-black tracking-wider uppercase transition-all active:scale-95',
                   isProcessing

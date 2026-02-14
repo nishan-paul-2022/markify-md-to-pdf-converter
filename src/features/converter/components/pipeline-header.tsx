@@ -22,7 +22,6 @@ import {
   HardDrive,
   Layers,
   Loader2,
-  MousePointer2,
   SortAsc,
   Square,
   Trash2,
@@ -33,13 +32,14 @@ import {
 interface PipelineHeaderProps {
   filteredFilesCount: number;
   completedResultsCount: number;
-  isSelectionMode: boolean;
+  selectionMode: 'none' | 'conversion' | 'deletion';
   selectedCount: number;
   sortBy: 'name' | 'time' | 'size';
   sortOrder: 'asc' | 'desc';
   isBatchProcessing: boolean;
   deleting: boolean;
-  onToggleSelectionMode: () => void;
+  onToggleConversionMode: () => void;
+  onToggleDeletionMode: () => void;
   onToggleSelectAll: () => void;
   onSortByChange: (val: 'name' | 'time' | 'size') => void;
   onSortOrderChange: () => void;
@@ -56,13 +56,14 @@ interface PipelineHeaderProps {
 export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
   filteredFilesCount,
   completedResultsCount,
-  isSelectionMode,
+  selectionMode,
   selectedCount,
   sortBy,
   sortOrder,
   isBatchProcessing,
   deleting,
-  onToggleSelectionMode,
+  onToggleConversionMode,
+  onToggleDeletionMode,
   onToggleSelectAll,
   onSortByChange,
   onSortOrderChange,
@@ -71,14 +72,18 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
   onBatchDelete,
   onBatchConvert,
 }) => {
-  const showSelectionBar = selectedCount > 0;
+  const showSelectionBar = selectionMode !== 'none';
+  const isConversion = selectionMode === 'conversion';
+  const isDeletion = selectionMode === 'deletion';
 
   return (
     <div
       className={cn(
         'relative flex h-11 flex-none items-center justify-between px-4 text-xs font-black tracking-[0.2em] uppercase transition-all duration-300',
         showSelectionBar
-          ? 'rounded-xl border border-indigo-500/30 bg-indigo-500/10 shadow-lg shadow-indigo-500/5'
+          ? isDeletion
+            ? 'rounded-xl border border-red-500/30 bg-red-500/10 shadow-lg shadow-red-500/5'
+            : 'rounded-xl border border-indigo-500/30 bg-indigo-500/10 shadow-lg shadow-indigo-500/5'
           : '',
       )}
     >
@@ -88,21 +93,36 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
           <div className="animate-in fade-in slide-in-from-left-4 flex items-center gap-6">
             <div className="flex items-center gap-3">
               <button
-                onClick={onToggleSelectionMode}
-                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-indigo-500/20 text-indigo-400 transition-all hover:bg-indigo-500 hover:text-white"
+                onClick={isDeletion ? onToggleDeletionMode : onToggleConversionMode}
+                className={cn(
+                  'flex h-7 w-7 cursor-pointer items-center justify-center rounded-full transition-all hover:text-white',
+                  isDeletion
+                    ? 'bg-red-500/20 text-red-400 hover:bg-red-500'
+                    : 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500',
+                )}
               >
                 <X className="h-4 w-4" />
               </button>
-              <span className="font-black text-indigo-300">
+              <span
+                className={cn(
+                  'font-black',
+                  isDeletion ? 'text-red-300' : 'text-indigo-300',
+                )}
+              >
                 {selectedCount} {selectedCount === 1 ? 'FILE' : 'FILES'} SELECTED
               </span>
             </div>
 
             <button
               onClick={onToggleSelectAll}
-              className="group flex items-center gap-2 text-[10px] font-bold tracking-widest text-indigo-400/60 transition-colors hover:text-indigo-400"
+              className={cn(
+                'group flex items-center gap-2 text-[10px] font-bold tracking-widest transition-colors',
+                isDeletion
+                  ? 'text-red-400/60 hover:text-red-400'
+                  : 'text-indigo-400/60 hover:text-indigo-400',
+              )}
             >
-              {selectedCount === filteredFilesCount ? (
+              {selectedCount === filteredFilesCount && filteredFilesCount > 0 ? (
                 <>
                   <Square className="h-3.5 w-3.5" />
                   <span>DESELECT ALL</span>
@@ -117,34 +137,38 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
           </div>
 
           <div className="animate-in fade-in slide-in-from-right-4 flex items-center gap-3">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={onBatchDelete}
-              disabled={isBatchProcessing || deleting}
-              className="h-8 gap-2 rounded-lg border border-red-500/20 bg-red-500/5 px-4 text-[10px] font-black tracking-widest text-red-400 uppercase transition-all hover:bg-red-500 hover:text-white"
-            >
-              {deleting ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Trash2 className="h-3.5 w-3.5" />
-              )}
-              <span>Delete</span>
-            </Button>
+            {isDeletion && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onBatchDelete}
+                disabled={isBatchProcessing || deleting}
+                className="h-8 gap-2 rounded-lg bg-red-500 px-4 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-red-500/20 transition-all hover:bg-red-600 hover:scale-[1.02] active:scale-95"
+              >
+                {deleting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="h-3.5 w-3.5" />
+                )}
+                <span>Delete Selected</span>
+              </Button>
+            )}
 
-            <Button
-              size="sm"
-              onClick={onBatchConvert}
-              disabled={isBatchProcessing || deleting}
-              className="h-8 gap-2 rounded-lg bg-indigo-500 px-4 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-600 hover:scale-[1.02] active:scale-95"
-            >
-              {isBatchProcessing ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Zap className="h-3.5 w-3.5 fill-current" />
-              )}
-              <span>Convert All</span>
-            </Button>
+            {isConversion && (
+              <Button
+                size="sm"
+                onClick={onBatchConvert}
+                disabled={isBatchProcessing || deleting}
+                className="h-8 gap-2 rounded-lg bg-indigo-500 px-4 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-600 hover:scale-[1.02] active:scale-95"
+              >
+                {isBatchProcessing ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Zap className="h-3.5 w-3.5 fill-current" />
+                )}
+                <span>Convert All</span>
+              </Button>
+            )}
           </div>
         </>
       ) : (
@@ -181,20 +205,35 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
-                      onClick={onToggleSelectionMode}
-                      className={cn(
-                        'group flex h-8 cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 transition-all hover:bg-white/10 hover:text-white',
-                        isSelectionMode ? 'border-indigo-500/30 text-indigo-400' : 'text-slate-400',
-                      )}
+                      onClick={onToggleConversionMode}
+                      className="group flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-slate-400 transition-all hover:bg-white/10 hover:text-white"
                     >
-                      <MousePointer2 className="h-3.5 w-3.5" />
+                      <Zap className="h-3.5 w-3.5" />
                       <span className="text-[10px] font-black tracking-wider uppercase">
-                        {isSelectionMode ? 'ACTIVE' : 'SELECT'}
+                        CONVERT
                       </span>
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="border-slate-800 bg-slate-900 text-xs text-white">
-                    {isSelectionMode ? 'Disable Selection Mode' : 'Enable Selection Mode'}
+                    Enable Conversion Selection
+                  </TooltipContent>
+                </Tooltip>
+
+                {/* 2. Deletion Mode Entry (Minimal) */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={onToggleDeletionMode}
+                      className="group flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-slate-400 transition-all hover:border-red-500/30 hover:bg-red-500/20 hover:text-red-400"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      <span className="text-[10px] font-black tracking-wider uppercase">
+                        DELETE
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="border-slate-800 bg-slate-900 text-xs text-white">
+                    Delete Multiple Files
                   </TooltipContent>
                 </Tooltip>
 

@@ -66,13 +66,38 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
   } = useConverterFiles(files);
 
   const {
-    selectedIds: selectedFileIds,
-    isSelectionMode,
-    toggleSelectionMode,
-    toggleId: toggleSelection,
-    selectAll,
-    clearSelection,
-  } = useSelection('converter');
+    selectedIds: conversionSelectedIds,
+    isSelectionMode: isConversionMode,
+    toggleSelectionMode: rawToggleConversionMode,
+    toggleId: toggleConversionId,
+    selectAll: selectAllConversion,
+    clearSelection: clearConversionSelection,
+  } = useSelection('converter_conversion');
+
+  const {
+    selectedIds: deletionSelectedIds,
+    isSelectionMode: isDeletionMode,
+    toggleSelectionMode: rawToggleDeletionMode,
+    toggleId: toggleDeletionId,
+    selectAll: selectAllDeletion,
+    clearSelection: clearDeletionSelection,
+  } = useSelection('converter_deletion');
+
+  const selectionMode: 'none' | 'conversion' | 'deletion' = isConversionMode
+    ? 'conversion'
+    : isDeletionMode
+      ? 'deletion'
+      : 'none';
+
+  const handleToggleConversionMode = () => {
+    if (isDeletionMode) rawToggleDeletionMode();
+    rawToggleConversionMode();
+  };
+
+  const handleToggleDeletionMode = () => {
+    if (isConversionMode) rawToggleConversionMode();
+    rawToggleDeletionMode();
+  };
 
   // Derived state for the "Converted" column (matching filtered set)
   const completedResults = React.useMemo(() => {
@@ -85,20 +110,40 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
   }, [filteredMdFiles, processingStates, convertedFiles]);
 
   const toggleSelectAll = () => {
-    if (selectedFileIds.size === filteredMdFiles.length && filteredMdFiles.length > 0) {
-      clearSelection();
-    } else {
-      selectAll(filteredMdFiles.map((f) => f.id));
+    if (selectionMode === 'conversion') {
+      if (conversionSelectedIds.size === filteredMdFiles.length && filteredMdFiles.length > 0) {
+        clearConversionSelection();
+      } else {
+        selectAllConversion(filteredMdFiles.map((f) => f.id));
+      }
+    } else if (selectionMode === 'deletion') {
+      if (deletionSelectedIds.size === filteredMdFiles.length && filteredMdFiles.length > 0) {
+        clearDeletionSelection();
+      } else {
+        selectAllDeletion(filteredMdFiles.map((f) => f.id));
+      }
     }
   };
 
+  const activeSelectedIds =
+    selectionMode === 'conversion'
+      ? conversionSelectedIds
+      : selectionMode === 'deletion'
+        ? deletionSelectedIds
+        : new Set<string>();
+
+  const handleToggleSelection = (id: string) => {
+    if (selectionMode === 'conversion') toggleConversionId(id);
+    else if (selectionMode === 'deletion') toggleDeletionId(id);
+  };
+
   const handleBatchConvert = async () => {
-    if (selectedFileIds.size === 0) {
+    if (conversionSelectedIds.size === 0) {
       return;
     }
 
     setIsBatchProcessing(true);
-    const idsToConvert = Array.from(selectedFileIds);
+    const idsToConvert = Array.from(conversionSelectedIds);
 
     for (const id of idsToConvert) {
       const file = filteredMdFiles.find((f) => f.id === id);
@@ -108,18 +153,18 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     }
 
     setIsBatchProcessing(false);
-    clearSelection();
-    toggleSelectionMode(); // Exit selection mode after batch action
+    clearConversionSelection();
+    handleToggleConversionMode(); // Exit selection mode after batch action
   };
 
   const handleBatchDelete = async () => {
-    if (selectedFileIds.size === 0) {
+    if (deletionSelectedIds.size === 0) {
       return;
     }
 
     const confirmed = await confirmAlert({
       title: 'Delete Multiple Files',
-      message: `Are you sure you want to delete ${selectedFileIds.size} selected files? This action cannot be undone.`,
+      message: `Are you sure you want to delete ${deletionSelectedIds.size} selected files? This action cannot be undone.`,
       confirmText: 'Delete Files',
       variant: 'destructive',
     });
@@ -128,9 +173,9 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       return;
     }
 
-    await handleBulkDelete(Array.from(selectedFileIds));
-    clearSelection();
-    toggleSelectionMode(); // Exit selection mode after batch action
+    await handleBulkDelete(Array.from(deletionSelectedIds));
+    clearDeletionSelection();
+    handleToggleDeletionMode(); // Exit selection mode after batch action
   };
 
   const handleConvertFile = async (file: AppFile) => {
@@ -435,13 +480,14 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             <PipelineHeader
               filteredFilesCount={filteredMdFiles.length}
               completedResultsCount={completedResults.length}
-              isSelectionMode={isSelectionMode}
-              selectedCount={selectedFileIds.size}
+              selectionMode={selectionMode}
+              selectedCount={activeSelectedIds.size}
               sortBy={sortBy}
               sortOrder={sortOrder}
               isBatchProcessing={isBatchProcessing}
               deleting={deleting}
-              onToggleSelectionMode={toggleSelectionMode}
+              onToggleConversionMode={handleToggleConversionMode}
+              onToggleDeletionMode={handleToggleDeletionMode}
               onToggleSelectAll={toggleSelectAll}
               onSortByChange={setSortBy}
               onSortOrderChange={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
@@ -467,14 +513,14 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                       key={file.id}
                       file={file}
                       index={index}
-                      isSelected={selectedFileIds.has(file.id)}
-                      isSelectionMode={isSelectionMode}
+                      isSelected={activeSelectedIds.has(file.id)}
+                      selectionMode={selectionMode}
                       processingState={
                         processingStates[file.id] ||
                         (file.metadata?.generatedPdfUrl ? 'done' : 'pending')
                       }
                       hasLocalBlob={!!convertedFiles[file.id]}
-                      onToggleSelection={toggleSelection}
+                      onToggleSelection={handleToggleSelection}
                       onConvert={handleConvertFile}
                       onDelete={handleDelete}
                       onDownload={handleDownloadFile}
