@@ -53,6 +53,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
   >({});
   const [convertedFiles, setConvertedFiles] = React.useState<Record<string, Blob | undefined>>({});
   const [isBatchProcessing, setIsBatchProcessing] = React.useState(false);
+  const [batchProgress, setBatchProgress] = React.useState({ current: 0, total: 0 });
 
   // Modular Hooks (Guidelines 4 & 6)
   const {
@@ -144,15 +145,24 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
 
     setIsBatchProcessing(true);
     const idsToConvert = Array.from(conversionSelectedIds);
+    const filesToConvert = idsToConvert.filter((id) => {
+      return processingStates[id] !== 'done' && processingStates[id] !== 'converting';
+    });
 
+    setBatchProgress({ current: 0, total: filesToConvert.length });
+
+    let completed = 0;
     for (const id of idsToConvert) {
       const file = filteredMdFiles.find((f) => f.id === id);
       if (file && processingStates[id] !== 'done' && processingStates[id] !== 'converting') {
         await handleConvertFile(file);
+        completed++;
+        setBatchProgress({ current: completed, total: filesToConvert.length });
       }
     }
 
     setIsBatchProcessing(false);
+    setBatchProgress({ current: 0, total: 0 });
     clearConversionSelection();
     handleToggleConversionMode(); // Exit selection mode after batch action
   };
@@ -496,6 +506,38 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
               onBatchDelete={handleBatchDelete}
               onBatchConvert={handleBatchConvert}
             />
+
+            {/* Batch Conversion Progress Indicator */}
+            {isBatchProcessing && batchProgress.total > 0 && (
+              <div className="animate-in fade-in slide-in-from-top-2 relative overflow-hidden rounded-xl border border-white/5 bg-slate-900/40 px-5 py-3 backdrop-blur-sm">
+                <div className="flex items-center justify-between gap-6">
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xs font-medium text-slate-300">
+                        Converting
+                      </span>
+                      <span className="text-[10px] font-medium text-slate-500">
+                        {batchProgress.current} / {batchProgress.total}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-1 w-32 overflow-hidden rounded-full bg-white/5">
+                      <div
+                        className="h-full bg-slate-400 transition-all duration-300 ease-out"
+                        style={{
+                          width: `${(batchProgress.current / batchProgress.total) * 100}%`,
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-slate-400 tabular-nums">
+                      {Math.round((batchProgress.current / batchProgress.total) * 100)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="shadow-3xl relative flex flex-grow flex-col overflow-hidden rounded-[2rem] border border-white/5 bg-slate-900/20 p-4 backdrop-blur-3xl">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-indigo-500/[0.03] to-transparent" />

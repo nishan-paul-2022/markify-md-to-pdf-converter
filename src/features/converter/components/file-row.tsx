@@ -188,6 +188,12 @@ export const FileRow = React.memo(
                   : 'border-white/5 bg-white/[0.02] opacity-40 hover:bg-white/[0.04] hover:opacity-60',
           )}
         >
+          {/* Bottom Border Progress Bar - Minimal & Sleek */}
+          {isProcessing && (
+            <div className="absolute bottom-0 left-0 right-0 h-[1px] overflow-hidden bg-white/5">
+              <div className="h-full w-full bg-slate-400 animate-progress-shimmer" />
+            </div>
+          )}
           <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4 pl-5">
             <div
               className={cn(
