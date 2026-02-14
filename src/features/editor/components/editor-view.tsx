@@ -168,8 +168,8 @@ export default function EditorView({
             </div>
 
             <Link href="/converter">
-              <button className="group flex h-9 items-center gap-2 rounded-full border border-white/5 bg-white/5 px-4 text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase transition-all hover:border-blue-500/30 hover:bg-blue-500/5 hover:text-white">
-                <Layers className="h-3.5 w-3.5 transition-colors group-hover:text-blue-400" />
+              <button className="group flex h-9 cursor-pointer items-center gap-2 rounded-full border border-white/5 bg-white/5 px-4 text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase transition-all duration-300 hover:scale-[1.02] hover:border-blue-500/30 hover:bg-blue-500/10 hover:text-white active:scale-95">
+                <Layers className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-110 group-hover:text-blue-400" />
                 <span>Converter</span>
               </button>
             </Link>
