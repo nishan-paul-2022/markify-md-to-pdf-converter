@@ -74,28 +74,39 @@ export const FileRow = React.memo(
           )}
         >
           <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4">
-            {/* Selection Checkbox */}
-            {isSelectionMode && (
-              <button
-                onClick={() => onToggleSelection(file.id)}
+            {/* Unified Icon & Selection Area (Guideline 1: Premium UX) */}
+            <div className="group/icon relative h-12 w-12 shrink-0">
+              {/* File Icon */}
+              <div
                 className={cn(
-                  'animate-in zoom-in-50 flex h-6 w-6 cursor-pointer items-center justify-center rounded-lg transition-all',
-                  isSelected
-                    ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                    : 'border border-white/10 bg-white/5 text-transparent hover:border-indigo-500/30',
+                  'flex h-full w-full items-center justify-center rounded-2xl transition-all duration-300',
+                  isSelected || isSelectionMode
+                    ? 'scale-50 bg-indigo-500/0 text-transparent opacity-0'
+                    : 'bg-white/5 text-slate-400 opacity-100 scale-100 group-hover/row:scale-50 group-hover/row:opacity-0',
                 )}
               >
-                <CheckCircle2 className="h-3.5 w-3.5" />
-              </button>
-            )}
+                <FileCode className="h-6 w-6" />
+              </div>
 
-            <div
-              className={cn(
-                'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-transform group-hover/row:scale-110',
-                isSelected ? 'bg-indigo-500/20 text-indigo-400' : 'bg-white/5 text-slate-400',
-              )}
-            >
-              <FileCode className="h-6 w-6" />
+              {/* Selection Checkbox (Overlays Icon on hover/selection) */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleSelection(file.id);
+                }}
+                className={cn(
+                  'absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl transition-all duration-300',
+                  isSelected || isSelectionMode
+                    ? 'translate-y-0 opacity-100 scale-100'
+                    : 'translate-y-2 opacity-0 scale-50 group-hover/row:translate-y-0 group-hover/row:opacity-100 group-hover/row:scale-100',
+                  isSelected
+                    ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                    : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-indigo-400',
+                )}
+                aria-label={isSelected ? 'Deselect file' : 'Select file'}
+              >
+                <CheckCircle2 className={cn('transition-transform', isSelected ? 'h-6 w-6' : 'h-5 w-5')} />
+              </button>
             </div>
 
             <div className="min-w-0 flex-1">
