@@ -158,7 +158,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
 
       {/* Selection Toolbar - Replacing Default Items Area */}
       {isSelectionMode && (
-        <div className="animate-in fade-in slide-in-from-top-2 z-30 mx-3 mb-4 flex flex-col overflow-hidden rounded-xl border border-white/10 bg-slate-950/40 shadow-2xl duration-300">
+        <div className="animate-in fade-in slide-in-from-top-2 z-30 mx-3 mt-2 mb-4 flex flex-col overflow-hidden rounded-xl border border-white/10 bg-slate-950/40 shadow-2xl duration-300">
           <div className="flex h-12 items-center justify-between border-b border-white/5 bg-white/[0.02] px-3">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold tracking-[0.15em] text-slate-500 uppercase tabular-nums">
