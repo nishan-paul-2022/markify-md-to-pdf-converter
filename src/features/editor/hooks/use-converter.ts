@@ -126,8 +126,12 @@ export function useConverter(
     (newRawContent: string) => {
       setRawContent(newRawContent);
       lastModifiedTimeRef.current = new Date();
+      // Auto-save to local storage (debounced in effect or direct)
+      if (selectedFileId) {
+        localStorage.setItem(`markify_content_${selectedFileId}`, newRawContent);
+      }
     },
-    [setRawContent],
+    [setRawContent, selectedFileId],
   );
 
   useEffect(() => {
@@ -372,14 +376,20 @@ export function useConverter(
       const text = await FilesService.getContent(DEFAULT_MARKDOWN_PATH);
 
       handleContentChange(text);
+      
+      // Clear local storage for this file if it exists
+      if (selectedFileId) {
+        localStorage.removeItem(`markify_content_${selectedFileId}`);
+      }
+
       setFilename('file.md');
-      setSelectedFileId(null);
+      setSelectedFileId(null); // This effectively switches away from the 'saved' file context
       setIsReset(true);
       setTimeout(() => setIsReset(false), 2000);
     } catch (err: unknown) {
       logger.error('Failed to reset content:', err);
     }
-  }, [handleContentChange, setFilename, setSelectedFileId, setIsReset]);
+  }, [handleContentChange, setFilename, setSelectedFileId, setIsReset, selectedFileId]);
 
   const handleCopy = useCallback(async (): Promise<void> => {
     try {

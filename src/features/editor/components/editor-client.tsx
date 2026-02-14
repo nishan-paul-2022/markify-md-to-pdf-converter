@@ -60,7 +60,16 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
 
         const response = await fetch(fetchUrl);
         if (response.ok) {
-          const text = await response.text();
+          let text = await response.text();
+          
+          // Check for auto-saved content
+          if (targetFile.id) {
+            const savedContent = localStorage.getItem(`markify_content_${targetFile.id}`);
+            if (savedContent) {
+              text = savedContent;
+            }
+          }
+
           converterState.handleContentChange(text);
 
           // Update derived content immediately to avoid flash/delay
@@ -228,7 +237,16 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
 
           const response = await fetch(fetchUrl);
           if (response.ok) {
-            const text = await response.text();
+            let text = await response.text();
+            
+            // Check for auto-saved content
+            if (node.file.id) {
+              const savedContent = localStorage.getItem(`markify_content_${node.file.id}`);
+              if (savedContent) {
+                text = savedContent;
+              }
+            }
+            
             converterState.handleContentChange(text);
 
             // Update derived content immediately to avoid flash/delay
