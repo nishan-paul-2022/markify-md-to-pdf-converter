@@ -75,11 +75,11 @@ export const FileRow = React.memo(
         >
           <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4">
             {/* Unified Icon & Selection Area (Guideline 1: Premium UX) */}
-            <div className="group/icon relative h-12 w-12 shrink-0">
+            <div className="group/icon relative h-11 w-11 shrink-0">
               {/* File Icon */}
               <div
                 className={cn(
-                  'flex h-full w-full items-center justify-center rounded-2xl transition-all duration-300',
+                  'flex h-full w-full items-center justify-center rounded-xl transition-all duration-300',
                   isSelected || selectionMode !== 'none'
                     ? selectionMode === 'deletion'
                       ? 'scale-50 bg-red-500/0 text-transparent opacity-0' // Deletion: Hide icon
@@ -97,7 +97,7 @@ export const FileRow = React.memo(
                   onToggleSelection(file.id);
                 }}
                 className={cn(
-                  'absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl transition-all duration-300',
+                  'absolute inset-0 flex cursor-pointer items-center justify-center rounded-xl transition-all duration-300',
                   isSelected || selectionMode !== 'none'
                     ? 'translate-y-0 opacity-100 scale-100'
                     : 'translate-y-2 opacity-0 scale-50 group-hover/row:translate-y-0 group-hover/row:opacity-100 group-hover/row:scale-100',
@@ -135,16 +135,14 @@ export const FileRow = React.memo(
             {selectionMode === 'none' && (
                   <button
                     onClick={() => onDelete(file.id)}
-                    className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400"
+                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
             )}
 
-            <div className="mx-1 h-6 w-px bg-white/5" />
-
             {isDone ? (
-              <div className="flex h-9 items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 text-[10px] font-black tracking-wider whitespace-nowrap text-emerald-500/60 uppercase">
+              <div className="flex h-11 items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 text-[10px] font-black tracking-wider whitespace-nowrap text-emerald-500/60 uppercase">
                 <CheckCircle className="h-3.5 w-3.5" />
                 <span>Finished</span>
               </div>
@@ -154,7 +152,7 @@ export const FileRow = React.memo(
                 onClick={() => onConvert(file)}
                 disabled={isProcessing || selectionMode !== 'none'}
                 className={cn(
-                  'flex h-9 min-w-[100px] items-center gap-2 rounded-xl px-4 text-[10px] font-black tracking-wider uppercase transition-all active:scale-95',
+                  'flex h-11 min-w-[100px] items-center gap-2 rounded-xl px-4 text-[10px] font-black tracking-wider uppercase transition-all active:scale-95',
                   isProcessing
                     ? 'bg-amber-500/20 text-amber-500'
                     : isError
@@ -197,7 +195,7 @@ export const FileRow = React.memo(
           <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4 pl-5">
             <div
               className={cn(
-                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
                 isProcessing
                   ? 'bg-amber-500/10 text-amber-500'
                   : isError
@@ -280,7 +278,7 @@ export const FileRow = React.memo(
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onDownload(file, 'pdf')}
-                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 transition-all hover:bg-emerald-500 hover:text-white active:scale-90"
+                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 transition-all hover:bg-emerald-500 hover:text-white active:scale-90"
                   >
                     <Download className="h-4.5 w-4.5" />
                   </button>
