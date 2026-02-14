@@ -82,7 +82,7 @@ export const FileRow = React.memo(
                   'flex h-full w-full items-center justify-center rounded-2xl transition-all duration-300',
                   isSelected || selectionMode !== 'none'
                     ? selectionMode === 'deletion'
-                      ? 'bg-red-500/10 text-red-400 opacity-50' // Deletion: Dim icon, don't hide
+                      ? 'scale-50 bg-red-500/0 text-transparent opacity-0' // Deletion: Hide icon
                       : 'scale-50 bg-indigo-500/0 text-transparent opacity-0' // Conversion: Hide icon
                     : 'bg-white/5 text-slate-400 opacity-100 scale-100 group-hover/row:scale-50 group-hover/row:opacity-0',
                 )}

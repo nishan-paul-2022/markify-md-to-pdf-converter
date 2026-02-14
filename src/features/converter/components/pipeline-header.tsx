@@ -82,8 +82,8 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
         'relative flex h-11 flex-none items-center justify-between px-4 text-xs font-black tracking-[0.2em] uppercase transition-all duration-300',
         showSelectionBar
           ? isDeletion
-            ? 'rounded-xl border border-red-500/30 bg-red-500/10 shadow-lg shadow-red-500/5'
-            : 'rounded-xl border border-indigo-500/30 bg-indigo-500/10 shadow-lg shadow-indigo-500/5'
+            ? 'rounded-xl border border-red-500/30 bg-red-500/5 shadow-lg shadow-red-500/5'
+            : 'rounded-xl border border-indigo-500/30 bg-indigo-500/5 shadow-lg shadow-indigo-500/5'
           : '',
       )}
     >
@@ -116,10 +116,10 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
             <button
               onClick={onToggleSelectAll}
               className={cn(
-                'group flex items-center gap-2 text-[10px] font-bold tracking-widest transition-colors',
+                'group flex h-7 cursor-pointer items-center gap-2 rounded-lg px-3 text-[10px] font-black tracking-widest transition-all',
                 isDeletion
-                  ? 'text-red-400/60 hover:text-red-400'
-                  : 'text-indigo-400/60 hover:text-indigo-400',
+                  ? 'bg-red-500/20 text-red-200 hover:bg-red-500/30 hover:text-white'
+                  : 'bg-indigo-500/20 text-indigo-200 hover:bg-indigo-500/30 hover:text-white',
               )}
             >
               {selectedCount === filteredFilesCount && filteredFilesCount > 0 ? (
@@ -140,7 +140,6 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
             {isDeletion && (
               <Button
                 size="sm"
-                variant="ghost"
                 onClick={onBatchDelete}
                 disabled={isBatchProcessing || deleting}
                 className="h-8 gap-2 rounded-lg bg-red-500 px-4 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-red-500/20 transition-all hover:bg-red-600 hover:scale-[1.02] active:scale-95"
@@ -166,7 +165,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                 ) : (
                   <Zap className="h-3.5 w-3.5 fill-current" />
                 )}
-                <span>Convert All</span>
+                <span>Convert Selected</span>
               </Button>
             )}
           </div>
@@ -224,7 +223,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                   <TooltipTrigger asChild>
                     <button
                       onClick={onToggleDeletionMode}
-                      className="group flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-slate-400 transition-all hover:border-red-500/30 hover:bg-red-500/20 hover:text-red-400"
+                      className="group flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-slate-400 transition-all hover:bg-white/10 hover:text-white"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                       <span className="text-[10px] font-black tracking-wider uppercase">
