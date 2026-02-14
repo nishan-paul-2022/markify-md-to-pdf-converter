@@ -24,7 +24,7 @@ import {
 import { buildFileTree, type FileTreeNode } from '@/features/file-management/utils/file-tree';
 import { cn } from '@/utils/cn';
 
-import { Eye, Layers, Search, X } from 'lucide-react';
+import { Eye, Layers, Loader2, Search, X } from 'lucide-react';
 
 interface EditorViewProps {
   user: {
@@ -296,6 +296,12 @@ export default function EditorView({
                   uploadTime={uploadTime}
                   lastModifiedTime={lastModifiedTime}
                 />
+
+                {isLoading && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                  </div>
+                )}
 
                 <Editor
                   innerRef={textareaRef}

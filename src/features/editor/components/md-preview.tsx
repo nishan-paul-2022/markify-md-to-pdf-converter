@@ -88,7 +88,7 @@ const MdPreview = React.memo(
             className={cn(
               'absolute inset-0 z-50 flex items-center justify-center bg-slate-950/20 backdrop-blur-[2px] transition-all duration-300 ease-in-out',
               showToolbar ? 'top-12' : 'top-0',
-              isPdfRendering ? 'opacity-100' : 'pointer-events-none opacity-0',
+              isPdfRendering || isLoading ? 'opacity-100' : 'pointer-events-none opacity-0',
             )}
           >
             <div className="relative flex -translate-y-6 flex-col items-center gap-8">

@@ -96,7 +96,16 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
   // Initial selection of file (URL -> LocalStorage -> Default)
   const initialLoadDone = useRef(false);
   useEffect(() => {
-    if (filesLoading || files.length === 0) return;
+    if (filesLoading) return;
+
+    if (files.length === 0) {
+      if (!initialLoadDone.current) {
+        converterState.setIsLoading(false);
+        initialLoadDone.current = true;
+      }
+      return;
+    }
+
     if (initialLoadDone.current) return;
 
     if (!converterState.selectedFileId) {
