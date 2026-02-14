@@ -86,28 +86,13 @@ const MdPreview = React.memo(
           {/* Global Loader Overlay */}
           <div
             className={cn(
-              'absolute inset-0 z-50 flex items-center justify-center bg-slate-950/20 backdrop-blur-[2px] transition-all duration-300 ease-in-out',
-              showToolbar ? 'top-12' : 'top-0',
+              'absolute inset-0 z-50 flex items-center justify-center transition-all duration-300 ease-in-out',
               isPdfRendering || isLoading ? 'opacity-100' : 'pointer-events-none opacity-0',
+              'bg-slate-950/80 backdrop-blur-sm',
             )}
           >
-            <div className="relative flex -translate-y-6 flex-col items-center gap-8">
-              <div className="relative h-16 w-16">
-                <div
-                  className="absolute inset-0 animate-spin rounded-full border border-white/10"
-                  style={{ animationDuration: '3s' }}
-                />
-                <div
-                  className="border-primary/20 absolute inset-2 animate-spin rounded-full border"
-                  style={{ animationDuration: '2s', animationDirection: 'reverse' }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Loader2
-                    className="h-7 w-7 animate-spin text-slate-400"
-                    style={{ animationDuration: '1.5s' }}
-                  />
-                </div>
-              </div>
+            <div className="relative flex flex-col items-center gap-4">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
             </div>
           </div>
 
