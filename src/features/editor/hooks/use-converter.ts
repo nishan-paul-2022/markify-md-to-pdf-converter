@@ -373,23 +373,58 @@ export function useConverter(
 
   const handleReset = useCallback(async (): Promise<void> => {
     try {
-      const text = await FilesService.getContent(DEFAULT_MARKDOWN_PATH);
+      setIsReset(true);
 
-      handleContentChange(text);
-      
-      // Clear local storage for this file if it exists
+      // If we have a selected file, reload its original content from the server (or file list)
       if (selectedFileId) {
-        localStorage.removeItem(`markify_content_${selectedFileId}`);
+        // Find the file object to get the URL
+        const currentFile = files.find((f) => f.id === selectedFileId);
+
+        if (currentFile) {
+          // Clear local storage for this file
+          localStorage.removeItem(`markify_content_${selectedFileId}`);
+
+          // Fetch original content
+          const fileUrl = currentFile.url || '';
+          const fetchUrl =
+            fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/')
+              ? `/api${fileUrl}`
+              : fileUrl;
+
+          const response = await fetch(fetchUrl);
+          if (response.ok) {
+            const text = await response.text();
+            handleContentChange(text);
+            
+            // Re-parse metadata to reset derived state
+            const parsedMetadata = parseMetadataFromMarkdown(text);
+            const contentWithoutLandingPage = removeLandingPageSection(text);
+            setMetadata(parsedMetadata);
+            setContent(contentWithoutLandingPage);
+          }
+        }
+      } else {
+        // Fallback to default behavior if no file is selected (e.g. just cleared everything)
+        // or if it was the default file to begin with.
+        const text = await FilesService.getContent(DEFAULT_MARKDOWN_PATH);
+        handleContentChange(text);
+        setFilename('file.md');
       }
 
-      setFilename('file.md');
-      setSelectedFileId(null); // This effectively switches away from the 'saved' file context
-      setIsReset(true);
       setTimeout(() => setIsReset(false), 2000);
     } catch (err: unknown) {
       logger.error('Failed to reset content:', err);
+      setIsReset(false);
     }
-  }, [handleContentChange, setFilename, setSelectedFileId, setIsReset, selectedFileId]);
+  }, [
+    handleContentChange,
+    setFilename,
+    setIsReset,
+    selectedFileId,
+    files,
+    setMetadata,
+    setContent,
+  ]);
 
   const handleCopy = useCallback(async (): Promise<void> => {
     try {
