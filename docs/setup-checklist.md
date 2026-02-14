@@ -233,7 +233,7 @@ Your setup is complete when:
 ✅ You can download the file  
 ✅ You can delete the file  
 ✅ You can sign out  
-✅ Protected routes redirect to sign-in when not authenticated  
+✅ Protected routes redirect to sign-in when not authenticated
 
 ## Next Steps
 

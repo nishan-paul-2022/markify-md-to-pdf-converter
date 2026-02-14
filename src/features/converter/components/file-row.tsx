@@ -1,0 +1,301 @@
+import React from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import type { AppFile } from '@/features/file-management/hooks/use-files';
+import { cn } from '@/utils/cn';
+
+import {
+  AlertCircle,
+  CheckCircle,
+  CheckCircle2,
+  Download,
+  FileCode,
+  FileDown,
+  Loader2,
+  Trash2,
+  Zap,
+} from 'lucide-react';
+
+interface FileRowProps {
+  file: AppFile;
+  index: number;
+  isSelected: boolean;
+  selectionMode: 'none' | 'conversion' | 'deletion';
+  processingState: 'pending' | 'converting' | 'done' | 'error';
+  hasLocalBlob: boolean;
+  onToggleSelection: (id: string) => void;
+  onConvert: (file: AppFile) => void;
+  onDelete: (id: string) => void;
+  onDownload: (file: AppFile, type: 'md' | 'pdf') => void;
+  formatDate: (date: string | Date) => string;
+  formatSize: (bytes: number) => string;
+}
+
+/**
+ * Guideline 7: Composition Over Inheritance
+ * Individual file row with interactive states.
+ */
+export const FileRow = React.memo(
+  ({
+    file,
+    index,
+    isSelected,
+    selectionMode,
+    processingState,
+    hasLocalBlob,
+    onToggleSelection,
+    onConvert,
+    onDelete,
+    onDownload,
+    formatDate,
+    formatSize,
+  }: FileRowProps) => {
+    const isProcessing = processingState === 'converting';
+    const isDone = processingState === 'done';
+    const isError = processingState === 'error';
+
+    const hasOutput = !!(
+      hasLocalBlob ||
+      isDone ||
+      (file.metadata && file.metadata.generatedPdfUrl)
+    );
+
+    return (
+      <div
+        style={{ animationDelay: `${index * 0.05}s` }}
+        className={cn('group/row animate-card-in flex items-stretch gap-4', isSelected && 'z-20')}
+      >
+        {/* Input File Card */}
+        <div
+          className={cn(
+            'relative flex flex-grow items-center justify-between overflow-hidden rounded-3xl border border-white/5 bg-slate-900/40 p-5 shadow-xl transition-all hover:border-indigo-500/30',
+            isSelected && 'border-indigo-500/50 bg-indigo-500/[0.05]',
+          )}
+        >
+          <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4">
+            {/* Unified Icon & Selection Area (Guideline 1: Premium UX) */}
+            <div className="group/icon relative h-11 w-11 shrink-0">
+              {/* File Icon */}
+              <div
+                className={cn(
+                  'flex h-full w-full items-center justify-center rounded-xl transition-all duration-300',
+                  isSelected || selectionMode !== 'none'
+                    ? selectionMode === 'deletion'
+                      ? 'scale-50 bg-red-500/0 text-transparent opacity-0' // Deletion: Hide icon
+                      : 'scale-50 bg-indigo-500/0 text-transparent opacity-0' // Conversion: Hide icon
+                    : 'bg-white/5 text-slate-400 opacity-100 scale-100 group-hover/row:scale-50 group-hover/row:opacity-0',
+                )}
+              >
+                <FileCode className="h-6 w-6" />
+              </div>
+
+              {/* Selection Checkbox (Overlays Icon on hover/selection) */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleSelection(file.id);
+                }}
+                className={cn(
+                  'absolute inset-0 flex cursor-pointer items-center justify-center rounded-xl transition-all duration-300',
+                  isSelected || selectionMode !== 'none'
+                    ? 'translate-y-0 opacity-100 scale-100'
+                    : 'translate-y-2 opacity-0 scale-50 group-hover/row:translate-y-0 group-hover/row:opacity-100 group-hover/row:scale-100',
+                  isSelected
+                    ? selectionMode === 'deletion'
+                      ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' // Deletion: Red
+                      : 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' // Conversion: Indigo
+                    : selectionMode === 'deletion'
+                      ? 'bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white'
+                      : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-indigo-400',
+                )}
+                aria-label={isSelected ? 'Deselect file' : 'Select file'}
+              >
+                <CheckCircle2 className={cn('transition-transform', isSelected ? 'h-6 w-6' : 'h-5 w-5')} />
+              </button>
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <h3 className="truncate text-sm font-bold text-slate-200 transition-colors group-hover/row:text-indigo-300">
+                {file.originalName.split('/').pop()}
+              </h3>
+              <div className="mt-1 flex items-center gap-3">
+                <span className="text-[10px] font-black tracking-wider text-slate-500 uppercase">
+                  {formatSize(file.size)}
+                </span>
+                <span className="h-1 w-1 rounded-full bg-slate-700" />
+                <span className="text-[10px] font-black tracking-wider text-slate-500 uppercase">
+                  {formatDate(file.createdAt)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative z-10 flex shrink-0 items-center gap-2">
+            {selectionMode === 'none' && (
+                  <button
+                    onClick={() => onDelete(file.id)}
+                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+            )}
+
+            {isDone ? (
+              <div className="flex h-11 items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 text-[10px] font-black tracking-wider whitespace-nowrap text-emerald-500/60 uppercase">
+                <CheckCircle className="h-3.5 w-3.5" />
+                <span>Finished</span>
+              </div>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => onConvert(file)}
+                disabled={isProcessing || selectionMode !== 'none'}
+                className={cn(
+                  'flex h-11 min-w-[100px] items-center gap-2 rounded-xl px-4 text-[10px] font-black tracking-wider uppercase transition-all active:scale-95',
+                  isProcessing
+                    ? 'bg-amber-500/20 text-amber-500'
+                    : isError
+                      ? 'border border-red-500/20 bg-red-500/10 text-red-400'
+                      : 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-600',
+                )}
+              >
+                {isProcessing ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : isError ? (
+                  <AlertCircle className="h-3.5 w-3.5" />
+                ) : (
+                  <Zap className="h-3.5 w-3.5 fill-current" />
+                )}
+                <span>{isProcessing ? 'Converting' : isError ? 'Retry' : 'Convert'}</span>
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Output File Card (Always visible for every file) */}
+        <div
+          className={cn(
+            'group/output animate-in slide-in-from-right-8 relative flex w-[480px] items-center justify-between overflow-hidden rounded-3xl border shadow-xl transition-all duration-500',
+            isProcessing
+              ? 'border-amber-500/20 bg-amber-500/[0.02] hover:bg-amber-500/[0.04]'
+              : isError
+                ? 'border-red-500/20 bg-red-500/[0.02] hover:bg-red-500/[0.04]'
+                : isDone || hasOutput
+                  ? 'border-emerald-500/10 bg-emerald-500/[0.03] hover:border-emerald-500/30 hover:bg-emerald-500/[0.06]'
+                  : 'border-white/5 bg-white/[0.02] opacity-40 hover:bg-white/[0.04] hover:opacity-60',
+          )}
+        >
+          {/* Bottom Border Progress Bar - Minimal & Sleek */}
+          {isProcessing && (
+            <div className="absolute bottom-0 left-0 right-0 h-[1px] overflow-hidden bg-white/5">
+              <div className="h-full w-full bg-slate-400 animate-progress-shimmer" />
+            </div>
+          )}
+          <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4 pl-5">
+            <div
+              className={cn(
+                'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
+                isProcessing
+                  ? 'bg-amber-500/10 text-amber-500'
+                  : isError
+                    ? 'bg-red-500/10 text-red-500'
+                    : isDone || hasOutput
+                      ? 'bg-emerald-500/10 text-emerald-400 transition-transform group-hover/output:scale-110'
+                      : 'bg-white/5 text-slate-500',
+              )}
+            >
+              {isProcessing ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : isError ? (
+                <AlertCircle className="h-5 w-5" />
+              ) : (
+                <FileDown className="h-5 w-5" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold text-slate-200">
+                {file.originalName.split('/').pop()?.replace(/\.md$/i, '')}.pdf
+              </p>
+              <div className="mt-1.5 flex items-center gap-3">
+                <span
+                  className={cn(
+                    'text-[10px] font-black tracking-wider uppercase',
+                    isDone || hasOutput ? 'text-slate-400' : 'text-slate-500/30',
+                  )}
+                >
+                  {isDone || hasOutput
+                    ? formatSize((file.metadata?.generatedPdfSize as number) || 0)
+                    : 'PENDING'}
+                </span>
+                <span className="h-1 w-1 rounded-full bg-slate-700" />
+                <span
+                  className={cn(
+                    'text-[10px] font-black tracking-wider uppercase',
+                    isDone || hasOutput ? 'text-slate-400' : 'text-slate-500/30',
+                  )}
+                >
+                  {isDone || hasOutput
+                    ? `${(file.metadata?.generatedPdfPageCount as number) || 0} Pages`
+                    : 'PENDING'}
+                </span>
+
+                <span className="h-1 w-1 rounded-full bg-slate-700" />
+
+                <div className="flex items-center gap-1.5">
+                  {(isDone || hasOutput) && !isProcessing && (
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                  )}
+                  <span
+                    className={cn(
+                      'text-[10px] font-black tracking-[0.15em] uppercase',
+                      isProcessing
+                        ? 'text-amber-500'
+                        : isError
+                          ? 'text-red-500'
+                          : isDone || hasOutput
+                            ? 'font-black text-emerald-500'
+                            : 'text-slate-500/30',
+                    )}
+                  >
+                    {isProcessing
+                      ? 'Processing'
+                      : isError
+                        ? 'Failed'
+                        : isDone || hasOutput
+                          ? 'Ready'
+                          : 'Pending'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action slot - Fixed width to prevent shifting */}
+          <div className="relative z-10 flex h-full w-[80px] shrink-0 items-center justify-center pr-5">
+            {!isProcessing && (isDone || hasOutput) && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onDownload(file, 'pdf')}
+                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 transition-all hover:bg-emerald-500 hover:text-white active:scale-90"
+                  >
+                    <Download className="h-4.5 w-4.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  className="border-slate-800 bg-slate-900 text-xs text-emerald-400"
+                >
+                  Download PDF
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
+FileRow.displayName = 'FileRow';

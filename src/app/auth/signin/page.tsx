@@ -1,46 +1,40 @@
-import { signIn } from "@/lib/auth"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { signIn } from '@/lib/auth';
 
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string; error?: string }>
+  searchParams: Promise<{ callbackUrl?: string; error?: string }>;
 }): Promise<React.JSX.Element> {
   const { callbackUrl = '/dashboard', error } = await searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4 dark:from-gray-900 dark:to-gray-800">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-3xl font-bold tracking-tight">
-            Welcome to Markify
-          </CardTitle>
+          <CardTitle className="text-3xl font-bold tracking-tight">Welcome to Markify</CardTitle>
           <CardDescription className="text-base">
-            Sign in to access your markdown documents and PDF conversions
+            Sign in to access your markdown files and PDF conversions
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-800 dark:text-red-200">
+            <div className="rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
               {error === 'OAuthAccountNotLinked'
                 ? 'This email is already associated with another account.'
                 : 'An error occurred during sign in. Please try again.'}
             </div>
           )}
-          
+
           <form
             action={async () => {
-              "use server"
-              await signIn("google", { redirectTo: callbackUrl })
+              'use server';
+              await signIn('google', { redirectTo: callbackUrl });
             }}
             className="space-y-4"
           >
-            <Button
-              type="submit"
-              className="w-full h-12 text-base font-medium"
-              size="lg"
-            >
+            <Button type="submit" className="h-12 w-full text-base font-medium" size="lg">
               <svg
                 className="mr-2 h-5 w-5"
                 aria-hidden="true"
@@ -65,17 +59,17 @@ export default async function SignInPage({
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
+              <span className="bg-background text-muted-foreground px-2">
                 Secure authentication
               </span>
             </div>
           </div>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-center text-sm">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

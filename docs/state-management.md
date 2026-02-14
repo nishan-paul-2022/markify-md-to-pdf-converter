@@ -7,24 +7,29 @@ This document outlines the requirements for implementing state management in our
 ## Key User Choices to Track
 
 ### 1. View Mode
+
 - Toggle between 'LIVE' and 'PRINT' modes.
 - Current UI shows the mode selection mechanism.
 
 ### 2. Page Navigation
+
 - **Current Page**: The page currently being viewed (e.g., page 1).
 - **Total Pages**: The total number of pages in the document (e.g., 11 pages).
 
 ### 3. Zoom Controls
+
 - **Zoom Percentage**: The current zoom level (e.g., 115%).
 - **Fit to Page**: Option to fit the PDF to the page dimensions.
 - **Fit to Width**: Option to fit the PDF to the width of the viewer.
-- *Note*: These settings are stored separately for 'LIVE' and 'PRINT' modes.
+- _Note_: These settings are stored separately for 'LIVE' and 'PRINT' modes.
 
 ### 4. Mode-Specific Preferences
+
 - Each mode ('LIVE' and 'PRINT') maintains independent zoom settings.
 - Upon switching modes, the application restores the last used settings for the selected mode.
 
 ### 5. UI Preferences
+
 - Collapsed or expanded states for navigation panels and other UI elements.
 
 ## State Requirements
