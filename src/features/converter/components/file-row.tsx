@@ -95,7 +95,7 @@ export const FileRow: React.FC<FileRowProps> = ({
 
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-sm font-bold text-slate-200 transition-colors group-hover/row:text-indigo-300">
-              {file.originalName}
+              {file.originalName.split('/').pop()}
             </h3>
             <div className="mt-1 flex items-center gap-3">
               <span className="text-[10px] font-black tracking-wider text-slate-500 uppercase">
@@ -105,14 +105,6 @@ export const FileRow: React.FC<FileRowProps> = ({
               <span className="text-[10px] font-black tracking-wider text-slate-500 uppercase">
                 {formatDate(file.createdAt)}
               </span>
-              {file.relativePath && file.relativePath !== file.originalName && (
-                <>
-                  <span className="h-1 w-1 rounded-full bg-slate-700" />
-                  <span className="max-w-[150px] truncate text-[10px] font-black tracking-wider text-indigo-500/60 uppercase">
-                    {file.relativePath}
-                  </span>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -207,19 +199,25 @@ export const FileRow: React.FC<FileRowProps> = ({
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-bold text-slate-200">
-              {file.originalName.replace(/\.md$/i, '')}.pdf
+              {file.originalName.split('/').pop()?.replace(/\.md$/i, '')}.pdf
             </p>
             <div className="mt-1.5 flex items-center gap-3">
-              <span className="text-[10px] font-black tracking-wider text-slate-400 uppercase">
+              <span className={cn(
+                "text-[10px] font-black tracking-wider uppercase",
+                isDone || hasOutput ? "text-slate-400" : "text-slate-500/30"
+              )}>
                 {isDone || hasOutput
                   ? formatSize((file.metadata?.generatedPdfSize as number) || 0)
-                  : '--- KB'}
+                  : 'PENDING'}
               </span>
               <span className="h-1 w-1 rounded-full bg-slate-700" />
-              <span className="text-[10px] font-black tracking-wider text-slate-400 uppercase">
+              <span className={cn(
+                "text-[10px] font-black tracking-wider uppercase",
+                isDone || hasOutput ? "text-slate-400" : "text-slate-500/30"
+              )}>
                 {isDone || hasOutput
                   ? `${(file.metadata?.generatedPdfPageCount as number) || 0} Pages`
-                  : '--- Pages'}
+                  : 'PENDING'}
               </span>
 
               <span className="h-1 w-1 rounded-full bg-slate-700" />
@@ -237,7 +235,7 @@ export const FileRow: React.FC<FileRowProps> = ({
                         ? 'text-red-500'
                         : isDone || hasOutput
                           ? 'font-black text-emerald-500'
-                          : 'text-slate-500',
+                          : 'text-slate-500/30',
                   )}
                 >
                   {isProcessing
@@ -246,7 +244,7 @@ export const FileRow: React.FC<FileRowProps> = ({
                       ? 'Failed'
                       : isDone || hasOutput
                         ? 'Ready'
-                        : 'Silent'}
+                        : 'Pending'}
                 </span>
               </div>
             </div>
