@@ -1,9 +1,10 @@
-import NextAuth from "next-auth"
-import authConfig from "@/auth.config"
+import NextAuth from 'next-auth';
 
-const { auth } = NextAuth(authConfig)
+import authConfig from '@/auth.config';
 
-export default auth
+const { auth } = NextAuth(authConfig);
+
+export default auth;
 
 // Configure which routes to run middleware on
 export const config = {
@@ -17,4 +18,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-}
+};

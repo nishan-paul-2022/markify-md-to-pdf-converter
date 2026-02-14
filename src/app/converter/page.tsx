@@ -1,12 +1,19 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import ConverterWrapper from "./ConverterWrapper";
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+
+import ConverterWrapper from '@/app/converter/converter-wrapper';
+import { auth } from '@/lib/auth';
+
+export const metadata: Metadata = {
+  title: 'Markify - Converter',
+  description: 'Advanced Markdown to PDF conversion pipeline',
+};
 
 export default async function ConverterPage(): Promise<React.JSX.Element> {
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/");
+    redirect('/');
   }
 
   const user = {

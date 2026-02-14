@@ -1,12 +1,19 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import ConverterLoader from "@/components/converter/ConverterLoader";
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+
+import ConverterLoader from '@/features/converter/components/converter-loader';
+import { auth } from '@/lib/auth';
+
+export const metadata: Metadata = {
+  title: 'Markify - Editor',
+  description: 'Craft pixel-perfect Markdown documents',
+};
 
 export default async function EditorPage(): Promise<React.JSX.Element> {
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/");
+    redirect('/');
   }
 
   return <ConverterLoader user={session.user} />;

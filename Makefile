@@ -9,8 +9,11 @@ APP_NAME = $(APP_CONTAINER_NAME)
 DB_NAME = $(DB_CONTAINER_NAME)
 
 kill-port:
-	@echo "Stopping any process on port 3000..."
-	@fuser -k 3000/tcp || true
+	@fuser -k 3000/tcp 2>/dev/null || true
+	@CONTAINERS=$$(docker ps -q --filter "publish=3000"); \
+	if [ -n "$$CONTAINERS" ]; then \
+		docker stop $$CONTAINERS >/dev/null; \
+	fi
 
 setup: kill-port
 	npm install
@@ -20,6 +23,9 @@ setup: kill-port
 clean: kill-port
 	docker compose down -v
 	docker rmi $(APP_NAME) || true
+
+fix-perms:
+	@sudo chown -R $$USER:$$USER public/uploads 2>/dev/null || true
 
 dev: kill-port
 	docker compose up -d db

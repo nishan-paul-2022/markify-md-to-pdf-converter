@@ -33,29 +33,32 @@ To qualify as a "true" PWA in 2024/2025, you need three core pillars:
 
 Based on my audit of your current codebase (Next.js 16, Tailwind 4):
 
-| Feature             | Status | Observation |
-|---------------------|--------|-------------|
-| Responsive Design   | 🟢 Good | You've recently optimized the Action Strip and mobile tabs. |
-| HTTPS               | 🟡 Pending | Depends on your hosting (e.g., Vercel gives this for free). |
-| Web Manifest        | 🔴 Missing | No `manifest.json` or `app/manifest.ts` found. |
-| Service Worker      | 🔴 Missing | No caching logic implemented for offline use. |
-| App Icons           | 🔴 Missing | No standardized PWA icons (192px, 512px, Maskable). |
-| Theme Metadata      | 🔴 Missing | Missing `theme-color` meta tags in `layout.tsx`. |
+| Feature           | Status     | Observation                                                 |
+| ----------------- | ---------- | ----------------------------------------------------------- |
+| Responsive Design | 🟢 Good    | You've recently optimized the Action Strip and mobile tabs. |
+| HTTPS             | 🟡 Pending | Depends on your hosting (e.g., Vercel gives this for free). |
+| Web Manifest      | 🔴 Missing | No `manifest.json` or `app/manifest.ts` found.              |
+| Service Worker    | 🔴 Missing | No caching logic implemented for offline use.               |
+| App Icons         | 🔴 Missing | No standardized PWA icons (192px, 512px, Maskable).         |
+| Theme Metadata    | 🔴 Missing | Missing `theme-color` meta tags in `layout.tsx`.            |
 
 ## 4. Implementation Roadmap (What Needs to Be Done)
 
 If we proceed, these are the high-impact items I would implement for you:
 
 ### Phase A: The Foundation
+
 - **Manifest Generation**: Create a `src/app/manifest.ts` (Next.js native) to define the name, short_name, and standalone display mode.
 - **Icon Strategy**: Use your current brand logo to generate a suite of icons, including a "Maskable Icon" (essential for Android to prevent white borders).
 - **Meta Integration**: Add `theme-color`, `apple-mobile-web-app-capable`, and `apple-touch-icon` to your `layout.tsx`.
 
 ### Phase B: The Engine (Service Worker)
+
 - **Caching Strategy**: Implement a "Stale-While-Revalidate" strategy for assets (CSS, JS) and "Cache-First" for your Markdown/PDF processing libraries (which are heavy).
 - **Offline Page**: Create a fallback UI for when the user is offline but trying to access a feature that requires a server (if any).
 
 ### Phase C: The "Wow" Factor
+
 - **Install Prompt**: Create a custom, non-intrusive "Install to Desktop" button that only appears if the app isn't already installed.
 - **Share Target**: Allow users to "Share" a markdown file from their phone directly into your app.
 

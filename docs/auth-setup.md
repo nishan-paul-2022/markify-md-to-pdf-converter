@@ -279,6 +279,7 @@ npm run db:migrate
 When prompted, enter a migration name: `init`
 
 This will:
+
 - Create the migration files
 - Apply the migration to your database
 - Generate the Prisma Client
@@ -290,6 +291,7 @@ npm run db:studio
 ```
 
 This opens Prisma Studio in your browser where you can:
+
 - View all tables
 - Inspect the schema
 - Manually add/edit data (for testing)

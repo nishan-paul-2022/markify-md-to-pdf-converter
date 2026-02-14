@@ -1,317 +1,140 @@
-# Markify
+<div align="center">
+  <img src="public/brand-logo.svg" alt="Markify Logo" width="120" height="120" />
+  <h1>Markify</h1>
+  <p>Professional Markdown to PDF Conversion Suite</p>
+</div>
 
-A professional web application built with Next.js, Shadcn UI, and Playwright to convert Markdown (with Mermaid diagram support) into high-quality PDF reports. Features secure authentication and file management.
+Markify is a professional, high-performance web application designed to convert Markdown into beautiful, high-fidelity PDF reports. Built with **Next.js**, **Playwright**, and **Tailwind CSS v4**, it features real-time preview and seamless Mermaid diagram support.
 
-## Features
+## ✨ Core Features
 
-- **🔐 Authentication**: Secure Google OAuth authentication with NextAuth.js v5
-- **📁 File Management**: Upload, store, and manage markdown files with PostgreSQL
-- **👤 User Dashboard**: Personalized dashboard with file statistics and management
-- **📝 Live Preview**: Real-time rendering of Markdown content
-- **📊 Mermaid Support**: Seamlessly render diagrams within your markdown
-- **📄 PDF Generation**: High-fidelity PDF output using Playwright
-- **🎨 Modern UI**: Built with Shadcn UI and Tailwind CSS v4
-- **🐳 Dockerized**: Easy deployment with Docker
-- **🔒 Secure**: Database sessions, file ownership verification, and proper authentication
+- **📄 Pro PDF Generation**: High-fidelity PDF output using Playwright engine.
+- **📊 Mermaid Support**: Native support for diagrams and charts within Markdown.
+- **📝 Live Preview**: Real-time side-by-side rendering as you type.
+- **🔐 Secure Auth**: Seamless Google OAuth integration with NextAuth.js v5.
+- **📁 File Management**: Robust storage and organization of your documents.
+- **🎨 Elite UI**: Stunning dark-mode interface built with Shadcn UI.
+- **🐳 Docker Ready**: Fully containerized for instant deployment.
 
-## Tech Stack
+---
 
-- **Frontend**: Next.js 16, React 19, TypeScript
-- **Authentication**: NextAuth.js v5 (Auth.js)
-- **Database**: PostgreSQL with Prisma ORM
-- **UI**: Shadcn UI, Tailwind CSS v4, Radix UI
-- **PDF Generation**: Playwright
-- **Deployment**: Docker, Vercel-ready
+## 🛠️ Technology Stack
 
-## Quick Start
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Server Components)
+- **Language**: [TypeScript](https://www.typescriptlang.org/) (Full Type Safety)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **UI Components**: [Shadcn UI](https://ui.shadcn.com/) (Radix UI)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Database**: [PostgreSQL](https://www.postgresql.org/)
+- **ORM**: [Prisma](https://www.prisma.io/)
+- **Authentication**: [NextAuth.js v5](https://authjs.dev/) (Auth.js)
+- **PDF Engine**: [Playwright](https://playwright.dev/) (Chromium)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
 
-### Prerequisites
+---
 
-- Node.js 18+
-- PostgreSQL 14+ (or Docker)
-- Google Cloud Console account (for OAuth)
+## 🚀 Step-by-Step Installation
 
-### 1. Install Dependencies
+Follow these steps to get Markify up and running in minutes.
+
+### 1. Prerequisites
+
+Ensure you have the following installed:
+
+- **Node.js 20+**
+- **Docker** and **Docker Compose**
+
+### 2. Environment Configuration
+
+Clone the repository and set up your local environment file:
+
+```bash
+cp .env.example .env
+```
+
+Generate a secure authentication secret and add it to `AUTH_SECRET` in your `.env`:
+
+```bash
+openssl rand -base64 32
+```
+
+### 3. Google OAuth Setup
+
+To enable authentication, you need to create credentials in the [Google Cloud Console](https://console.cloud.google.com/).
+
+**Step-by-step Guide:**
+
+1.  **Create a Project**: Click the project dropdown and select "New Project".
+2.  **OAuth Consent Screen**: Search for "OAuth consent screen", choose "External", and fill in the required fields.
+3.  **Create Credentials**: Go to "Credentials" > "Create Credentials" > "OAuth client ID".
+4.  **Configure**:
+    - **Application type**: Web application.
+    - **Authorized redirect URIs**: Add `http://localhost:3000/api/auth/callback/google`.
+5.  **Save**: Copy the **Client ID** and **Client Secret** into your `.env` file.
+
+### 4. Launch the Application
+
+Choose your preferred method of running the app:
+
+#### Option A: Docker (Recommended)
+
+This installs all dependencies and starts the database/app in containers.
+
+```bash
+make setup    # First-time initialization
+make up       # Subsequent runs
+```
+
+#### Option B: Local Development
+
+Fastest for coding. Runs the database in Docker and the app on your host machine.
+
+1. **Install Dependencies:**
 
 ```bash
 npm install
 ```
 
-### 2. Set Up PDF Generation (Playwright)
-
-Markify uses Playwright for high-fidelity PDF generation. You must install the browser binaries and system dependencies:
+2. **Setup Playwright (Required for PDF):**
 
 ```bash
-# 1. Install browser binaries (Chromium)
 npx playwright install chromium
-
-# 2. Install system dependencies (Linux only)
-# This requires sudo privileges to install necessary libs for the headless browser
-sudo npx playwright install-deps chromium
+sudo npx playwright install-deps chromium  # Linux only
 ```
 
-*Note: On Windows or macOS, `npx playwright install chromium` is usually sufficient.*
-
-### 3. Set Up Database
-
-**Using Docker (Recommended)**:
-```bash
-docker run --name markify-postgres \
-  -e POSTGRES_DB=markify \
-  -e POSTGRES_USER=markify_user \
-  -e POSTGRES_PASSWORD=markify123 \
-  -p 5432:5432 \
-  -d postgres:16-alpine
-```
-
-**Or install PostgreSQL locally** - See [docs/quick-start.md](docs/quick-start.md)
-
-### 4. Configure Environment Variables
-
-Create a `.env` file:
+3. **Fix Directory Permissions (Linux Only):**
+   Prevents `EACCES` errors when uploading files:
 
 ```bash
-# Generate secret
-openssl rand -base64 32
+make fix-perms
 ```
 
-```env
-DATABASE_URL="postgresql://markify_user:markify123@localhost:5432/markify?schema=public"
-NEXTAUTH_SECRET="your-generated-secret"
-NEXTAUTH_URL="http://localhost:3000"
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-```
-
-See [docs/environment-setup.md](docs/environment-setup.md) for detailed configuration.
-
-### 5. Set Up Google OAuth
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project
-3. Enable Google+ API
-4. Create OAuth credentials with redirect URI: `http://localhost:3000/api/auth/callback/google`
-5. Copy credentials to `.env`
-
-**Detailed guide**: [docs/auth-setup.md](docs/auth-setup.md#google-oauth-configuration)
-
-### 6. Run Database Migrations
+4. **Run Server:**
 
 ```bash
-npm run db:migrate
+make dev
 ```
 
-### 7. Start Development Server
+Visit [http://localhost:3000](http://localhost:3000) to access the app.
 
-```bash
-npm run dev
-```
+---
 
-Visit [http://localhost:3000](http://localhost:3000) and sign in!
+## 📑 Management Commands
 
-## Documentation
+| Command          | Description                                             |
+| :--------------- | :------------------------------------------------------ |
+| `make setup`     | **First-time install**: Docker setup + DB schema sync   |
+| `make dev`       | Run Next.js locally with Docker DB (Fastest for coding) |
+| `make up`        | Start production-ready containers                       |
+| `make build`     | Force rebuild Docker images and restart                 |
+| `make logs`      | Follow application logs                                 |
+| `make fix-perms` | Fix file permission issues in `public/uploads` (Linux)  |
+| `make down`      | Stop all services                                       |
+| `make clean`     | Reset everything (removes volumes and images)           |
 
-- **[Quick Start Guide](docs/quick-start.md)** - Get up and running in 5 minutes
-- **[Authentication Setup](docs/auth-setup.md)** - Complete auth and database setup
-- **[Environment Setup](docs/environment-setup.md)** - Environment configuration details
-- **[API Documentation](docs/api-documentation.md)** - API endpoints and usage
+---
 
-## Available Scripts
-
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-
-# Database commands
-npm run db:generate  # Generate Prisma Client
-npm run db:migrate   # Run database migrations
-npm run db:push      # Push schema to database
-npm run db:studio    # Open Prisma Studio
-```
-
-## Project Structure
-
-```
-markify/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── auth/[...nextauth]/  # Auth endpoints
-│   │   │   └── files/               # File management API
-│   │   ├── auth/                    # Auth pages
-│   │   ├── dashboard/               # Protected dashboard
-│   │   └── page.tsx                 # Home page
-│   ├── components/
-│   │   ├── ui/                      # Shadcn UI components
-│   │   ├── file-upload.tsx          # File upload component
-│   │   ├── file-list.tsx            # File list component
-│   │   └── user-nav.tsx             # User navigation
-│   ├── lib/
-│   │   ├── auth.ts                  # NextAuth configuration
-│   │   └── prisma.ts                # Prisma client
-│   └── middleware.ts                # Route protection
-├── prisma/
-│   └── schema.prisma                # Database schema
-├── docs/                            # Documentation
-└── public/
-    └── uploads/                     # User file uploads
-```
-
-## Features in Detail
-
-### Authentication
-
-- Google OAuth integration
-- Database-backed sessions for security
-- Protected routes with middleware
-- User profile management
-- Automatic session refresh
-
-### File Management
-
-- Secure file upload with validation
-- File type restrictions (markdown, images, PDF)
-- File size limits (10MB)
-- User-specific file storage
-- Download and delete functionality
-- Pagination support
-
-### Dashboard
-
-- User statistics (file count, storage used)
-- File upload interface with drag-and-drop
-- File list with search and filtering
-- User profile dropdown
-- Responsive design
-
-## Using Docker
-
-### Build and Run
-
-```bash
-# Build and start all services
-make up
-
-# View logs
-make logs
-
-# Stop and remove containers
-make down
-
-# Full setup (install + up + db push)
-make setup
-```
-
-### Docker Compose (with PostgreSQL)
-
-```yaml
-version: '3.8'
-services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: markify
-      POSTGRES_USER: markify_user
-      POSTGRES_PASSWORD: markify123
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      DATABASE_URL: postgresql://markify_user:markify123@postgres:5432/markify
-      NEXTAUTH_SECRET: your-secret
-      NEXTAUTH_URL: http://localhost:3000
-    depends_on:
-      - postgres
-
-volumes:
-  postgres-data:
-```
-
-## Production Deployment
-
-### Vercel (Recommended)
-
-1. Push to GitHub
-2. Import project in Vercel
-3. Add environment variables
-4. Deploy!
-
-**Database**: Use [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Vercel Postgres](https://vercel.com/storage/postgres)
-
-### Railway
-
-```bash
-# Install Railway CLI
-npm i -g @railway/cli
-
-# Login and deploy
-railway login
-railway init
-railway up
-```
-
-### Docker
-
-```bash
-# Build production image
-docker build -t markify .
-
-# Run with environment variables
-docker run -p 3000:3000 \
-  -e DATABASE_URL="..." \
-  -e NEXTAUTH_SECRET="..." \
-  -e NEXTAUTH_URL="..." \
-  -e GOOGLE_CLIENT_ID="..." \
-  -e GOOGLE_CLIENT_SECRET="..." \
-  markify
-```
-
-## Security Best Practices
-
-✅ Database sessions (not JWT)  
-✅ HTTP-only cookies  
-✅ CSRF protection (built-in)  
-✅ File ownership verification  
-✅ Input validation  
-✅ SQL injection prevention (Prisma)  
-✅ Environment variable protection  
-✅ Secure password hashing (handled by OAuth)
-
-## Industry Best Practices
-
-- **Next.js App Router**: Server Components and Server Actions
-- **TypeScript**: Full type safety across the stack
-- **Prisma ORM**: Type-safe database queries
-- **NextAuth.js v5**: Modern authentication solution
-- **Modular Components**: Reusable UI with Shadcn
-- **Database Migrations**: Version-controlled schema changes
-- **Error Handling**: Comprehensive error boundaries
-- **Responsive Design**: Mobile-first approach
-- **Accessibility**: ARIA labels and keyboard navigation
-
-## Troubleshooting
-
-See [docs/auth-setup.md#troubleshooting](docs/auth-setup.md#troubleshooting) for common issues and solutions.
-
-## Contributing
-
-Contributions are welcome! Please read our contributing guidelines first.
-
-## License
-
-MIT
-
-## Support
-
-- 📖 [Documentation](docs/)
-- 🐛 [Report Issues](https://github.com/yourusername/markify/issues)
-- 💬 [Discussions](https://github.com/yourusername/markify/discussions)
-
+<div align="center">
+  <img src="public/company-logo.svg" alt="KAI Team Logo" width="80" height="80" />
+  <p>Built with ❤️ by the <b>KAI Team</b>.</p>
+</div>
