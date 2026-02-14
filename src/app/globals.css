@@ -220,6 +220,19 @@
     }
   }
 
+  @keyframes progress-shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-progress-shimmer {
+    animation: progress-shimmer 1.5s infinite linear;
+  }
+
   .animate-pulse-subtle {
     animation: pulse-subtle 3s infinite ease-in-out;
   }

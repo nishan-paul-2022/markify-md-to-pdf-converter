@@ -454,7 +454,14 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
             <div className="shadow-3xl relative flex flex-grow flex-col overflow-hidden rounded-[2rem] border border-white/5 bg-slate-900/20 p-4 backdrop-blur-3xl">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-indigo-500/[0.03] to-transparent" />
               <div className="custom-scrollbar relative z-10 flex flex-grow flex-col gap-4 overflow-y-auto pr-2">
-                {!loading && filteredMdFiles.length > 0 ? (
+                {/* Subtle top loader for silent refreshes */}
+                {loading && filteredMdFiles.length > 0 && (
+                  <div className="absolute top-0 right-0 left-0 z-20 h-0.5 overflow-hidden">
+                    <div className="animate-progress-shimmer h-full w-full bg-indigo-500/50" />
+                  </div>
+                )}
+
+                {filteredMdFiles.length > 0 ? (
                   filteredMdFiles.map((file, index) => (
                     <FileRow
                       key={file.id}

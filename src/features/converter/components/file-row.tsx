@@ -36,20 +36,21 @@ interface FileRowProps {
  * Guideline 7: Composition Over Inheritance
  * Individual file row with interactive states.
  */
-export const FileRow: React.FC<FileRowProps> = ({
-  file,
-  index,
-  isSelected,
-  isSelectionMode,
-  processingState,
-  hasLocalBlob,
-  onToggleSelection,
-  onConvert,
-  onDelete,
-  onDownload,
-  formatDate,
-  formatSize,
-}) => {
+export const FileRow = React.memo(
+  ({
+    file,
+    index,
+    isSelected,
+    isSelectionMode,
+    processingState,
+    hasLocalBlob,
+    onToggleSelection,
+    onConvert,
+    onDelete,
+    onDownload,
+    formatDate,
+    formatSize,
+  }: FileRowProps) => {
   const isProcessing = processingState === 'converting';
   const isDone = processingState === 'done';
   const isError = processingState === 'error';
@@ -275,4 +276,6 @@ export const FileRow: React.FC<FileRowProps> = ({
       </div>
     </div>
   );
-};
+});
+
+FileRow.displayName = 'FileRow';
