@@ -217,8 +217,6 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
         {/* Group 3: Actions */}
         <div className="flex h-8 items-center gap-0.5 rounded-full border border-white/5 bg-slate-800/40 px-1 shadow-inner">
-          <Tooltip>
-            <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
@@ -235,14 +233,9 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
                 )}
                 {isCopied ? 'Copied' : 'Copy'}
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>Copy Source</TooltipContent>
-          </Tooltip>
 
           <div className="h-3 w-[1px] bg-white/10" />
 
-          <Tooltip>
-            <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
@@ -259,14 +252,9 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
                 )}
                 {isReset ? 'Done' : 'Reset'}
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>Reset Content</TooltipContent>
-          </Tooltip>
 
           <div className="h-3 w-[1px] bg-white/10" />
 
-          <Tooltip>
-            <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
@@ -283,9 +271,6 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
                 )}
                 Export
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>Download Source</TooltipContent>
-          </Tooltip>
 
           <div className="ml-1 md:hidden">
             <DropdownMenu>

@@ -201,8 +201,6 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
             {filteredFilesCount > 0 && (
               <div className="flex items-center gap-3">
                 {/* 1. Selection Mode Entry */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
                     <button
                       onClick={onToggleConversionMode}
                       className="group flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-slate-400 transition-all hover:bg-white/10 hover:text-white"
@@ -212,15 +210,8 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                         CONVERT
                       </span>
                     </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="border-slate-800 bg-slate-900 text-xs text-white">
-                    Enable Conversion Selection
-                  </TooltipContent>
-                </Tooltip>
 
                 {/* 2. Deletion Mode Entry (Minimal) */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
                     <button
                       onClick={onToggleDeletionMode}
                       className="group flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-slate-400 transition-all hover:bg-white/10 hover:text-white"
@@ -230,11 +221,6 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                         DELETE
                       </span>
                     </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="border-slate-800 bg-slate-900 text-xs text-white">
-                    Delete Multiple Files
-                  </TooltipContent>
-                </Tooltip>
 
                 {/* 2. Sorting Actions */}
                 <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] p-1">

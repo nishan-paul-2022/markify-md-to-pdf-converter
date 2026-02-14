@@ -102,8 +102,6 @@ export const MdPreviewToolbar = ({
       >
         {/* Pill 1: View Mode */}
         <div className="flex h-8 items-center gap-1 rounded-full border border-white/5 bg-slate-800/40 px-1 shadow-inner">
-          <Tooltip>
-            <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
@@ -118,11 +116,6 @@ export const MdPreviewToolbar = ({
                 <Eye className="h-3.5 w-3.5" />
                 LIVE
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>Switch to Live Preview</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
@@ -137,9 +130,6 @@ export const MdPreviewToolbar = ({
                 <Printer className="h-3.5 w-3.5" />
                 PRINT
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>Switch to Print Preview</TooltipContent>
-          </Tooltip>
         </div>
 
         {/* Pill 2: Sync (Preview Mode Only) */}

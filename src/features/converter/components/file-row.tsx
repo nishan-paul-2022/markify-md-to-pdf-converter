@@ -133,22 +133,12 @@ export const FileRow = React.memo(
 
           <div className="relative z-10 flex shrink-0 items-center gap-2">
             {selectionMode === 'none' && (
-              <Tooltip>
-                <TooltipTrigger asChild>
                   <button
                     onClick={() => onDelete(file.id)}
                     className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
-                </TooltipTrigger>
-                <TooltipContent
-                  side="top"
-                  className="border-slate-800 bg-slate-900 text-xs text-red-400/80"
-                >
-                  Delete Source
-                </TooltipContent>
-              </Tooltip>
             )}
 
             <div className="mx-1 h-6 w-px bg-white/5" />
