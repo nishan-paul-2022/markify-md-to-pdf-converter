@@ -38,63 +38,79 @@ Markify is a professional, high-performance web application designed to convert 
 Follow these steps to get Markify up and running in minutes.
 
 ### 1. Prerequisites
+
 Ensure you have the following installed:
+
 - **Node.js 20+**
 - **Docker** and **Docker Compose**
 
 ### 2. Environment Configuration
+
 Clone the repository and set up your local environment file:
+
 ```bash
 cp .env.example .env
 ```
+
 Generate a secure authentication secret and add it to `AUTH_SECRET` in your `.env`:
+
 ```bash
 openssl rand -base64 32
 ```
 
 ### 3. Google OAuth Setup
+
 To enable authentication, you need to create credentials in the [Google Cloud Console](https://console.cloud.google.com/).
 
 **Step-by-step Guide:**
+
 1.  **Create a Project**: Click the project dropdown and select "New Project".
 2.  **OAuth Consent Screen**: Search for "OAuth consent screen", choose "External", and fill in the required fields.
 3.  **Create Credentials**: Go to "Credentials" > "Create Credentials" > "OAuth client ID".
 4.  **Configure**:
-    *   **Application type**: Web application.
-    *   **Authorized redirect URIs**: Add `http://localhost:3000/api/auth/callback/google`.
+    - **Application type**: Web application.
+    - **Authorized redirect URIs**: Add `http://localhost:3000/api/auth/callback/google`.
 5.  **Save**: Copy the **Client ID** and **Client Secret** into your `.env` file.
 
 ### 4. Launch the Application
+
 Choose your preferred method of running the app:
 
 #### Option A: Docker (Recommended)
+
 This installs all dependencies and starts the database/app in containers.
+
 ```bash
 make setup    # First-time initialization
 make up       # Subsequent runs
 ```
 
 #### Option B: Local Development
+
 Fastest for coding. Runs the database in Docker and the app on your host machine.
 
 1. **Install Dependencies:**
+
 ```bash
 npm install
 ```
 
 2. **Setup Playwright (Required for PDF):**
+
 ```bash
 npx playwright install chromium
 sudo npx playwright install-deps chromium  # Linux only
 ```
 
 3. **Fix Directory Permissions (Linux Only):**
-Prevents `EACCES` errors when uploading files:
+   Prevents `EACCES` errors when uploading files:
+
 ```bash
 make fix-perms
 ```
 
 4. **Run Server:**
+
 ```bash
 make dev
 ```
@@ -105,16 +121,16 @@ Visit [http://localhost:3000](http://localhost:3000) to access the app.
 
 ## 📑 Management Commands
 
-| Command | Description |
-| :-- | :-- |
-| `make setup` | **First-time install**: Docker setup + DB schema sync |
-| `make dev` | Run Next.js locally with Docker DB (Fastest for coding) |
-| `make up` | Start production-ready containers |
-| `make build` | Force rebuild Docker images and restart |
-| `make logs` | Follow application logs |
-| `make fix-perms` | Fix file permission issues in `public/uploads` (Linux) |
-| `make down` | Stop all services |
-| `make clean` | Reset everything (removes volumes and images) |
+| Command          | Description                                             |
+| :--------------- | :------------------------------------------------------ |
+| `make setup`     | **First-time install**: Docker setup + DB schema sync   |
+| `make dev`       | Run Next.js locally with Docker DB (Fastest for coding) |
+| `make up`        | Start production-ready containers                       |
+| `make build`     | Force rebuild Docker images and restart                 |
+| `make logs`      | Follow application logs                                 |
+| `make fix-perms` | Fix file permission issues in `public/uploads` (Linux)  |
+| `make down`      | Stop all services                                       |
+| `make clean`     | Reset everything (removes volumes and images)           |
 
 ---
 

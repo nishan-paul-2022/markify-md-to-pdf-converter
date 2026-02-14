@@ -71,11 +71,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json(fileRecord);
   } catch (error: unknown) {
-    logger.error('File upload error:', error instanceof Error ? {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    } : error);
+    logger.error(
+      'File upload error:',
+      error instanceof Error
+        ? {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+          }
+        : error,
+    );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Upload failed' },
       { status: 500 },

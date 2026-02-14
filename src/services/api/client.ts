@@ -58,8 +58,13 @@ export async function fetchApiFormData<T>(
       errorDetail = { error: `HTTP ${response.status}: ${response.statusText}` };
     }
 
-    logger.error(`API Error [${url}] (Status ${response.status} ${response.statusText}):`, errorDetail);
-    throw new Error(errorDetail.details || errorDetail.error || `HTTP ${response.status}: ${response.statusText}`);
+    logger.error(
+      `API Error [${url}] (Status ${response.status} ${response.statusText}):`,
+      errorDetail,
+    );
+    throw new Error(
+      errorDetail.details || errorDetail.error || `HTTP ${response.status}: ${response.statusText}`,
+    );
   }
 
   return response.json();

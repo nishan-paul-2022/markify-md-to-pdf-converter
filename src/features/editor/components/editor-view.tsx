@@ -110,7 +110,7 @@ export default function EditorView({
   } = useConverter(files, handleFileDelete);
 
   const fileTree = React.useMemo(() => buildFileTree(files), [files]);
-  
+
   // Prevent page-level scrolling (Guidelines 1 & 4)
   React.useEffect(() => {
     document.documentElement.style.overflow = 'hidden';

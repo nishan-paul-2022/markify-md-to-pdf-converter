@@ -51,231 +51,240 @@ export const FileRow = React.memo(
     formatDate,
     formatSize,
   }: FileRowProps) => {
-  const isProcessing = processingState === 'converting';
-  const isDone = processingState === 'done';
-  const isError = processingState === 'error';
+    const isProcessing = processingState === 'converting';
+    const isDone = processingState === 'done';
+    const isError = processingState === 'error';
 
-  const hasOutput = !!(hasLocalBlob || isDone || (file.metadata && file.metadata.generatedPdfUrl));
+    const hasOutput = !!(
+      hasLocalBlob ||
+      isDone ||
+      (file.metadata && file.metadata.generatedPdfUrl)
+    );
 
-  return (
-    <div
-      style={{ animationDelay: `${index * 0.05}s` }}
-      className={cn('group/row animate-card-in flex items-stretch gap-4', isSelected && 'z-20')}
-    >
-      {/* Input File Card */}
+    return (
       <div
-        className={cn(
-          'relative flex flex-grow items-center justify-between overflow-hidden rounded-3xl border border-white/5 bg-slate-900/40 p-5 shadow-xl transition-all hover:border-indigo-500/30',
-          isSelected && 'border-indigo-500/50 bg-indigo-500/[0.05]',
-        )}
+        style={{ animationDelay: `${index * 0.05}s` }}
+        className={cn('group/row animate-card-in flex items-stretch gap-4', isSelected && 'z-20')}
       >
-        <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4">
-          {/* Selection Checkbox */}
-          {isSelectionMode && (
-            <button
-              onClick={() => onToggleSelection(file.id)}
-              className={cn(
-                'animate-in zoom-in-50 flex h-6 w-6 cursor-pointer items-center justify-center rounded-lg transition-all',
-                isSelected
-                  ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                  : 'border border-white/10 bg-white/5 text-transparent hover:border-indigo-500/30',
-              )}
-            >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-            </button>
+        {/* Input File Card */}
+        <div
+          className={cn(
+            'relative flex flex-grow items-center justify-between overflow-hidden rounded-3xl border border-white/5 bg-slate-900/40 p-5 shadow-xl transition-all hover:border-indigo-500/30',
+            isSelected && 'border-indigo-500/50 bg-indigo-500/[0.05]',
           )}
-
-          <div
-            className={cn(
-              'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-transform group-hover/row:scale-110',
-              isSelected ? 'bg-indigo-500/20 text-indigo-400' : 'bg-white/5 text-slate-400',
-            )}
-          >
-            <FileCode className="h-6 w-6" />
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <h3 className="truncate text-sm font-bold text-slate-200 transition-colors group-hover/row:text-indigo-300">
-              {file.originalName.split('/').pop()}
-            </h3>
-            <div className="mt-1 flex items-center gap-3">
-              <span className="text-[10px] font-black tracking-wider text-slate-500 uppercase">
-                {formatSize(file.size)}
-              </span>
-              <span className="h-1 w-1 rounded-full bg-slate-700" />
-              <span className="text-[10px] font-black tracking-wider text-slate-500 uppercase">
-                {formatDate(file.createdAt)}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative z-10 flex shrink-0 items-center gap-2">
-          {!isSelectionMode && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => onDelete(file.id)}
-                  className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="top"
-                className="border-slate-800 bg-slate-900 text-xs text-red-400/80"
-              >
-                Delete Source
-              </TooltipContent>
-            </Tooltip>
-          )}
-
-          <div className="mx-1 h-6 w-px bg-white/5" />
-
-          {isDone ? (
-            <div className="flex h-9 items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 text-[10px] font-black tracking-wider whitespace-nowrap text-emerald-500/60 uppercase">
-              <CheckCircle className="h-3.5 w-3.5" />
-              <span>Finished</span>
-            </div>
-          ) : (
-            <Button
-              size="sm"
-              onClick={() => onConvert(file)}
-              disabled={isProcessing || isSelectionMode}
-              className={cn(
-                'flex h-9 min-w-[100px] items-center gap-2 rounded-xl px-4 text-[10px] font-black tracking-wider uppercase transition-all active:scale-95',
-                isProcessing
-                  ? 'bg-amber-500/20 text-amber-500'
-                  : isError
-                    ? 'border border-red-500/20 bg-red-500/10 text-red-400'
-                    : 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-600',
-              )}
-            >
-              {isProcessing ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : isError ? (
-                <AlertCircle className="h-3.5 w-3.5" />
-              ) : (
-                <Zap className="h-3.5 w-3.5 fill-current" />
-              )}
-              <span>{isProcessing ? 'Converting' : isError ? 'Retry' : 'Convert'}</span>
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Output File Card (Always visible for every file) */}
-      <div
-        className={cn(
-          'group/output animate-in slide-in-from-right-8 relative flex w-[480px] items-center justify-between overflow-hidden rounded-3xl border shadow-xl transition-all duration-500',
-          isProcessing
-            ? 'border-amber-500/20 bg-amber-500/[0.02] hover:bg-amber-500/[0.04]'
-            : isError
-              ? 'border-red-500/20 bg-red-500/[0.02] hover:bg-red-500/[0.04]'
-              : isDone || hasOutput
-                ? 'border-emerald-500/10 bg-emerald-500/[0.03] hover:border-emerald-500/30 hover:bg-emerald-500/[0.06]'
-                : 'border-white/5 bg-white/[0.02] opacity-40 hover:bg-white/[0.04] hover:opacity-60',
-        )}
-      >
-        <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4 pl-5">
-          <div
-            className={cn(
-              'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-              isProcessing
-                ? 'bg-amber-500/10 text-amber-500'
-                : isError
-                  ? 'bg-red-500/10 text-red-500'
-                  : isDone || hasOutput
-                    ? 'bg-emerald-500/10 text-emerald-400 transition-transform group-hover/output:scale-110'
-                    : 'bg-white/5 text-slate-500',
-            )}
-          >
-            {isProcessing ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : isError ? (
-              <AlertCircle className="h-5 w-5" />
-            ) : (
-              <FileDown className="h-5 w-5" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold text-slate-200">
-              {file.originalName.split('/').pop()?.replace(/\.md$/i, '')}.pdf
-            </p>
-            <div className="mt-1.5 flex items-center gap-3">
-              <span className={cn(
-                "text-[10px] font-black tracking-wider uppercase",
-                isDone || hasOutput ? "text-slate-400" : "text-slate-500/30"
-              )}>
-                {isDone || hasOutput
-                  ? formatSize((file.metadata?.generatedPdfSize as number) || 0)
-                  : 'PENDING'}
-              </span>
-              <span className="h-1 w-1 rounded-full bg-slate-700" />
-              <span className={cn(
-                "text-[10px] font-black tracking-wider uppercase",
-                isDone || hasOutput ? "text-slate-400" : "text-slate-500/30"
-              )}>
-                {isDone || hasOutput
-                  ? `${(file.metadata?.generatedPdfPageCount as number) || 0} Pages`
-                  : 'PENDING'}
-              </span>
-
-              <span className="h-1 w-1 rounded-full bg-slate-700" />
-
-              <div className="flex items-center gap-1.5">
-                {(isDone || hasOutput) && !isProcessing && (
-                  <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+        >
+          <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4">
+            {/* Selection Checkbox */}
+            {isSelectionMode && (
+              <button
+                onClick={() => onToggleSelection(file.id)}
+                className={cn(
+                  'animate-in zoom-in-50 flex h-6 w-6 cursor-pointer items-center justify-center rounded-lg transition-all',
+                  isSelected
+                    ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                    : 'border border-white/10 bg-white/5 text-transparent hover:border-indigo-500/30',
                 )}
-                <span
-                  className={cn(
-                    'text-[10px] font-black tracking-[0.15em] uppercase',
-                    isProcessing
-                      ? 'text-amber-500'
-                      : isError
-                        ? 'text-red-500'
-                        : isDone || hasOutput
-                          ? 'font-black text-emerald-500'
-                          : 'text-slate-500/30',
-                  )}
-                >
-                  {isProcessing
-                    ? 'Processing'
-                    : isError
-                      ? 'Failed'
-                      : isDone || hasOutput
-                        ? 'Ready'
-                        : 'Pending'}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+
+            <div
+              className={cn(
+                'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-transform group-hover/row:scale-110',
+                isSelected ? 'bg-indigo-500/20 text-indigo-400' : 'bg-white/5 text-slate-400',
+              )}
+            >
+              <FileCode className="h-6 w-6" />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <h3 className="truncate text-sm font-bold text-slate-200 transition-colors group-hover/row:text-indigo-300">
+                {file.originalName.split('/').pop()}
+              </h3>
+              <div className="mt-1 flex items-center gap-3">
+                <span className="text-[10px] font-black tracking-wider text-slate-500 uppercase">
+                  {formatSize(file.size)}
+                </span>
+                <span className="h-1 w-1 rounded-full bg-slate-700" />
+                <span className="text-[10px] font-black tracking-wider text-slate-500 uppercase">
+                  {formatDate(file.createdAt)}
                 </span>
               </div>
             </div>
           </div>
+
+          <div className="relative z-10 flex shrink-0 items-center gap-2">
+            {!isSelectionMode && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onDelete(file.id)}
+                    className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  className="border-slate-800 bg-slate-900 text-xs text-red-400/80"
+                >
+                  Delete Source
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            <div className="mx-1 h-6 w-px bg-white/5" />
+
+            {isDone ? (
+              <div className="flex h-9 items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 text-[10px] font-black tracking-wider whitespace-nowrap text-emerald-500/60 uppercase">
+                <CheckCircle className="h-3.5 w-3.5" />
+                <span>Finished</span>
+              </div>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => onConvert(file)}
+                disabled={isProcessing || isSelectionMode}
+                className={cn(
+                  'flex h-9 min-w-[100px] items-center gap-2 rounded-xl px-4 text-[10px] font-black tracking-wider uppercase transition-all active:scale-95',
+                  isProcessing
+                    ? 'bg-amber-500/20 text-amber-500'
+                    : isError
+                      ? 'border border-red-500/20 bg-red-500/10 text-red-400'
+                      : 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-600',
+                )}
+              >
+                {isProcessing ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : isError ? (
+                  <AlertCircle className="h-3.5 w-3.5" />
+                ) : (
+                  <Zap className="h-3.5 w-3.5 fill-current" />
+                )}
+                <span>{isProcessing ? 'Converting' : isError ? 'Retry' : 'Convert'}</span>
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Action slot - Fixed width to prevent shifting */}
-        <div className="relative z-10 flex h-full w-[80px] shrink-0 items-center justify-center pr-5">
-          {!isProcessing && (isDone || hasOutput) && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => onDownload(file, 'pdf')}
-                  className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 transition-all hover:bg-emerald-500 hover:text-white active:scale-90"
-                >
-                  <Download className="h-4.5 w-4.5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="top"
-                className="border-slate-800 bg-slate-900 text-xs text-emerald-400"
-              >
-                Download PDF
-              </TooltipContent>
-            </Tooltip>
+        {/* Output File Card (Always visible for every file) */}
+        <div
+          className={cn(
+            'group/output animate-in slide-in-from-right-8 relative flex w-[480px] items-center justify-between overflow-hidden rounded-3xl border shadow-xl transition-all duration-500',
+            isProcessing
+              ? 'border-amber-500/20 bg-amber-500/[0.02] hover:bg-amber-500/[0.04]'
+              : isError
+                ? 'border-red-500/20 bg-red-500/[0.02] hover:bg-red-500/[0.04]'
+                : isDone || hasOutput
+                  ? 'border-emerald-500/10 bg-emerald-500/[0.03] hover:border-emerald-500/30 hover:bg-emerald-500/[0.06]'
+                  : 'border-white/5 bg-white/[0.02] opacity-40 hover:bg-white/[0.04] hover:opacity-60',
           )}
+        >
+          <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4 pl-5">
+            <div
+              className={cn(
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                isProcessing
+                  ? 'bg-amber-500/10 text-amber-500'
+                  : isError
+                    ? 'bg-red-500/10 text-red-500'
+                    : isDone || hasOutput
+                      ? 'bg-emerald-500/10 text-emerald-400 transition-transform group-hover/output:scale-110'
+                      : 'bg-white/5 text-slate-500',
+              )}
+            >
+              {isProcessing ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : isError ? (
+                <AlertCircle className="h-5 w-5" />
+              ) : (
+                <FileDown className="h-5 w-5" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold text-slate-200">
+                {file.originalName.split('/').pop()?.replace(/\.md$/i, '')}.pdf
+              </p>
+              <div className="mt-1.5 flex items-center gap-3">
+                <span
+                  className={cn(
+                    'text-[10px] font-black tracking-wider uppercase',
+                    isDone || hasOutput ? 'text-slate-400' : 'text-slate-500/30',
+                  )}
+                >
+                  {isDone || hasOutput
+                    ? formatSize((file.metadata?.generatedPdfSize as number) || 0)
+                    : 'PENDING'}
+                </span>
+                <span className="h-1 w-1 rounded-full bg-slate-700" />
+                <span
+                  className={cn(
+                    'text-[10px] font-black tracking-wider uppercase',
+                    isDone || hasOutput ? 'text-slate-400' : 'text-slate-500/30',
+                  )}
+                >
+                  {isDone || hasOutput
+                    ? `${(file.metadata?.generatedPdfPageCount as number) || 0} Pages`
+                    : 'PENDING'}
+                </span>
+
+                <span className="h-1 w-1 rounded-full bg-slate-700" />
+
+                <div className="flex items-center gap-1.5">
+                  {(isDone || hasOutput) && !isProcessing && (
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                  )}
+                  <span
+                    className={cn(
+                      'text-[10px] font-black tracking-[0.15em] uppercase',
+                      isProcessing
+                        ? 'text-amber-500'
+                        : isError
+                          ? 'text-red-500'
+                          : isDone || hasOutput
+                            ? 'font-black text-emerald-500'
+                            : 'text-slate-500/30',
+                    )}
+                  >
+                    {isProcessing
+                      ? 'Processing'
+                      : isError
+                        ? 'Failed'
+                        : isDone || hasOutput
+                          ? 'Ready'
+                          : 'Pending'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action slot - Fixed width to prevent shifting */}
+          <div className="relative z-10 flex h-full w-[80px] shrink-0 items-center justify-center pr-5">
+            {!isProcessing && (isDone || hasOutput) && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onDownload(file, 'pdf')}
+                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 transition-all hover:bg-emerald-500 hover:text-white active:scale-90"
+                  >
+                    <Download className="h-4.5 w-4.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  className="border-slate-800 bg-slate-900 text-xs text-emerald-400"
+                >
+                  Download PDF
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 FileRow.displayName = 'FileRow';
