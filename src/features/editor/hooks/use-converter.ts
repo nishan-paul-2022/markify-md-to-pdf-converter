@@ -160,7 +160,7 @@ export function useConverter(
     setIsGenerating(true);
     try {
       const blob = await PdfApiService.generate({
-        markdown: rawContent,
+        markdown: content,
         metadata,
         basePath,
       });
@@ -171,7 +171,7 @@ export function useConverter(
     } finally {
       setIsGenerating(false);
     }
-  }, [rawContent, metadata, basePath, setIsGenerating]);
+  }, [content, metadata, basePath, setIsGenerating]);
 
   const handleDownloadPdf = useCallback(async () => {
     try {
