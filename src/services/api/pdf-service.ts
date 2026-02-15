@@ -6,6 +6,7 @@ export const PdfApiService = {
     metadata: Metadata;
     saveToServer?: boolean;
     sourceFileId?: string;
+    basePath?: string;
   }) => {
     // Generate PDF returns a blob, so we use fetch directly or handle it in client
     const response = await fetch('/api/generate-pdf', {
