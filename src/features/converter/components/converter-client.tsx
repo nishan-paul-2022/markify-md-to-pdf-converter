@@ -18,7 +18,11 @@ import type { AppFile } from '@/features/file-management/hooks/use-files';
 import { useFiles } from '@/features/file-management/hooks/use-files';
 import { formatConverterDate, formatFileSize } from '@/utils/formatters';
 // Utilities
-import { addTimestampToName, generateStandardName } from '@/utils/naming';
+import {
+  formatFilenameTimestamp,
+  generateStandardName,
+  generateTimestampedPdfName,
+} from '@/utils/naming';
 
 import JSZip from 'jszip';
 import { FileCode, Loader2 } from 'lucide-react';
@@ -249,26 +253,39 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         return;
       }
 
+      const isDefault =
+        file.id.startsWith('default-') ||
+        file.batchId === 'sample-file' ||
+        file.batchId === 'sample-folder';
+
+      const a = document.createElement('a');
       if (pdfUrl && !blob) {
-        const a = document.createElement('a');
         a.href = pdfUrl as string;
-        a.download = `${generateStandardName(file.originalName)}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        return;
+        if (isDefault) {
+          a.download = `${generateStandardName(file.originalName)}.pdf`;
+        } else {
+          a.download = generateTimestampedPdfName(file.originalName);
+        }
+      } else {
+        const url = URL.createObjectURL(blob as Blob);
+        a.href = url;
+        if (isDefault) {
+          a.download = `${generateStandardName(file.originalName)}.pdf`;
+        } else {
+          a.download = generateTimestampedPdfName(file.originalName);
+        }
+        // For blob URLs, we should revoke them, but since we use a.click() synchronously
+        // and document.body.removeChild(a), we can handle it.
+        // The original code revoked it.
+        a.dataset.revokeUrl = 'true';
       }
 
-      const url = URL.createObjectURL(blob as Blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const baseName = generateStandardName(file.originalName);
-      const timestampedName = addTimestampToName(baseName);
-      a.download = `${timestampedName}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      if (a.dataset.revokeUrl === 'true') {
+        URL.revokeObjectURL(a.href);
+      }
     }
   };
 
@@ -301,8 +318,16 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         if (!blob) {
           return null;
         }
+
+        const isDefault =
+          file.id.startsWith('default-') ||
+          file.batchId === 'sample-file' ||
+          file.batchId === 'sample-folder';
+
         return {
-          name: `${generateStandardName(file.originalName)}.pdf`,
+          name: isDefault
+            ? `${generateStandardName(file.originalName)}.pdf`
+            : generateTimestampedPdfName(file.originalName),
           blob: blob,
         };
       }),
@@ -320,7 +345,8 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         validFiles.forEach((f) => folder.file(f.name, f.blob));
       }
       const content = await zip.generateAsync({ type: 'blob' });
-      const filename = `markify_export_${addTimestampToName('archive')}.zip`;
+      const timestamp = formatFilenameTimestamp(new Date());
+      const filename = `markify_export_archive_${timestamp}.zip`;
 
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');

@@ -11,7 +11,7 @@ import { logger } from '@/lib/logger';
 import { FilesService } from '@/services/api/files-service';
 import { PdfApiService } from '@/services/api/pdf-service';
 import { useEditorStore } from '@/store/use-editor-store';
-import { generateStandardName } from '@/utils/naming';
+import { generateStandardName, generateTimestampedPdfName } from '@/utils/naming';
 
 const getBaseName = (name: string): string => {
   return generateStandardName(name);
@@ -179,7 +179,14 @@ export function useConverter(
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${getBaseName(filename)}.pdf`;
+
+      const isDefault = selectedFileId?.startsWith('default-');
+      if (isDefault) {
+        a.download = `${getBaseName(filename)}.pdf`;
+      } else {
+        a.download = generateTimestampedPdfName(filename);
+      }
+
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -188,7 +195,7 @@ export function useConverter(
     } catch (error) {
       logger.error('Failed to download PDF:', error);
     }
-  }, [generatePdfBlob, filename, setIsPdfDownloaded]);
+  }, [generatePdfBlob, filename, setIsPdfDownloaded, selectedFileId]);
 
   const handleFileUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
