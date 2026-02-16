@@ -424,7 +424,7 @@ export function FileTree({
                 ) : (
                   <button
                     onClick={() => toggleFolder(node.id)}
-                    className="flex flex-1 items-center gap-2 truncate py-1.5 text-left text-sm"
+                    className="flex flex-1 cursor-pointer items-center gap-2 truncate py-1.5 text-left text-sm"
                   >
                     {isExpanded ? (
                       <ChevronDown className="h-3.5 w-3.5" />
@@ -481,7 +481,7 @@ export function FileTree({
                           {node.name === 'images' && (
                             <DropdownMenuItem
                               onClick={() => toggleFolderGridMode(node.id)}
-                              className="gap-2 text-xs"
+                              className="cursor-pointer gap-2 text-xs"
                             >
                               {isGridMode ? (
                                 <List className="h-3.5 w-3.5" />
@@ -494,7 +494,7 @@ export function FileTree({
                           {!isDefaultFolder && node.name !== 'images' && (
                             <DropdownMenuItem
                               onClick={() => handleRenameStart(node)}
-                              className="gap-2 text-xs"
+                              className="cursor-pointer gap-2 text-xs"
                             >
                               <PencilLine className="h-3.5 w-3.5" /> Rename Folder
                             </DropdownMenuItem>
@@ -504,14 +504,14 @@ export function FileTree({
                               onClick={() => {
                                 void handleDeleteClick(node, true);
                               }}
-                              className="gap-2 text-xs text-red-400 focus:text-red-400"
+                              className="cursor-pointer gap-2 text-xs text-red-400 focus:text-red-400"
                             >
                               <Trash2 className="h-3.5 w-3.5" /> Delete Folder
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem
                             onClick={() => toggleFolder(node.id)}
-                            className="gap-2 text-xs"
+                            className="cursor-pointer gap-2 text-xs"
                           >
                             {isExpanded ? (
                               <ChevronUp className="h-3.5 w-3.5" />
@@ -553,7 +553,7 @@ export function FileTree({
                           key={child.id}
                           onClick={() => onFileSelect(child)}
                           className={cn(
-                            'group/grid relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-lg border p-1.5 transition-all',
+                            'group/grid relative flex aspect-square cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border p-1.5 transition-all',
                             isChildSelected
                               ? 'border-amber-500/50 bg-amber-500/10 shadow-lg ring-1 shadow-amber-500/10 ring-amber-500/20'
                               : 'border-white/5 bg-slate-900/40 hover:border-white/10 hover:bg-slate-800/80',
@@ -642,7 +642,7 @@ export function FileTree({
             ) : (
               <button
                 onClick={() => onFileSelect(node)}
-                className="flex flex-1 items-center gap-2 truncate py-1.5 text-left text-sm"
+                className="flex flex-1 cursor-pointer items-center gap-2 truncate py-1.5 text-left text-sm"
               >
                 {getFileIcon(node.name, node.file?.mimeType)}
                 <span
@@ -692,14 +692,14 @@ export function FileTree({
                     >
                       <DropdownMenuItem
                         onClick={() => onFileSelect(node)}
-                        className="gap-2 text-xs"
+                        className="cursor-pointer gap-2 text-xs"
                       >
                         <ExternalLink className="h-3.5 w-3.5" /> Open
                       </DropdownMenuItem>
                       {!node.id.startsWith('default-') && (
                         <DropdownMenuItem
                           onClick={() => handleRenameStart(node)}
-                          className="gap-2 text-xs"
+                          className="cursor-pointer gap-2 text-xs"
                         >
                           <PencilLine className="h-3.5 w-3.5" /> Rename
                         </DropdownMenuItem>
@@ -709,7 +709,7 @@ export function FileTree({
                           onClick={() => {
                             void handleDeleteClick(node, false);
                           }}
-                          className="gap-2 text-xs text-red-400 focus:text-red-400"
+                          className="cursor-pointer gap-2 text-xs text-red-400 focus:text-red-400"
                         >
                           <Trash2 className="h-3.5 w-3.5" /> Delete
                         </DropdownMenuItem>

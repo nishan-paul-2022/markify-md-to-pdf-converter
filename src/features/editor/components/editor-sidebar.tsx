@@ -226,7 +226,10 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
             nodes={
               isSelectionMode || isSortExpanded
                 ? fileTree.filter(
-                    (node) => node.batchId !== 'sample-file' && node.batchId !== 'sample-folder',
+                    (node) =>
+                      node.batchId !== 'sample-file' &&
+                      node.batchId !== 'sample-folder' &&
+                      node.batchId !== 'v1-samples',
                   )
                 : fileTree
             }

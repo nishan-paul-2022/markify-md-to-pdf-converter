@@ -111,106 +111,155 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // 5. Apply the same validation rules as single file/folder uploads
+    // 5. Apply Zero Tolerance Validation Rules
+    
     // Rule: Must contain at least one .md file
     const mdFiles = allFiles.filter((f) => f.name.toLowerCase().endsWith('.md'));
     if (mdFiles.length === 0) {
       return NextResponse.json(
-        { error: 'Upload failed — only .md files are allowed here.' },
+        { error: 'Upload failed — archive must contain at least one .md file.' },
         { status: 400 },
       );
     }
 
     // Determine if there's a common wrapper folder to strip
-    // A wrapper exists if all files share the same first path segment,
-    // and that segment is NOT "images", and no files are at the root level relative to it.
     const firstSegments = new Set(allFiles.map((f) => f.relativePath.split('/')[0]));
     const hasWrapper =
       firstSegments.size === 1 &&
       ![...firstSegments][0].toLowerCase().endsWith('.md') &&
       [...firstSegments][0].toLowerCase() !== 'images';
 
-    // Strict Path Validation Logic (Mirrored from single file route)
     const allowedImageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
     const validFiles: typeof allFiles = [];
+    
+    // Helper to find all image references in markdown content with relative path resolution
+    async function getReferencedImages(
+      mdFiles: { fullPath: string; relativePath: string }[],
+      hasWrapper: boolean,
+    ): Promise<Set<string>> {
+      const { readFile } = await import('fs/promises');
+      const allReferences = new Set<string>();
+
+      // Support both ![]() and <img> tags
+      const mdImageRegex = /!\[.*?\]\((.*?)\)|<img.*?src=["'](.*?)["']/gi;
+
+      for (const mdFile of mdFiles) {
+        const content = await readFile(mdFile.fullPath, 'utf-8');
+        const actualParts = mdFile.relativePath.split('/');
+        const effectiveParts = hasWrapper ? actualParts.slice(1) : actualParts;
+        const mdFolder = effectiveParts.length > 1 ? effectiveParts[0] : '';
+
+        let match;
+        while ((match = mdImageRegex.exec(content)) !== null) {
+          const ref = (match[1] || match[2]).split(/[?#]/)[0]; // Remove query/hash
+          const normalized = ref.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+
+          // Add raw
+          allReferences.add(normalized);
+
+          // Add filename
+          const filename = normalized.split('/').pop();
+          if (filename) allReferences.add(filename);
+
+          if (!mdFolder) {
+            allReferences.add(normalized);
+            if (!normalized.startsWith('images/')) {
+              allReferences.add(`images/${normalized}`);
+            }
+          } else {
+            allReferences.add(normalized);
+            if (!normalized.startsWith(mdFolder + '/')) {
+              allReferences.add(`${mdFolder}/${normalized}`);
+            }
+            if (!normalized.startsWith('images/')) {
+              allReferences.add(`images/${normalized}`);
+              allReferences.add(`${mdFolder}/images/${normalized}`);
+            }
+            if (normalized.includes('images/')) {
+              const imagesIndex = normalized.indexOf('images/');
+              const fromImages = normalized.substring(imagesIndex);
+              allReferences.add(fromImages);
+              allReferences.add(`${mdFolder}/${fromImages}`);
+            }
+          }
+        }
+      }
+      return allReferences;
+    }
+
+    const referencedImages = await getReferencedImages(mdFiles, hasWrapper);
+    const providedImages = new Set<string>();
 
     for (const file of allFiles) {
       const actualParts = file.relativePath.split('/');
       const effectiveParts = hasWrapper ? actualParts.slice(1) : actualParts;
 
-      if (effectiveParts.length === 0) {
-        continue;
-      }
+      if (effectiveParts.length === 0) continue;
 
       const fileName = file.name.toLowerCase();
       const isMd = fileName.endsWith('.md');
       const isImage = allowedImageExtensions.some((ext) => fileName.endsWith(ext));
+      const effectiveRelPath = effectiveParts.join('/');
 
-      // Rule 1: Root level files (effective) MUST be .md
-      if (effectiveParts.length === 1) {
-        if (!isMd) {
-          return NextResponse.json(
-            {
-              error: `Upload failed — only .md files are allowed at the root. Found: ${file.relativePath}`,
-            },
-            { status: 400 },
-          );
-        }
-        validFiles.push(file);
+      if (isImage) {
+        providedImages.add(effectiveRelPath);
       }
-      // Rule 2: Subfolder level
-      else if (effectiveParts.length === 2) {
-        // Option A: Root-level images/ folder
-        if (effectiveParts[0].toLowerCase() === 'images') {
-          if (!isImage) {
-            return NextResponse.json(
-              {
-                error: `Upload failed — only images are allowed in the images/ folder. Found: ${file.relativePath}`,
-              },
-              { status: 400 },
-            );
-          }
-          validFiles.push(file);
-        }
-        // Option B: A folder's root file (e.g., FolderA/note.md)
-        else {
-          if (!isMd) {
-            return NextResponse.json(
-              {
-                error: `Upload failed — ensure it follows the required .md + images/ layout. Invalid file in folder: ${file.relativePath}`,
-              },
-              { status: 400 },
-            );
-          }
-          validFiles.push(file);
-        }
-      }
-      // Rule 3: Depth 3 level (e.g., Folder/images/file.png)
-      else if (effectiveParts.length === 3) {
-        if (effectiveParts[1].toLowerCase() !== 'images') {
-          return NextResponse.json(
-            {
-              error: `Upload failed — nested folders are only allowed for 'images/'. Invalid path: ${file.relativePath}`,
-            },
-            { status: 400 },
-          );
-        }
-        if (!isImage) {
-          return NextResponse.json(
-            {
-              error: `Upload failed — only images are allowed in 'images/' folders. Found: ${file.relativePath}`,
-            },
-            { status: 400 },
-          );
-        }
-        validFiles.push(file);
-      }
-      // Rule 4: Too deep
-      else {
+
+      // Rule: Hidden files are already skipped in walk()
+      
+      // Zip acts as a batch of Section 1 (Files) and Section 2 (Folders)
+      const depth = effectiveParts.length;
+      const parentFolder = depth > 1 ? effectiveParts[depth - 2].toLowerCase() : null;
+      const isInsideImages = parentFolder === 'images';
+
+      // Rule: Strict Depth (Zero Tolerance for messy nesting)
+      if (depth > 3) {
         return NextResponse.json(
-          {
-            error: `Upload failed — directory structure too deep (max 1 subfolder level allowed): ${file.relativePath}`,
-          },
+          { error: `Upload failed — directory structure too deep (max 3 levels): ${file.relativePath}` },
+          { status: 400 },
+        );
+      }
+
+      // Rule Check based on position
+      if (isMd) {
+        // MDs allowed at Root (L1) or Folder Root (L2). No MDs allowed inside images/ or deeper.
+        if (depth > 2 || isInsideImages) {
+           return NextResponse.json(
+            { error: `Upload failed — Markdown files must be at a project root, not in subfolders: ${file.relativePath}` },
+            { status: 400 },
+          );
+        }
+        validFiles.push(file);
+      } 
+      else if (isImage) {
+        // Images MUST be inside a folder named 'images/'
+        if (!isInsideImages) {
+          return NextResponse.json(
+            { error: `Upload failed — images must be inside an 'images/' subfolder: ${file.relativePath}` },
+            { status: 400 },
+          );
+        }
+        validFiles.push(file);
+      }
+      else {
+        // Anything else is forbidden baggage (unless ignored hidden files)
+        const fileName = effectiveParts[depth - 1].toLowerCase();
+        if (!fileName.startsWith('.')) {
+          return NextResponse.json(
+            { error: `Upload failed — invalid file type found: ${file.relativePath}` },
+            { status: 400 },
+          );
+        }
+      }
+    }
+
+    // FINAL CHECK: Orphaned Assets (Zero Tolerance)
+    for (const imagePath of providedImages) {
+      // We check if the image path (relative to effective root) is referenced in ANY md file
+      // e.g. "images/pic.png" or "Folder/images/pic.png"
+      if (!referencedImages.has(imagePath)) {
+        return NextResponse.json(
+          { error: `Upload failed — Orphaned asset found: '${imagePath}' is not referenced in any Markdown file.` },
           { status: 400 },
         );
       }

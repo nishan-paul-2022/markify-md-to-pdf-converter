@@ -96,18 +96,45 @@ async function getFilesRecursively(
 }
 
 export async function getDefaultFiles(): Promise<DefaultFile[]> {
-  const publicDir = join(process.cwd(), 'public');
+  const publicDir = join(process.cwd(), 'public', 'samples');
+  const files: DefaultFile[] = [];
 
-  const content1Dir = join(publicDir, 'content-1');
-  const content4Dir = join(publicDir, 'content-4');
+  // 1. Handle sample-file.md
+  try {
+    const sampleFilePath = join(publicDir, 'sample-file.md');
+    const sampleFileStats = await stat(sampleFilePath);
+    files.push({
+      id: 'default-samples-v1-sample-file.md',
+      filename: 'sample-file.md',
+      originalName: 'sample-file.md',
+      mimeType: 'text/markdown',
+      size: sampleFileStats.size,
+      url: '/samples/sample-file.md',
+      relativePath: 'sample-file.md',
+      batchId: 'sample-file',
+      createdAt: sampleFileStats.birthtime.toISOString(),
+    });
+  } catch {
+    // Silently ignore if file doesn't exist
+  }
 
-  const files1 = await getFilesRecursively(content1Dir, content1Dir, 'sample-file', '');
-  const files4 = await getFilesRecursively(
-    content4Dir,
-    content4Dir,
-    'sample-folder',
-    'sample-folder',
-  );
+  // 2. Handle sample-folder
+  try {
+    const sampleFolderDir = join(publicDir, 'sample-folder');
+    // Verify it exists and is a directory
+    const s = await stat(sampleFolderDir);
+    if (s.isDirectory()) {
+      const folderFiles = await getFilesRecursively(
+        sampleFolderDir,
+        sampleFolderDir,
+        'v1-samples',
+        'sample-folder',
+      );
+      files.push(...folderFiles);
+    }
+  } catch {
+    // Silently ignore if folder doesn't exist
+  }
 
-  return [...files1, ...files4];
+  return files;
 }

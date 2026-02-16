@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 
 import { getAlert } from '@/components/alert-provider';
 import { logger } from '@/lib/logger';
-import { extractImageReferences, validateUploadStructure } from '@/services/upload-validator';
+import { validateUploadStructure } from '@/services/upload-validator';
 
 const processFilesWithNaming = (filesToProcess: File[], uploadCase: number): File[] => {
   logger.info(`UseUpload: Processing ${filesToProcess.length} files for Case ${uploadCase}`);
@@ -19,29 +19,11 @@ export function useUpload() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderInputRef = useRef<HTMLInputElement | null>(null);
 
-  const processUploadedFiles = useCallback(async (inputFiles: File[]) => {
+  const processUploadedFiles = useCallback(async (inputFiles: File[], type?: 'folder' | 'zip') => {
     logger.info(`📦 Processing ${inputFiles.length} files...`);
 
-    // First, identify all markdown files to extract references in parallel
-    const markdownFiles = inputFiles.filter((f) => f.name.toLowerCase().endsWith('.md'));
-    const referencedImages = new Set<string>();
-
-    await Promise.all(
-      markdownFiles.map(async (mdFile) => {
-        try {
-          const content = await mdFile.text();
-          const refs = extractImageReferences(content);
-          refs.forEach((ref) => referencedImages.add(ref));
-        } catch (err) {
-          logger.error(`Failed to read markdown ${mdFile.name}:`, err);
-        }
-      }),
-    );
-
-    logger.info(`🔍 Found ${referencedImages.size} unique image references in markdown.`);
-
     // Now validate and filter using the consolidated logic
-    const validation = validateUploadStructure(inputFiles, referencedImages);
+    const validation = await validateUploadStructure(inputFiles, type);
 
     if (!validation.valid) {
       const api = getAlert();
@@ -72,7 +54,8 @@ export function useUpload() {
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
         const selectedFiles = Array.from(e.target.files);
-        await processUploadedFiles(selectedFiles);
+        const isFolder = e.target.hasAttribute('webkitdirectory');
+        await processUploadedFiles(selectedFiles, isFolder ? 'folder' : undefined);
         // Reset input value so same files can be selected again if needed
         e.target.value = '';
       }

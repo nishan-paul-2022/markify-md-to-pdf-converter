@@ -71,8 +71,10 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
       // 2. Folders
       // 3. Alphabetical
 
-      const isDefaultA = a.batchId === 'sample-file' || a.batchId === 'sample-folder';
-      const isDefaultB = b.batchId === 'sample-file' || b.batchId === 'sample-folder';
+      const isDefaultA =
+        a.batchId === 'sample-file' || a.batchId === 'sample-folder' || a.batchId === 'v1-samples';
+      const isDefaultB =
+        b.batchId === 'sample-file' || b.batchId === 'sample-folder' || b.batchId === 'v1-samples';
 
       if (isDefaultA && !isDefaultB) {
         return -1;
@@ -81,12 +83,12 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
         return 1;
       }
 
-      // If both are defaults, sample-file goes before sample-folder (or vice versa, but let's keep it consistent)
+      // If both are defaults, sample-file goes before others
       if (isDefaultA && isDefaultB) {
-        if (a.batchId === 'sample-file' && b.batchId === 'sample-folder') {
+        if (a.batchId === 'sample-file' && b.batchId !== 'sample-file') {
           return -1;
         }
-        if (a.batchId === 'sample-folder' && b.batchId === 'sample-file') {
+        if (a.batchId !== 'sample-file' && b.batchId === 'sample-file') {
           return 1;
         }
       }

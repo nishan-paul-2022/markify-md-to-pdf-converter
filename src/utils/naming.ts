@@ -42,3 +42,46 @@ export function addTimestampToName(name: string): string {
 
   return `${name}-${timestamp}`;
 }
+
+/**
+ * Formats a date into the specific format: DD-mmm-YYYY-HH.MMam/pm
+ * e.g., "15-feb-2026-11.11am"
+ */
+export function formatFilenameTimestamp(date: Date): string {
+  const day = String(date.getDate()).padStart(2, '0');
+  const monthNames = [
+    'jan',
+    'feb',
+    'mar',
+    'apr',
+    'may',
+    'jun',
+    'jul',
+    'aug',
+    'sep',
+    'oct',
+    'nov',
+    'dec',
+  ];
+  const month = monthNames[date.getMonth()];
+  const year = date.getFullYear();
+
+  const hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const ms = String(date.getMilliseconds()).padStart(3, '0');
+  const ampm = hours >= 12 ? 'pm' : 'am';
+  const displayHours = hours % 12 || 12;
+  const hourString = String(displayHours).padStart(2, '0');
+
+  return `${day}-${month}-${year}-${hourString}-${minutes}-${seconds}-${ms}-${ampm}`;
+}
+
+/**
+ * Generates a PDF filename with the requested timestamp format.
+ */
+export function generateTimestampedPdfName(baseName: string): string {
+  const timestamp = formatFilenameTimestamp(new Date());
+  const cleanBase = generateStandardName(baseName);
+  return `${cleanBase}-${timestamp}.pdf`;
+}
