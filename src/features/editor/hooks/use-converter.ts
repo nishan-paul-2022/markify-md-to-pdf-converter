@@ -7,11 +7,11 @@ import {
   removeLandingPageSection,
 } from '@/constants/default-content';
 import type { AppFile } from '@/features/file-management/hooks/use-files';
+import { useFileUpload } from '@/hooks/use-file-upload';
 import { logger } from '@/lib/logger';
 import { FilesService } from '@/services/api/files-service';
 import { PdfApiService } from '@/services/api/pdf-service';
 import { createDebouncedDraftSave, deleteDraft } from '@/services/draft-service';
-import { validateUploadStructure } from '@/services/upload-validator';
 import { useEditorStore } from '@/store/use-editor-store';
 import { generateStandardName, generateTimestampedPdfName } from '@/utils/naming';
 
@@ -70,6 +70,8 @@ export function useConverter(
     getStats,
   } = useEditorStore();
 
+  const { confirm } = useAlert();
+
   // Local UI State (Not in Global Store)
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadRulesModal, setUploadRulesModal] = useState<{
@@ -83,9 +85,7 @@ export function useConverter(
   const statsRef = useRef<HTMLDivElement | null>(null);
   const debouncedSaveRef = useRef<((content: string) => void) | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const folderInputRef = useRef<HTMLInputElement | null>(null);
-  const zipInputRef = useRef<HTMLInputElement | null>(null);
+
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -107,6 +107,51 @@ export function useConverter(
 
     return () => textarea.removeEventListener('scroll', handleScroll);
   }, [isLoading]);
+
+  const handleContentChange = useCallback(
+    (newRawContent: string) => {
+      setRawContent(newRawContent);
+
+      // Auto-save draft to server (debounced)
+      if (debouncedSaveRef.current) {
+        debouncedSaveRef.current(newRawContent);
+      }
+    },
+    [setRawContent],
+  );
+
+  // Use the universal upload hook
+  const onUploadSuccess = useCallback(async () => {
+    setIsUploaded(true);
+    setTimeout(() => setIsUploaded(false), 2000);
+  }, [setIsUploaded]);
+
+  const onMarkdownFound = useCallback(
+    async (file: { id: string; originalName: string; url: string }) => {
+      const text = await FilesService.getContent(file.url);
+      handleContentChange(text);
+      setFilename(file.originalName);
+      setSelectedFileId(file.id);
+    },
+    [handleContentChange, setFilename, setSelectedFileId],
+  );
+
+  const {
+    fileInputRef: fileInputRefObj,
+    folderInputRef: folderInputRefObj,
+    zipInputRef: zipInputRefObj,
+    handleFileUpload,
+    handleFolderUpload,
+    handleZipUpload,
+    triggerFileUpload,
+    triggerFolderUpload,
+    triggerZipUpload,
+  } = useFileUpload({
+    setIsLoading,
+    onUploadSuccess,
+    onMarkdownFound,
+    source: 'editor',
+  });
 
   const stats = getStats();
 
@@ -137,17 +182,7 @@ export function useConverter(
     }
   }, [selectedFileId]);
 
-  const handleContentChange = useCallback(
-    (newRawContent: string) => {
-      setRawContent(newRawContent);
 
-      // Auto-save draft to server (debounced)
-      if (debouncedSaveRef.current) {
-        debouncedSaveRef.current(newRawContent);
-      }
-    },
-    [setRawContent],
-  );
 
   useEffect(() => {
     if (isLoading) {
@@ -212,171 +247,11 @@ export function useConverter(
     }
   }, [generatePdfBlob, filename, setIsPdfDownloaded, selectedFileId]);
 
-  const handleFileUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-      const files = event.target.files;
-      if (!files || files.length === 0) return;
 
-      setIsLoading(true);
-      const batchId = self.crypto.randomUUID();
 
-      try {
-        const uploadPromises = Array.from(files).map((file) =>
-          FilesService.upload(file, batchId, file.name, 'editor'),
-        );
 
-        const results = await Promise.all(uploadPromises);
 
-        const mdResult = results.find((r) => r.originalName.endsWith('.md'));
-        if (mdResult) {
-          const text = await FilesService.getContent(mdResult.url);
-          handleContentChange(text);
-          setFilename(mdResult.originalName);
-          setSelectedFileId(mdResult.id);
-        }
 
-        setIsUploaded(true);
-        setTimeout(() => setIsUploaded(false), 2000);
-      } catch (error: unknown) {
-        logger.error('Upload failed:', error);
-      } finally {
-        setIsLoading(false);
-        event.target.value = '';
-      }
-    },
-    [handleContentChange, setFilename, setIsLoading, setSelectedFileId, setIsUploaded],
-  );
-
-  const handleFolderUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-      const fileList = event.target.files;
-      if (!fileList || fileList.length === 0) return;
-
-      setIsLoading(true);
-      const batchId = self.crypto.randomUUID();
-
-      try {
-        const filesArray = Array.from(fileList);
-        
-        // 1. Run high-precision validation (async)
-        const validation = await validateUploadStructure(filesArray, 'folder');
-        if (!validation.valid) {
-          throw new Error(validation.error);
-        }
-
-        // 3. Proceed with upload
-        const uploadPromises = validation.filteredFiles.map((file) => {
-          const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
-          return FilesService.upload(file, batchId, relativePath, 'editor');
-        });
-
-        const results = await Promise.all(uploadPromises);
-
-        // Find the first markdown file to display
-        const mdResult = results.find((r) => r.originalName.endsWith('.md'));
-        if (mdResult) {
-          const text = await FilesService.getContent(mdResult.url);
-          handleContentChange(text);
-          setFilename(mdResult.originalName);
-          setSelectedFileId(mdResult.id);
-        }
-
-        setIsUploaded(true);
-        setTimeout(() => setIsUploaded(false), 2000);
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Folder upload failed';
-        logger.error('Folder validation error:', message);
-        alert(message); // Provide immediate feedback
-      } finally {
-        setIsLoading(false);
-        event.target.value = '';
-      }
-    },
-    [handleContentChange, setFilename, setIsLoading, setSelectedFileId, setIsUploaded],
-  );
-
-  const handleZipUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-      const files = event.target.files;
-      if (!files || files.length === 0) return;
-
-      const zipFile = files[0];
-      if (!zipFile.name.endsWith('.zip')) {
-        logger.error('Invalid file type. Only .zip files are allowed.');
-        return;
-      }
-
-      setIsLoading(true);
-      const batchId = self.crypto.randomUUID();
-
-      try {
-        // Dynamically import JSZip
-        const JSZip = (await import('jszip')).default;
-        const zip = new JSZip();
-        const zipContent = await zip.loadAsync(zipFile);
-
-        // 1. Convert zip contents to Virtual Files for validation
-        const virtualFiles: File[] = [];
-        const fileDataPromises: Promise<void>[] = [];
-
-        zipContent.forEach((relativePath, file) => {
-          if (!file.dir) {
-            fileDataPromises.push(
-              (async () => {
-                const blob = await file.async('blob');
-                const virtualFile = new File([blob], relativePath, { type: blob.type });
-                // We fake webkitRelativePath for the validator to treat it as a folder structure
-                Object.defineProperty(virtualFile, 'webkitRelativePath', {
-                  value: relativePath,
-                });
-                virtualFiles.push(virtualFile);
-              })(),
-            );
-          }
-        });
-
-        await Promise.all(fileDataPromises);
-
-        // 2. Run high-precision validation (async)
-        const validation = await validateUploadStructure(virtualFiles, 'zip');
-        if (!validation.valid) {
-          throw new Error(validation.error);
-        }
-
-        const uploadPromises: Promise<{ id: string; url: string; originalName: string }>[] = [];
-
-        // 4. Proceed with upload
-        validation.filteredFiles.forEach((file) => {
-          const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
-          uploadPromises.push(
-            (async () => {
-              return FilesService.upload(file, batchId, relativePath, 'editor');
-            })(),
-          );
-        });
-
-        const results = await Promise.all(uploadPromises);
-
-        // Find the first markdown file to display
-        const mdResult = results.find((r) => r.originalName.endsWith('.md'));
-        if (mdResult) {
-          const text = await FilesService.getContent(mdResult.url);
-          handleContentChange(text);
-          setFilename(mdResult.originalName);
-          setSelectedFileId(mdResult.id);
-        }
-
-        setIsUploaded(true);
-        setTimeout(() => setIsUploaded(false), 2000);
-      } catch (error: unknown) {
-        logger.error('Zip upload failed:', error);
-      } finally {
-        setIsLoading(false);
-        event.target.value = '';
-      }
-    },
-    [handleContentChange, setFilename, setIsLoading, setSelectedFileId, setIsUploaded],
-  );
 
   const getAllDeletableFileIds = useCallback(() => {
     return files
@@ -400,8 +275,6 @@ export function useConverter(
       setSelectedIds(new Set(deletableIds));
     }
   }, [selectedIds, getAllDeletableFileIds, setSelectedIds]);
-
-  const { confirm } = useAlert();
 
   const handleBulkDeleteClick = useCallback(async () => {
     if (selectedIds.size === 0) return;
@@ -530,11 +403,11 @@ export function useConverter(
   }, []);
 
   const handleUploadModalConfirm = useCallback(() => {
-    if (uploadRulesModal.type === 'file') fileInputRef.current?.click();
-    else if (uploadRulesModal.type === 'folder') folderInputRef.current?.click();
-    else zipInputRef.current?.click();
+    if (uploadRulesModal.type === 'file') triggerFileUpload();
+    else if (uploadRulesModal.type === 'folder') triggerFolderUpload();
+    else triggerZipUpload();
     setUploadRulesModal((prev) => ({ ...prev, isOpen: false }));
-  }, [uploadRulesModal.type]);
+  }, [uploadRulesModal.type, triggerFileUpload, triggerFolderUpload, triggerZipUpload]);
 
   return {
     rawContent,
@@ -560,9 +433,9 @@ export function useConverter(
     uploadRulesModal,
     activeImage,
     imageGallery,
-    fileInputRef,
-    folderInputRef,
-    zipInputRef,
+    fileInputRef: fileInputRefObj,
+    folderInputRef: folderInputRefObj,
+    zipInputRef: zipInputRefObj,
     textareaRef,
     stats,
     setActiveTab,
@@ -576,9 +449,9 @@ export function useConverter(
     handleFolderUpload,
     handleZipUpload,
     onFileSelect,
-    triggerFileUpload: () => fileInputRef.current?.click(),
-    triggerFolderUpload: () => folderInputRef.current?.click(),
-    triggerZipUpload: () => zipInputRef.current?.click(),
+    triggerFileUpload,
+    triggerFolderUpload,
+    triggerZipUpload,
     handleReset,
     handleCopy,
     handleDownloadMd,

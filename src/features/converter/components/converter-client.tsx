@@ -4,7 +4,6 @@ import React from 'react';
 
 import { useAlert } from '@/components/alert-provider';
 // Components
-import { getAlert } from '@/components/alert-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
 import { ConverterHeader } from '@/features/converter/components/converter-header';
@@ -14,10 +13,9 @@ import { SourceSegment } from '@/features/converter/components/source-segment';
 import { UploadRulesModal } from '@/features/converter/components/upload-rules-modal';
 import { useConverterFiles } from '@/features/converter/hooks/use-converter-files';
 import { useSelection } from '@/features/converter/hooks/use-selection';
-// Hooks
 import type { AppFile } from '@/features/file-management/hooks/use-files';
 import { useFiles } from '@/features/file-management/hooks/use-files';
-import { validateUploadStructure } from '@/services/upload-validator';
+import { useFileUpload } from '@/hooks/use-file-upload';
 import { formatConverterDate, formatFileSize } from '@/utils/formatters';
 // Utilities
 import {
@@ -49,9 +47,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     type: 'file' | 'folder' | 'zip';
   }>({ isOpen: false, type: 'file' });
 
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const folderInputRef = React.useRef<HTMLInputElement>(null);
-  const zipInputRef = React.useRef<HTMLInputElement>(null);
+
 
   // Status and result management (kept local as it's ephemeral/session-based)
   const [processingStates, setProcessingStates] = React.useState<
@@ -369,132 +365,24 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = e.target.files;
-    if (!selectedFiles || selectedFiles.length === 0) {
-      return;
-    }
-
-    const validation = await validateUploadStructure(Array.from(selectedFiles), 'single');
-    if (!validation.valid) {
-      const api = getAlert();
-      api?.show({
-        title: 'Invalid File',
-        message: validation.error || 'Invalid selection.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const batchId = self.crypto.randomUUID();
-    const uploadPromises = validation.filteredFiles.map(async (file: File) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('batchId', batchId);
-      formData.append('relativePath', file.name);
-      formData.append('source', 'converter');
-
-      const response = await fetch('/api/files', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        return { error: errorText, file: file.name };
-      }
-      return response.ok;
-    });
-
-    await Promise.all(uploadPromises);
+  const onUploadSuccess = React.useCallback(async () => {
     await refreshFiles();
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
+  }, [refreshFiles]);
 
-  const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = e.target.files;
-    if (!selectedFiles || selectedFiles.length === 0) {
-      return;
-    }
-
-    const validation = await validateUploadStructure(Array.from(selectedFiles), 'folder');
-    if (!validation.valid) {
-      const api = getAlert();
-      api?.show({
-        title: 'Invalid Folder',
-        message: validation.error || 'Invalid selection.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const batchId = self.crypto.randomUUID();
-    const uploadPromises = validation.filteredFiles.map(async (file: File) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('batchId', batchId);
-      const relativePath =
-        (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
-      formData.append('relativePath', relativePath);
-      formData.append('source', 'converter');
-
-      const response = await fetch('/api/files', {
-        method: 'POST',
-        body: formData,
-      });
-      if (!response.ok) {
-        return { error: await response.text(), file: file.name };
-      }
-      return response.ok;
-    });
-
-    await Promise.all(uploadPromises);
-    await refreshFiles();
-    if (folderInputRef.current) {
-      folderInputRef.current.value = '';
-    }
-  };
-
-  const handleZipUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = e.target.files;
-    if (!selectedFiles || selectedFiles.length === 0) {
-      return;
-    }
-
-    try {
-      const uploadPromises = Array.from(selectedFiles).map(async (archiveFile) => {
-        const formData = new FormData();
-        formData.append('file', archiveFile);
-        formData.append('source', 'converter');
-
-        const response = await fetch('/api/files/archive', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
-        return response.json();
-      });
-
-      await Promise.all(uploadPromises);
-      await refreshFiles();
-    } catch (error) {
-      const api = getAlert();
-      api?.show({
-        title: 'Processing Failed',
-        message: error instanceof Error ? error.message : 'Failed',
-        variant: 'destructive',
-      });
-    } finally {
-      if (zipInputRef.current) {
-        zipInputRef.current.value = '';
-      }
-    }
-  };
+  const {
+    fileInputRef,
+    folderInputRef,
+    zipInputRef,
+    handleFileUpload,
+    handleFolderUpload,
+    handleZipUpload,
+    triggerFileUpload,
+    triggerFolderUpload,
+    triggerZipUpload,
+  } = useFileUpload({
+    onUploadSuccess,
+    source: 'converter',
+  });
 
   return (
     <TooltipProvider>
@@ -536,7 +424,13 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         />
 
         <div className="relative z-10 flex flex-grow flex-row gap-6 overflow-hidden p-6">
-          <SourceSegment onUploadClick={(type) => setUploadRulesModal({ isOpen: true, type })} />
+          <SourceSegment
+            onUploadClick={(type) => {
+              if (type === 'file') triggerFileUpload();
+              else if (type === 'folder') triggerFolderUpload();
+              else triggerZipUpload();
+            }}
+          />
 
           <section className="flex h-full flex-grow flex-col gap-4 overflow-hidden">
             <PipelineHeader

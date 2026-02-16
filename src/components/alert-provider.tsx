@@ -134,9 +134,9 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
       >
         <AlertDialogContent
           variant={variant === 'destructive' ? 'destructive' : 'default'}
-          className="w-fit gap-0 overflow-hidden border-white/10 bg-slate-900/95 p-0 shadow-2xl backdrop-blur-xl sm:max-w-none"
+          className="gap-0 overflow-hidden border-white/10 bg-slate-900/95 p-0 shadow-2xl backdrop-blur-xl"
         >
-          <div className="relative min-w-[320px] p-6 sm:p-8">
+          <div className="relative p-6 sm:p-8">
             {/* Background Decoration */}
             <div
               className={cn(
@@ -189,8 +189,8 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
                 )}
                 asChild
               >
-                <div className="flex items-center whitespace-nowrap">
-                  <p className="text-xs leading-normal font-medium tracking-wide whitespace-nowrap text-slate-300 italic sm:text-sm">
+                <div className="flex items-start">
+                  <p className="text-xs leading-normal font-medium tracking-wide text-slate-300 italic sm:text-sm">
                     {message.split(/(\.md|images\/|`.+?`)/).map((part, i) => {
                       const isHighlighted =
                         part === '.md' ||

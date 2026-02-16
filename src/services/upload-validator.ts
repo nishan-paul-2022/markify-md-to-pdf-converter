@@ -137,7 +137,7 @@ function validateSingleFileUpload(files: File[]): ValidationResult {
   if (invalidFiles.length > 0) {
     return {
       valid: false,
-      error: `Upload failed — only .md files are allowed. Found: ${invalidFiles.join(', ')}`,
+      error: `Only .md files are allowed for this upload. Please remove these files: ${invalidFiles.join(', ')}`,
       filteredFiles: [],
       case: 0,
     };
@@ -146,7 +146,7 @@ function validateSingleFileUpload(files: File[]): ValidationResult {
   if (mdFiles.length === 0) {
     return {
       valid: false,
-      error: 'No Markdown (.md) files found in selection.',
+      error: 'We couldn\'t find any `.md` files in your selection. Please make sure you\'re uploading at least one markdown file.',
       filteredFiles: [],
       case: 0,
     };
@@ -234,7 +234,7 @@ async function validateFolderOrZipUpload(
       // This is NOT allowed - only images/ subfolder is permitted
       if (!isZipUpload) {
         errors.push(
-          `Upload failed — no subfolders allowed except 'images/'. Found .md file in subfolder: ${effectivePath}`,
+          `You have a markdown file in a subfolder: \`${effectivePath}\`. Please move it to the main folder. Only \`images/\` can be a subfolder.`,
         );
         continue;
       }
@@ -246,7 +246,7 @@ async function validateFolderOrZipUpload(
 
     // .md files deeper than folder root are not allowed
     if (isMd && depth > 2) {
-      errors.push(`Upload failed — .md files must be at root or folder root. Found: ${effectivePath}`);
+      errors.push(`Markdown files must be in the main folder. We found one too deep: \`${effectivePath}\`.`);
       continue;
     }
 
@@ -255,7 +255,7 @@ async function validateFolderOrZipUpload(
       // For root-level images (not allowed)
       if (depth === 1) {
         errors.push(
-          `Upload failed — images must be inside 'images/' subfolder. Found: ${effectivePath}`,
+          `Images must be inside an \`images/\` folder. We found one at the top level: \`${effectivePath}\`.`,
         );
         continue;
       }
@@ -268,7 +268,7 @@ async function validateFolderOrZipUpload(
           imageFiles.push({ file, path: effectivePath, name: file.name, folder: '' });
         } else {
           errors.push(
-            `Upload failed — images must be inside 'images/' subfolder. Found: ${effectivePath}`,
+            `Images must be inside an \`images/\` folder. We found one in an unexpected place: \`${effectivePath}\`.`,
           );
         }
         continue;
@@ -280,7 +280,7 @@ async function validateFolderOrZipUpload(
           imageFiles.push({ file, path: effectivePath, name: file.name, folder: topLevelFolder });
         } else {
           errors.push(
-            `Upload failed — images must be inside 'images/' subfolder. Found: ${effectivePath}`,
+            `Images must be inside an \`images/\` folder. We found one elsewhere: \`${effectivePath}\`.`,
           );
         }
         continue;
@@ -288,7 +288,7 @@ async function validateFolderOrZipUpload(
 
       // Images deeper than depth 3 are not allowed
       errors.push(
-        `Upload failed — images must be inside 'images/' subfolder (max depth 3). Found: ${effectivePath}`,
+        `Your folder structure is too deep. Please put your images directly inside \`images/\`. Found: \`${effectivePath}\`.`,
       );
       continue;
     }
@@ -297,18 +297,18 @@ async function validateFolderOrZipUpload(
     // Check for excessive depth (only applies to non-md, non-image files now)
     if (depth > 3) {
       errors.push(
-        `Upload failed — directory structure too deep (max 3 levels). Found: ${effectivePath}`,
+        `Your folder structure is too deep. Please keep it simple (max 3 levels). Found: \`${effectivePath}\`.`,
       );
       continue;
     }
 
     // RULE: No other file types allowed
-    errors.push(`Upload failed — forbidden file type. Found: ${effectivePath}`);
+    errors.push(`We only support \`.md\` and image files. We found an unsupported file: \`${effectivePath}\`.`);
   }
 
   // RULE: At least one .md file required
   if (mdFiles.length === 0) {
-    errors.push('Upload failed — selection must contain at least one .md file.');
+    errors.push('Your selection must contain at least one `.md` file to be converted.');
   }
 
   // Return early if structural errors found
@@ -395,7 +395,7 @@ async function validateFolderOrZipUpload(
       if (!isReferenced) {
         return {
           valid: false,
-          error: `Upload failed — orphaned image found: '${img.path}' is not referenced in any .md file.`,
+          error: `The image \`${img.path}\` is not used anywhere in your markdown files. Please either link it or remove it from the \`images/\` folder.`,
           filteredFiles: [],
           case: 0,
         };
