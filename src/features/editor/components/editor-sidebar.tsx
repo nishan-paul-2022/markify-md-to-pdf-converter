@@ -88,40 +88,57 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
           Explorer
         </span>
         <div className="flex items-center gap-1">
-          {!isSelectionMode && !isSortExpanded && (
-            <SortToggle onClick={() => setIsSortExpanded(true)} isOpen={isSortExpanded} />
-          )}
-          {!isSelectionMode && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsSelectionMode(true)}
-                  className="h-7 w-7 rounded-sm text-slate-500 transition-all hover:bg-white/5 hover:text-slate-200"
-                >
-                  <ListChecks className="h-3.5 w-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="border-slate-800 bg-slate-900 text-xs">
-                Bulk Select
-              </TooltipContent>
-            </Tooltip>
-          )}
+          <SortToggle
+            onClick={() => {
+              if (!isSortExpanded && isSelectionMode) {
+                setIsSelectionMode(false);
+                setSelectedIds(new Set());
+              }
+              setIsSortExpanded(!isSortExpanded);
+            }}
+            isOpen={isSortExpanded}
+          />
 
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost"
+                variant={undefined}
+                size="icon"
+                onClick={() => {
+                  if (!isSelectionMode && isSortExpanded) {
+                    setIsSortExpanded(false);
+                  }
+                  if (isSelectionMode) {
+                    setSelectedIds(new Set());
+                  }
+                  setIsSelectionMode(!isSelectionMode);
+                }}
+                className={cn(
+                  'h-6.5 w-6.5 transition-all hover:scale-110 !bg-transparent hover:!bg-transparent',
+                  isSelectionMode ? 'text-sky-400' : 'text-slate-500 hover:text-white',
+                )}
+              >
+                <ListChecks className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="border-slate-800 bg-slate-900 text-xs">
+              {isSelectionMode ? 'Exit Selection' : 'Bulk Select'}
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={undefined}
                 size="icon"
                 onClick={() => refreshFiles()}
-                className="h-7 w-7 rounded-sm text-slate-500 transition-all hover:bg-white/5 hover:text-slate-200"
+                className="h-6.5 w-6.5 transition-all text-slate-500 hover:text-white hover:scale-110 !bg-transparent hover:!bg-transparent"
                 disabled={filesLoading}
               >
                 <RefreshCw className={cn('h-3.5 w-3.5', filesLoading && 'animate-spin')} />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="border-slate-800 bg-slate-900 text-xs">
+            <TooltipContent side="top" className="border-slate-800 bg-slate-900 text-xs">
               Refresh Explorer
             </TooltipContent>
           </Tooltip>
@@ -129,18 +146,18 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost"
+                variant={undefined}
                 size="icon"
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsSidebarOpen(false);
                 }}
-                className="h-7 w-7 rounded-sm text-slate-500 transition-all hover:bg-white/5 hover:text-slate-200"
+                className="h-6.5 w-6.5 transition-all text-slate-500 hover:text-white hover:scale-110 !bg-transparent hover:!bg-transparent"
               >
                 <PanelLeftClose className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="border-slate-800 bg-slate-900 text-xs">
+            <TooltipContent side="top" className="border-slate-800 bg-slate-900 text-xs">
               Collapse Sidebar
             </TooltipContent>
           </Tooltip>
