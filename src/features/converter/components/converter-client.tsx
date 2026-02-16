@@ -416,8 +416,7 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         />
         <input
           type="file"
-          multiple
-          accept=".zip"
+          accept=".zip,application/zip,application/x-zip-compressed"
           ref={zipInputRef}
           onChange={handleZipUpload}
           className="hidden"
