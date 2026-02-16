@@ -258,7 +258,8 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       const isDefault =
         file.id.startsWith('default-') ||
         file.batchId === 'sample-file' ||
-        file.batchId === 'sample-folder';
+        file.batchId === 'sample-folder' ||
+        file.batchId === 'v1-samples';
 
       const a = document.createElement('a');
       if (pdfUrl && !blob) {

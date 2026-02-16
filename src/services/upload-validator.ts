@@ -74,7 +74,7 @@ const extractImageReferences = (markdownContent: string): Set<string> => {
  */
 export async function validateUploadStructure(
   files: File[],
-  uploadType?: 'folder' | 'zip',
+  uploadType?: 'single' | 'folder' | 'zip',
 ): Promise<ValidationResult> {
   if (files.length === 0) {
     return { valid: false, error: 'No files selected.', filteredFiles: [], case: 0 };

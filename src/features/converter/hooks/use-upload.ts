@@ -19,7 +19,7 @@ export function useUpload() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderInputRef = useRef<HTMLInputElement | null>(null);
 
-  const processUploadedFiles = useCallback(async (inputFiles: File[], type?: 'folder' | 'zip') => {
+  const processUploadedFiles = useCallback(async (inputFiles: File[], type?: 'single' | 'folder' | 'zip') => {
     logger.info(`📦 Processing ${inputFiles.length} files...`);
 
     // Now validate and filter using the consolidated logic

@@ -223,16 +223,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
           </div>
         ) : (
           <FileTree
-            nodes={
-              isSelectionMode || isSortExpanded
-                ? fileTree.filter(
-                    (node) =>
-                      node.batchId !== 'sample-file' &&
-                      node.batchId !== 'sample-folder' &&
-                      node.batchId !== 'v1-samples',
-                  )
-                : fileTree
-            }
+            nodes={fileTree}
             onFileSelect={onFileSelect}
             onDelete={handleFileDelete}
             onRename={handleFileRename}

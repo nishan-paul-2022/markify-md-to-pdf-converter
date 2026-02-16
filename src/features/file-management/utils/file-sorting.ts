@@ -65,20 +65,23 @@ export function sortFileTreeNodes(
   preference: SortPreference,
 ): FileTreeNode[] {
   const sorted = [...nodes].sort((a, b) => {
-    // Always keep default items (sample-file, sample-folder) at the top
-    const isDefaultA = a.batchId === 'sample-file' || a.batchId === 'sample-folder';
-    const isDefaultB = b.batchId === 'sample-file' || b.batchId === 'sample-folder';
+    // Always keep default items (sample-file, sample-folder, v1-samples) at the top
+    const isDefaultA =
+      a.batchId === 'sample-file' || a.batchId === 'sample-folder' || a.batchId === 'v1-samples';
+    const isDefaultB =
+      b.batchId === 'sample-file' || b.batchId === 'sample-folder' || b.batchId === 'v1-samples';
 
     if (isDefaultA && !isDefaultB) return -1;
     if (!isDefaultA && isDefaultB) return 1;
 
-    // If both are defaults, maintain consistent order
+    // If both are defaults, maintain consistent order: sample-file first
     if (isDefaultA && isDefaultB) {
-      if (a.batchId === 'sample-file' && b.batchId === 'sample-folder') return -1;
-      if (a.batchId === 'sample-folder' && b.batchId === 'sample-file') return 1;
+      if (a.batchId === 'sample-file' && b.batchId !== 'sample-file') return -1;
+      if (a.batchId !== 'sample-file' && b.batchId === 'sample-file') return 1;
+      // Other defaults (sample-folder, v1-samples) are treated equally and sort by type/name below
     }
 
-    // Always put folders before files
+    // Always put folders before files (for non-default or same-batch items)
     if (a.type !== b.type) {
       return a.type === 'folder' ? -1 : 1;
     }

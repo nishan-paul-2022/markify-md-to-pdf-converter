@@ -16,10 +16,7 @@ export function useConverterFiles(files: AppFile[]) {
     return files
       .filter(
         (f) =>
-          !f.id.startsWith('default-') &&
-          f.batchId !== 'sample-file' &&
-          f.batchId !== 'sample-folder' &&
-          (f.originalName.toLowerCase().endsWith('.md') || f.mimeType === 'text/markdown'),
+          f.originalName.toLowerCase().endsWith('.md') || f.mimeType === 'text/markdown',
       )
       .filter(
         (f) =>
@@ -27,6 +24,27 @@ export function useConverterFiles(files: AppFile[]) {
           (f.relativePath && f.relativePath.toLowerCase().includes(searchQuery.toLowerCase())),
       )
       .sort((a, b) => {
+        // Priority: Always keep default items at the top
+        const isDefaultA =
+          a.id.startsWith('default-') ||
+          a.batchId === 'sample-file' ||
+          a.batchId === 'sample-folder' ||
+          a.batchId === 'v1-samples';
+        const isDefaultB =
+          b.id.startsWith('default-') ||
+          b.batchId === 'sample-file' ||
+          b.batchId === 'sample-folder' ||
+          b.batchId === 'v1-samples';
+
+        if (isDefaultA && !isDefaultB) return -1;
+        if (!isDefaultA && isDefaultB) return 1;
+
+        // If both are defaults, maintain consistent order: sample-file first
+        if (isDefaultA && isDefaultB) {
+          if (a.batchId === 'sample-file' && b.batchId !== 'sample-file') return -1;
+          if (a.batchId !== 'sample-file' && b.batchId === 'sample-file') return 1;
+        }
+
         let comparison = 0;
         if (sortBy === 'name') {
           comparison = a.originalName.localeCompare(b.originalName);
