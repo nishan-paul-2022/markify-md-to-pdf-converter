@@ -71,7 +71,7 @@ export function SortPanel({ sortPreference, onSortChange, onClose }: SortProps) 
   };
 
   return (
-    <div className="animate-in fade-in slide-in-from-top-2 z-30 mx-3 mt-2 mb-4 flex flex-col overflow-hidden rounded-xl border border-white/10 bg-slate-950/40 shadow-2xl duration-300">
+    <div className="animate-in fade-in slide-in-from-top-2 z-30 mx-3 mt-2 mb-4 flex shrink-0 flex-col rounded-xl border border-white/10 bg-slate-950/40 shadow-2xl duration-300">
       <div className="p-2 space-y-2">
         {/* Compact Header with Close */}
         <div className="flex items-center justify-between px-1">
