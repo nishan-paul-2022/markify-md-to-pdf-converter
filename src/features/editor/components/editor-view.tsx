@@ -77,7 +77,7 @@ export default function EditorView({
     isCopied,
     isReset,
     isDownloaded,
-    isEditorAtTop,
+    statsRef,
     stats,
     uploadTime,
 
@@ -290,7 +290,7 @@ export default function EditorView({
 
               <div className="group/editor relative flex-grow overflow-hidden">
                 <EditorStats
-                  isEditorAtTop={isEditorAtTop}
+                  ref={statsRef}
                   stats={stats}
                   uploadTime={uploadTime}
                 />
@@ -305,7 +305,7 @@ export default function EditorView({
                   innerRef={textareaRef}
                   value={rawContent}
                   onChange={handleContentChange}
-                  className="selection:bg-primary/30 custom-scrollbar dark-editor absolute inset-0 h-full w-full resize-none border-none bg-slate-950 p-4 pt-10 font-mono text-sm text-slate-300 focus-visible:ring-0 lg:p-6 lg:pt-10"
+                  className="selection:bg-primary/30 custom-scrollbar dark-editor absolute inset-0 h-full w-full resize-none border-none rounded-none bg-slate-950 p-4 pt-10 font-mono text-sm text-slate-300 focus-visible:ring-0 lg:p-6 lg:pt-10"
                   placeholder="Write your markdown here..."
                 />
               </div>

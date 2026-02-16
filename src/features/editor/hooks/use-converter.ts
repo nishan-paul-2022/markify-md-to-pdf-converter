@@ -80,6 +80,7 @@ export function useConverter(
     type: 'file',
   });
 
+  const statsRef = useRef<HTMLDivElement | null>(null);
   const debouncedSaveRef = useRef<((content: string) => void) | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -94,10 +95,14 @@ export function useConverter(
     }
 
     const handleScroll = () => {
-      // Logic for isEditorAtTop
+      const top = textarea.scrollTop;
+      if (statsRef.current) {
+        statsRef.current.style.transform = `translateY(${-top}px)`;
+      }
     };
 
     textarea.addEventListener('scroll', handleScroll, { passive: true });
+    // Initial sync
     handleScroll();
 
     return () => textarea.removeEventListener('scroll', handleScroll);
@@ -603,7 +608,7 @@ export function useConverter(
       const f = files.find((f) => f.id === selectedFileId);
       return f?.createdAt ? new Date(f.createdAt) : null;
     })(),
-    isEditorAtTop: true, // simplified for now
+    statsRef,
     setMetadata,
     setContent,
   };
