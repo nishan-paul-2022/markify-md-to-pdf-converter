@@ -24,10 +24,31 @@ This document outlines the strict validation rules for all upload methods in Mar
 
 ## 3. Zip Archive Upload
 *   **Multi-Archive Support**: Users can select and upload **one or more** `.zip` archive files at once.
-*   **Rule Inheritance**: Zip uploads are essentially a batch of files and folders. Therefore, every single item extracted from the Zip must strictly comply with:
-    *   **Section 1** for individual files (Only `.md` allowed).
-    *   **Section 2** for folders (Only `images/` subfolder allowed, no orphans, no extra file types).
-*   **Strict Validation**: If any file or folder within the Zip violates the rules in Sections 1 or 2, the **entire archive** will fail validation.
+*   **Flexible Root Structure**: Zip files can contain:
+    *   **Multiple folders** at the root level
+    *   **Multiple `.md` files** at the root level
+    *   **Both folders and `.md` files** at the root level
+*   **Folder Rules**: Each folder inside the zip must comply with **Section 2** rules:
+    *   Only `.md` files at the folder root
+    *   Optional `images/` subfolder with only supported images
+    *   No other subfolders allowed
+    *   If `images/` exists, all images must be referenced
+*   **Strict Validation**: If any folder within the zip violates Section 2 rules, the **entire archive** will fail validation.
+
+**Example Valid Zip Structures:**
+```
+my-project.zip/
+├── readme.md                    ← Root .md file (allowed)
+├── guide.md                     ← Another root .md file (allowed)
+├── project-a/                   ← Folder (must follow Section 2 rules)
+│   ├── main.md
+│   └── images/
+│       └── logo.png
+└── project-b/                   ← Another folder (must follow Section 2 rules)
+    ├── index.md
+    └── images/
+        └── banner.jpg
+```
 
 ---
 
