@@ -239,7 +239,7 @@ export const MdPreviewToolbar = ({
             <TooltipContent>Prev Page</TooltipContent>
           </Tooltip>
 
-          <div className="relative flex h-6 min-w-[3.5rem] items-center justify-center overflow-hidden px-1.5">
+          <div className="relative flex h-6 min-w-[5.5rem] items-center justify-center overflow-hidden px-1.5">
             <div
               className={cn(
                 'absolute flex items-center justify-center transition-all duration-300 ease-in-out',
@@ -259,15 +259,15 @@ export const MdPreviewToolbar = ({
                   : 'pointer-events-none translate-y-1 scale-95 opacity-0',
               )}
             >
-              <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1">
+              <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1.5 whitespace-nowrap">
                 <Input
                   type="text"
                   value={pageInput}
                   onChange={handlePageInputChange}
                   onBlur={handlePageInputSubmit}
-                  className="h-5 w-10 rounded-full border-none bg-white/5 p-0 text-center text-[11px] font-bold text-white tabular-nums shadow-inner transition-all hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0"
+                  className="h-5 w-11 shrink-0 rounded-full border-none bg-white/5 p-0 text-center text-[10px] font-bold text-slate-200 tabular-nums leading-none shadow-inner transition-all hover:bg-white/10 focus:text-white focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
-                <span className="text-[10px] font-bold text-slate-500 tabular-nums select-none">
+                <span className="flex items-center text-[12px] font-bold text-slate-400 tabular-nums select-none shrink-0 leading-none">
                   / {totalPages}
                 </span>
               </form>
@@ -330,7 +330,7 @@ export const MdPreviewToolbar = ({
               <TooltipContent>Zoom Out</TooltipContent>
             </Tooltip>
 
-            <form onSubmit={handleZoomInputSubmit} className="flex min-w-[3.5rem] justify-center">
+            <form onSubmit={handleZoomInputSubmit} className="flex min-w-[4rem] items-center justify-center whitespace-nowrap">
               {!isScaleCalculated ? (
                 <div className="flex h-5 w-8 items-center justify-center">
                   <Loader2 className="h-3 w-3 animate-spin text-slate-500" />
@@ -341,7 +341,7 @@ export const MdPreviewToolbar = ({
                   value={zoomInput}
                   onChange={handleZoomInputChange}
                   onBlur={handleZoomInputSubmit}
-                  className="h-5 w-14 rounded-full border-none bg-white/5 p-0 text-center text-[11px] font-bold text-white tabular-nums shadow-inner transition-all hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0"
+                  className="h-5 w-14 shrink-0 rounded-full border-none bg-white/5 p-0 text-center text-[10px] font-bold text-slate-200 tabular-nums leading-none shadow-inner transition-all hover:bg-white/10 focus:text-white focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               )}
             </form>
