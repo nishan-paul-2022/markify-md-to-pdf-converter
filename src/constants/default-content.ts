@@ -15,7 +15,7 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
   // Find the Landing Page section
   // It starts with # Landing Page and ends at the next main heading (#) or horizontal rule (---)
   const landingPageMatch = markdown.match(
-    /(?:^|\r?\n)#\s+Landing\s+Page\s*\r?\n([\s\S]*?)(?=\r?\n#\s+|(?:\r?\n){2}---|(?![^]))/i,
+    /(?:^|\r?\n)#\s+Landing\s+Page\s*\r?\n([\s\S]*?)(?=\r?\n(?:#\s+|---|\*\*\*|___|\\pagebreak|<!--\s*pagebreak\s*-->)|(?![^]))/i,
   );
 
   if (!landingPageMatch) {
@@ -97,15 +97,22 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
  * Removes the Landing Page section from markdown content
  */
 export function removeLandingPageSection(markdown: string): string {
-  // More robust removal that handles different termination markers
-  return markdown
+  // 1. Remove the Landing Page section itself
+  // Terminate at next heading, HR (---, ***, ___), or explicit \pagebreak
+  const cleaned = markdown
     .replace(
-      /(?:^|\r?\n)#\s+Landing\s+Page\s*\r?\n[\s\S]*?(?=\r?\n#\s+|(?:\r?\n){2}---|(?![^]))/i,
+      /(?:^|\r?\n)#\s+Landing\s+Page\s*\r?\n[\s\S]*?(?=\r?\n(?:#\s+|---|\*\*\*|___|\\pagebreak|<!--\s*pagebreak\s*-->)|(?![^]))/i,
       '',
     )
+    .trim();
+
+  // 2. If the content now starts with a page break, remove it to avoid an empty second page
+  // (since the cover page already implies a page break)
+  return cleaned
+    .replace(/^(?:\\pagebreak|<!--\s*pagebreak\s*-->)\s*/i, '')
     .trim();
 }
 
 export const DEFAULT_METADATA: Metadata = {};
 
-export const DEFAULT_MARKDOWN_PATH = '/content-1/sample-file.md';
+export const DEFAULT_MARKDOWN_PATH = '/samples/sample-file.md';

@@ -51,12 +51,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // I'll keep the specialized validation logic here or move to a helper.
 
     // Validate file type
-    const isMarkdown = file.name.endsWith('.md') || file.type === 'text/markdown';
-    const isImage = file.type.startsWith('image/');
+    const isMarkdown = file.name.toLowerCase().endsWith('.md') || file.type === 'text/markdown';
+    const isImage = 
+      file.type.startsWith('image/') || 
+      ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'].some(ext => file.name.toLowerCase().endsWith(ext));
+
+    // Rule 1: Single/Multiple File Upload (no folder structure) must be .md only
+    const isDirectUpload = !relativePath || !relativePath.includes('/');
+    
+    if (isDirectUpload && !isMarkdown) {
+      return NextResponse.json(
+        { error: 'Upload failed — only .md files are allowed for individual uploads.' },
+        { status: 400 },
+      );
+    }
 
     if (!isMarkdown && !isImage) {
       return NextResponse.json(
-        { error: 'Upload failed — only .md and images are allowed here.' },
+        { error: 'Upload failed — supported formats are .md and images within folders.' },
         { status: 400 },
       );
     }
