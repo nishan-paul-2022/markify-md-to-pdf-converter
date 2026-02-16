@@ -100,7 +100,7 @@ export function SortPanel({ sortPreference, onSortChange, onClose }: SortProps) 
                   key={type}
                   onClick={() => handleSortByChange(type)}
                   className={cn(
-                    'flex items-center gap-2 rounded-md border px-2 py-1.5 text-[9px] font-bold tracking-wider uppercase transition-all duration-300',
+                    'flex items-center gap-2 rounded-md border px-2 py-1.5 text-[9px] font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer',
                     sortBy === type
                       ? 'border-blue-500/40 bg-blue-500/10 text-blue-400'
                       : 'border-white/5 bg-transparent text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-300',
@@ -122,7 +122,7 @@ export function SortPanel({ sortPreference, onSortChange, onClose }: SortProps) 
               <button
                 onClick={() => onSortChange({ sortBy, direction: 'asc' })}
                 className={cn(
-                  'flex items-center gap-2 rounded-md border px-2 py-1.5 text-[9px] font-bold tracking-wider uppercase transition-all duration-300',
+                  'flex items-center gap-2 rounded-md border px-2 py-1.5 text-[9px] font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer',
                   direction === 'asc'
                     ? 'border-blue-500/40 bg-blue-500/10 text-blue-400'
                     : 'border-white/5 bg-transparent text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-300',
@@ -134,7 +134,7 @@ export function SortPanel({ sortPreference, onSortChange, onClose }: SortProps) 
               <button
                 onClick={() => onSortChange({ sortBy, direction: 'desc' })}
                 className={cn(
-                  'flex items-center gap-2 rounded-md border px-2 py-1.5 text-[9px] font-bold tracking-wider uppercase transition-all duration-300',
+                  'flex items-center gap-2 rounded-md border px-2 py-1.5 text-[9px] font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer',
                   direction === 'desc'
                     ? 'border-blue-500/40 bg-blue-500/10 text-blue-400'
                     : 'border-white/5 bg-transparent text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-300',
