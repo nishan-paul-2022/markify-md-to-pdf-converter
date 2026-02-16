@@ -14,7 +14,7 @@ export async function GET(
 ): Promise<NextResponse> {
   try {
     const session = await auth();
-    if (!session?.user?.email) {
+    if (!session?.user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -63,7 +63,7 @@ export async function POST(
 ): Promise<NextResponse> {
   try {
     const session = await auth();
-    if (!session?.user?.email) {
+    if (!session?.user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -133,7 +133,7 @@ export async function DELETE(
 ): Promise<NextResponse> {
   try {
     const session = await auth();
-    if (!session?.user?.email) {
+    if (!session?.user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
