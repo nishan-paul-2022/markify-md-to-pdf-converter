@@ -11,6 +11,7 @@ import { useConverter } from '@/features/editor/hooks/use-converter';
 import { useFiles } from '@/features/file-management/hooks/use-files';
 import type { FileTreeNode } from '@/features/file-management/utils/file-tree';
 import { logger } from '@/lib/logger';
+import { fetchDraft } from '@/services/draft-service';
 
 interface EditorClientProps {
   user: {
@@ -62,11 +63,12 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         if (response.ok) {
           let text = await response.text();
           
-          // Check for auto-saved content
-          if (targetFile.id) {
-            const savedContent = localStorage.getItem(`markify_content_${targetFile.id}`);
-            if (savedContent) {
-              text = savedContent;
+          // Check for draft from server
+          if (targetFile.id && !targetFile.id.startsWith('default-')) {
+            const draft = await fetchDraft(targetFile.id);
+            if (draft) {
+              text = draft;
+              logger.info(`📝 Loaded draft from server for ${targetFile.originalName}`);
             }
           }
 
@@ -239,11 +241,12 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
           if (response.ok) {
             let text = await response.text();
             
-            // Check for auto-saved content
-            if (node.file.id) {
-              const savedContent = localStorage.getItem(`markify_content_${node.file.id}`);
-              if (savedContent) {
-                text = savedContent;
+            // Check for draft from server
+            if (node.file.id && !node.file.id.startsWith('default-')) {
+              const draft = await fetchDraft(node.file.id);
+              if (draft) {
+                text = draft;
+                logger.info(`📝 Loaded draft from server for ${node.name}`);
               }
             }
             

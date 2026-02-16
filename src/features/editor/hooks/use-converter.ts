@@ -10,6 +10,8 @@ import type { AppFile } from '@/features/file-management/hooks/use-files';
 import { logger } from '@/lib/logger';
 import { FilesService } from '@/services/api/files-service';
 import { PdfApiService } from '@/services/api/pdf-service';
+import { createDebouncedDraftSave, deleteDraft } from '@/services/draft-service';
+import { validateUploadStructure } from '@/services/upload-validator';
 import { useEditorStore } from '@/store/use-editor-store';
 import { generateStandardName, generateTimestampedPdfName } from '@/utils/naming';
 
@@ -80,6 +82,7 @@ export function useConverter(
 
   const uploadTimeRef = useRef<Date | null>(null);
   const lastModifiedTimeRef = useRef<Date | null>(null);
+  const debouncedSaveRef = useRef<((content: string) => void) | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderInputRef = useRef<HTMLInputElement | null>(null);
@@ -122,16 +125,26 @@ export function useConverter(
     setIsEditing(false);
   }, [setIsEditing]);
 
+  // Update debounced save function when selectedFileId changes
+  useEffect(() => {
+    if (selectedFileId && !selectedFileId.startsWith('default-')) {
+      debouncedSaveRef.current = createDebouncedDraftSave(selectedFileId, 1000);
+    } else {
+      debouncedSaveRef.current = null;
+    }
+  }, [selectedFileId]);
+
   const handleContentChange = useCallback(
     (newRawContent: string) => {
       setRawContent(newRawContent);
       lastModifiedTimeRef.current = new Date();
-      // Auto-save to local storage (debounced in effect or direct)
-      if (selectedFileId) {
-        localStorage.setItem(`markify_content_${selectedFileId}`, newRawContent);
+
+      // Auto-save draft to server (debounced)
+      if (debouncedSaveRef.current) {
+        debouncedSaveRef.current(newRawContent);
       }
     },
-    [setRawContent, selectedFileId],
+    [setRawContent],
   );
 
   useEffect(() => {
@@ -234,17 +247,24 @@ export function useConverter(
 
   const handleFolderUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-      const files = event.target.files;
-      if (!files || files.length === 0) return;
+      const fileList = event.target.files;
+      if (!fileList || fileList.length === 0) return;
 
       setIsLoading(true);
       const batchId = self.crypto.randomUUID();
 
       try {
-        const uploadPromises = Array.from(files).map((file) => {
-          // Preserve folder structure in the file path
-          const relativePath =
-            (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
+        const filesArray = Array.from(fileList);
+        
+        // 1. Run high-precision validation (async)
+        const validation = await validateUploadStructure(filesArray, 'folder');
+        if (!validation.valid) {
+          throw new Error(validation.error);
+        }
+
+        // 3. Proceed with upload
+        const uploadPromises = validation.filteredFiles.map((file) => {
+          const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
           return FilesService.upload(file, batchId, relativePath, 'editor');
         });
 
@@ -262,7 +282,9 @@ export function useConverter(
         setIsUploaded(true);
         setTimeout(() => setIsUploaded(false), 2000);
       } catch (error: unknown) {
-        logger.error('Folder upload failed:', error);
+        const message = error instanceof Error ? error.message : 'Folder upload failed';
+        logger.error('Folder validation error:', message);
+        alert(message); // Provide immediate feedback
       } finally {
         setIsLoading(false);
         event.target.value = '';
@@ -291,19 +313,44 @@ export function useConverter(
         const zip = new JSZip();
         const zipContent = await zip.loadAsync(zipFile);
 
-        const uploadPromises: Promise<{ id: string; url: string; originalName: string }>[] = [];
+        // 1. Convert zip contents to Virtual Files for validation
+        const virtualFiles: File[] = [];
+        const fileDataPromises: Promise<void>[] = [];
 
-        // Extract and upload each file from the zip
         zipContent.forEach((relativePath, file) => {
           if (!file.dir) {
-            uploadPromises.push(
+            fileDataPromises.push(
               (async () => {
                 const blob = await file.async('blob');
-                const extractedFile = new File([blob], relativePath, { type: blob.type });
-                return FilesService.upload(extractedFile, batchId, relativePath, 'editor');
+                const virtualFile = new File([blob], relativePath, { type: blob.type });
+                // We fake webkitRelativePath for the validator to treat it as a folder structure
+                Object.defineProperty(virtualFile, 'webkitRelativePath', {
+                  value: relativePath,
+                });
+                virtualFiles.push(virtualFile);
               })(),
             );
           }
+        });
+
+        await Promise.all(fileDataPromises);
+
+        // 2. Run high-precision validation (async)
+        const validation = await validateUploadStructure(virtualFiles, 'zip');
+        if (!validation.valid) {
+          throw new Error(validation.error);
+        }
+
+        const uploadPromises: Promise<{ id: string; url: string; originalName: string }>[] = [];
+
+        // 4. Proceed with upload
+        validation.filteredFiles.forEach((file) => {
+          const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
+          uploadPromises.push(
+            (async () => {
+              return FilesService.upload(file, batchId, relativePath, 'editor');
+            })(),
+          );
         });
 
         const results = await Promise.all(uploadPromises);
@@ -335,6 +382,7 @@ export function useConverter(
         (f) =>
           f.batchId !== 'sample-file' &&
           f.batchId !== 'sample-folder' &&
+          f.batchId !== 'v1-samples' &&
           !f.id.startsWith('default-'),
       )
       .map((f) => f.id);
@@ -366,6 +414,9 @@ export function useConverter(
     if (confirmed && onDelete) {
       setIsLoading(true);
       try {
+        // Delete drafts for deleted files from server
+        await Promise.all(Array.from(selectedIds).map(id => deleteDraft(id)));
+        
         await onDelete(Array.from(selectedIds));
         setSelectedIds(new Set());
         setIsSelectionMode(false);

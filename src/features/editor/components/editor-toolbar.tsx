@@ -90,7 +90,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         <div className="flex h-8 items-center gap-0.5 rounded-full border border-white/5 bg-slate-800/40 px-1 shadow-inner">
           <input
             type="file"
-            accept=".md,image/png,image/jpeg,image/jpg,image/gif,image/webp"
+            accept=".md"
             multiple
             ref={fileInputRef}
             onChange={(e) => {
