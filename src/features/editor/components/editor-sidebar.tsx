@@ -204,7 +204,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                   setIsSelectionMode(false);
                   setSelectedIds(new Set());
                 }}
-                className="group flex h-9 w-9 cursor-pointer items-center justify-center rounded-md text-slate-500 transition-all hover:bg-white/5 hover:text-slate-200"
+                className="group flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-500 transition-all hover:bg-white/5 hover:text-slate-200"
                 aria-label="Exit selection mode"
               >
                 <X className="h-4 w-4 transition-transform group-hover:scale-110" />
