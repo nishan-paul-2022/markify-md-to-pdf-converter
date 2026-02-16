@@ -80,8 +80,6 @@ export function useConverter(
     type: 'file',
   });
 
-  const uploadTimeRef = useRef<Date | null>(null);
-  const lastModifiedTimeRef = useRef<Date | null>(null);
   const debouncedSaveRef = useRef<((content: string) => void) | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -137,7 +135,6 @@ export function useConverter(
   const handleContentChange = useCallback(
     (newRawContent: string) => {
       setRawContent(newRawContent);
-      lastModifiedTimeRef.current = new Date();
 
       // Auto-save draft to server (debounced)
       if (debouncedSaveRef.current) {
@@ -602,8 +599,10 @@ export function useConverter(
     handleUploadModalConfirm,
     MAX_FILENAME_LENGTH: 30,
     getBaseName,
-    uploadTime: uploadTimeRef.current,
-    lastModifiedTime: lastModifiedTimeRef.current,
+    uploadTime: (() => {
+      const f = files.find((f) => f.id === selectedFileId);
+      return f?.createdAt ? new Date(f.createdAt) : null;
+    })(),
     isEditorAtTop: true, // simplified for now
     setMetadata,
     setContent,

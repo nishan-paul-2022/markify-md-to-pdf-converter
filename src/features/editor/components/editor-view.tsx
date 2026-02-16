@@ -80,7 +80,6 @@ export default function EditorView({
     isEditorAtTop,
     stats,
     uploadTime,
-    lastModifiedTime,
 
     // Refs
     textareaRef,
@@ -294,7 +293,6 @@ export default function EditorView({
                   isEditorAtTop={isEditorAtTop}
                   stats={stats}
                   uploadTime={uploadTime}
-                  lastModifiedTime={lastModifiedTime}
                 />
 
                 {isLoading && (

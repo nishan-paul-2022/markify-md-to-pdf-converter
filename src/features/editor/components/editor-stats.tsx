@@ -11,14 +11,12 @@ interface EditorStatsProps {
     chars: number;
   };
   uploadTime: Date | null;
-  lastModifiedTime: Date | null;
 }
 
 export const EditorStats: React.FC<EditorStatsProps> = ({
   isEditorAtTop,
   stats,
   uploadTime,
-  lastModifiedTime,
 }) => {
   return (
     <div
@@ -46,14 +44,6 @@ export const EditorStats: React.FC<EditorStatsProps> = ({
               Uploaded
             </span>
             <span className="text-slate-300 tabular-nums">{formatDateTime(uploadTime)}</span>
-          </div>
-        )}
-        {lastModifiedTime && (
-          <div className="group/stat flex items-center gap-1.5">
-            <span className="text-[9px] font-bold tracking-widest text-emerald-400/50 uppercase">
-              Modified
-            </span>
-            <span className="text-slate-300 tabular-nums">{formatDateTime(lastModifiedTime)}</span>
           </div>
         )}
       </div>
