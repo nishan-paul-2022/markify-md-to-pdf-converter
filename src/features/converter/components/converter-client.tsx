@@ -4,6 +4,7 @@ import React from 'react';
 
 import { useAlert } from '@/components/alert-provider';
 // Components
+import { getAlert } from '@/components/alert-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { parseMetadataFromMarkdown, removeLandingPageSection } from '@/constants/default-content';
 import { ConverterHeader } from '@/features/converter/components/converter-header';
@@ -16,6 +17,7 @@ import { useSelection } from '@/features/converter/hooks/use-selection';
 // Hooks
 import type { AppFile } from '@/features/file-management/hooks/use-files';
 import { useFiles } from '@/features/file-management/hooks/use-files';
+import { validateUploadStructure } from '@/services/upload-validator';
 import { formatConverterDate, formatFileSize } from '@/utils/formatters';
 // Utilities
 import {
@@ -372,8 +374,19 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       return;
     }
 
+    const validation = await validateUploadStructure(Array.from(selectedFiles), 'single');
+    if (!validation.valid) {
+      const api = getAlert();
+      api?.show({
+        title: 'Invalid File',
+        message: validation.error || 'Invalid selection.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const batchId = self.crypto.randomUUID();
-    const uploadPromises = Array.from(selectedFiles).map(async (file) => {
+    const uploadPromises = validation.filteredFiles.map(async (file: File) => {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('batchId', batchId);
@@ -405,8 +418,19 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       return;
     }
 
+    const validation = await validateUploadStructure(Array.from(selectedFiles), 'folder');
+    if (!validation.valid) {
+      const api = getAlert();
+      api?.show({
+        title: 'Invalid Folder',
+        message: validation.error || 'Invalid selection.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const batchId = self.crypto.randomUUID();
-    const uploadPromises = Array.from(selectedFiles).map(async (file) => {
+    const uploadPromises = validation.filteredFiles.map(async (file: File) => {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('batchId', batchId);
@@ -458,7 +482,8 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
       await Promise.all(uploadPromises);
       await refreshFiles();
     } catch (error) {
-      showAlert({
+      const api = getAlert();
+      api?.show({
         title: 'Processing Failed',
         message: error instanceof Error ? error.message : 'Failed',
         variant: 'destructive',
