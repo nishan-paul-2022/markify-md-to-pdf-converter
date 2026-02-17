@@ -6,6 +6,13 @@
 
 Markify is a professional, high-performance web application designed to convert Markdown into beautiful, high-fidelity PDF reports. Built with **Next.js**, **Playwright**, and **Tailwind CSS v4**, it features real-time preview and seamless Mermaid diagram support.
 
+<div align="center">
+  <br />
+  <img src="public/previews/page-home.gif" alt="Markify Dashboard" width="100%" style="border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" />
+  <br />
+</div>
+
+
 ## ✨ Core Features
 
 - **📄 Pro PDF Generation**: High-fidelity PDF output using Playwright engine.
@@ -15,6 +22,24 @@ Markify is a professional, high-performance web application designed to convert 
 - **📁 File Management**: Robust storage and organization of your documents.
 - **🎨 Elite UI**: Stunning dark-mode interface built with Shadcn UI.
 - **🐳 Docker Ready**: Fully containerized for instant deployment.
+
+---
+
+## 📸 Interface In Action
+
+### Intelligent Workspace
+Real-time side-by-side editing with instant feedback and diagram support.
+
+<img src="public/previews/page-editor.gif" alt="Editor Preview" width="100%" style="border-radius: 8px; border: 1px solid #333;" />
+
+<br />
+
+### Batch Processing Pipeline
+Convert extensive archives or multiple files into polished PDFs in seconds.
+
+<img src="public/previews/page-converter.gif" alt="Converter Preview" width="100%" style="border-radius: 8px; border: 1px solid #333;" />
+
+<br />
 
 ---
 
