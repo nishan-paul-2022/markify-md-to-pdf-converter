@@ -245,7 +245,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="sticky top-0 z-50 flex h-24 items-center justify-between border-b border-white/5 bg-slate-950/40 px-6 backdrop-blur-2xl lg:px-12"
+        className="sticky top-0 z-50 flex h-24 items-center justify-between border-b border-white px-6 backdrop-blur-2xl lg:px-12"
       >
         <div className="flex items-center gap-12">
           <Link href="/" className="group flex items-center gap-3">
@@ -254,7 +254,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
                alt="Markify" 
                width={32} 
                height={32} 
-               className="transition-transform duration-500 group-hover:rotate-12"
+               className="transition-transform duration-500"
              />
             <span className="text-2xl font-black tracking-tighter text-white">Markify</span>
           </Link>
@@ -286,10 +286,9 @@ export default function LandingContent({ session }: LandingContentProps): React.
           ) : (
             <Button
               onClick={() => void signIn('google')}
-              className="group relative h-12 overflow-hidden rounded-full bg-white px-8 text-sm font-black uppercase tracking-widest text-slate-950 transition-all hover:scale-105 hover:bg-slate-100"
+              className="group relative h-12 overflow-hidden rounded-full bg-white px-8 text-sm font-black uppercase tracking-widest text-slate-950 transition-all hover:scale-105 hover:bg-white"
             >
               <span className="relative z-10">Sign In</span>
-              <div className="absolute inset-0 z-0 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 opacity-0 transition-opacity group-hover:opacity-100" />
             </Button>
           )}
         </div>
