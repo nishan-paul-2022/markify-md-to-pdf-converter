@@ -1,4 +1,4 @@
-.PHONY: fix-perms kill-port setup clean build dev up down restart db-push db-migrate db-studio db-seed logs help
+.PHONY: fix-perms kill-port setup clean build dev up down restart db-push db-migrate db-studio db-seed db-reset logs help
 
 ifneq (,$(wildcard ./.env))
     include .env
@@ -55,6 +55,10 @@ db-studio:
 db-seed:
 	docker exec $(APP_NAME) npx prisma db seed
 
+db-reset:
+	npx prisma db push --force-reset
+	rm -rf public/uploads/*
+
 logs:
 	docker compose logs -f app
 
@@ -72,4 +76,5 @@ help:
 	@echo "  db-migrate   - Run Prisma migrations"
 	@echo "  db-studio    - Open Prisma Studio"
 	@echo "  db-seed      - Run database seed"
+	@echo "  db-reset     - Reset DB and clear uploads (runs locally)"
 	@echo "  logs         - Follow app logs in Docker"
