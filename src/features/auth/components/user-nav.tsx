@@ -102,12 +102,12 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
           <DropdownMenuSeparator className="mx-1 bg-white/5" />
           <div className="p-1">
             <DropdownMenuItem
-              className="cursor-pointer rounded-lg px-3 py-3 text-slate-300 transition-colors focus:bg-white/5 focus:text-white"
+              className="group cursor-pointer rounded-lg px-3 py-3 text-slate-300 transition-colors focus:bg-red-600 focus:text-white"
               onClick={async () => {
                 await signOut({ callbackUrl: '/' });
               }}
             >
-              <LogOut className="mr-3 h-4 w-4 text-slate-500" />
+              <LogOut className="mr-3 h-4 w-4 text-slate-500 transition-colors group-focus:text-white" />
               <span className="text-xs font-black tracking-[0.15em] uppercase">Log out</span>
             </DropdownMenuItem>
           </div>
