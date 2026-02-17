@@ -136,5 +136,5 @@ Visit [http://localhost:3000](http://localhost:3000) to access the app.
 
 <div align="center">
   <img src="public/images/company-logo.svg" alt="KAI Team Logo" width="80" height="80" />
-  <p>Built with ❤️ by the <b>KAI Team</b>.</p>
+  <p>Built with ❤️ by the <b> KAI</b>.</p>
 </div>

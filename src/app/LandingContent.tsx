@@ -13,6 +13,7 @@ import {
   Code2,
   FileDown,
   FileText,
+  Heart,
   Image as LucideImage,
   Layers,
   Layout,
@@ -446,33 +447,21 @@ export default function LandingContent({ session }: LandingContentProps): React.
         <footer className="relative border-t border-white/5 bg-slate-950 py-20 px-6">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-12 md:flex-row">
             <div className="flex flex-col items-center gap-4 md:items-start">
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5">
-                  <Image src="/images/brand-logo.svg" alt="Markify" width={16} height={16} />
-                </div>
-                <span className="text-lg font-black tracking-tight text-white/90">MARKIFY</span>
-              </div>
+
               <p className="text-sm font-medium text-slate-500">
                 © 2026 MARKIFY. ALL RIGHTS RESERVED.
               </p>
             </div>
 
-            <motion.div whileHover={{ scale: 1.05 }} className="group relative">
-              <div className="absolute -inset-4 opacity-0 blur-2xl transition-opacity bg-blue-500/5 rounded-3xl group-hover:opacity-100" />
-              <div className="relative flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-8 py-4 backdrop-blur-md">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
-                  Made by
-                </span>
-                <div className="flex items-center gap-3">
-                  <Image src="/images/company-logo.svg" alt="KAI" width={24} height={24} />
-                  <span className="text-xl font-black text-white">KAI</span>
-                </div>
-              </div>
-            </motion.div>
-
-            <div className="flex items-center gap-8">
-              {/* Social icons removed for conciseness as requested */}
+            <div className="flex items-center gap-3 font-mono text-[10px] font-bold uppercase text-slate-100 tracking-[0.4em] transition-all duration-300">
+              <span className="inline-block scale-y-[1.4]">Built with</span>
+              <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
+              <span className="inline-block scale-y-[1.4]">by the</span>
+              <Image src="/images/company-logo.svg" alt="KAI" width={36} height={36} className="object-contain" />
+              <span className="inline-block scale-y-[1.4]">KAI</span>
             </div>
+
+
           </div>
         </footer>
       </main>
