@@ -281,26 +281,21 @@ export default function LandingContent({ session }: LandingContentProps): React.
         {/* Hero Section */}
         <section className="mx-auto max-w-7xl px-6 pt-24 pb-12 text-center lg:pt-40">
           <motion.div initial="initial" animate="animate" variants={stagger} className="flex flex-col items-center">
-            <motion.div variants={fadeIn} className="mb-6">
-              <span className="flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-blue-400">
-                <Sparkles className="h-3 w-3" />
-                Next-Gen Markdown Pipeline
-              </span>
-            </motion.div>
+
 
             <motion.h1
               variants={fadeIn}
               className="mb-8 bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-6xl font-black leading-[1.1] tracking-tighter text-transparent md:text-8xl"
             >
-              Docs should look <br /> <span className="text-blue-500">as good as code.</span>
+              <span className="text-red-500">PDF</span> should look as good as <span className="text-blue-500">Markdown</span>
             </motion.h1>
 
             <motion.p
               variants={fadeIn}
-              className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-slate-400 md:text-xl"
+              className="mx-auto mb-12 max-w-4xl text-lg leading-relaxed text-slate-400 md:text-xl"
             >
-              The ultimate suite for converting Markdown into high-fidelity, brandable PDFs. Powering
-              modern developers with real-time feedback and intelligent tooling.
+              The ultimate suite for converting Markdown into high-fidelity, brandable PDFs.
+              Powering modern developers with real-time feedback and intelligent tooling.
             </motion.p>
           </motion.div>
         </section>
