@@ -235,7 +235,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                           <Clock className="h-3.5 w-3.5" />
                         )}
                         <span className="text-[10px] font-black tracking-wider uppercase">
-                          {sortBy === 'name' ? 'NAME' : sortBy === 'size' ? 'SIZE' : 'DATE'}
+                          {sortBy === 'name' ? 'Name' : sortBy === 'size' ? 'File Size' : 'Upload Time'}
                         </span>
                       </button>
                     </DropdownMenuTrigger>
@@ -258,7 +258,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                       >
                         <Clock className="h-4 w-4" />
                         <span className="text-xs font-bold tracking-wider uppercase">
-                          Most Recent
+                          Upload Time
                         </span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
@@ -272,7 +272,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                       >
                         <SortAsc className="h-4 w-4" />
                         <span className="text-xs font-bold tracking-wider uppercase">
-                          Alphabetical
+                          Name
                         </span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
