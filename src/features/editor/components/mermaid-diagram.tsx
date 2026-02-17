@@ -24,6 +24,7 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
   useEffect(() => {
     mermaid.initialize({
       startOnLoad: false,
+      logLevel: 5, // Silence mermaid's internal logging (5 = Fatal/Off)
       theme: 'base',
       themeVariables: {
         primaryColor: '#e0f2fe',
@@ -46,39 +47,48 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
   }, []);
 
   useEffect(() => {
-    if (ref.current) {
+    const renderDiagram = async () => {
+      if (!ref.current) return;
       const id = instanceId.current;
 
-      // Clear previous content
-      ref.current.innerHTML = '';
+      try {
+        // Pre-validate syntax to avoid internal mermaid logging during render
+        // suppressErrors: true ensures mermaid doesn't log the parse error to console
+        const isValid = await mermaid.parse(chart, { suppressErrors: true });
+        
+        if (!isValid) {
+          throw new Error('Invalid Mermaid syntax');
+        }
 
-      mermaid
-        .render(id, chart)
-        .then(({ svg }) => {
-          if (ref.current) {
-            ref.current.innerHTML = svg;
-            setIsLoaded(true);
+        // Clear previous content before success render
+        ref.current.innerHTML = '';
+        
+        const { svg } = await mermaid.render(id, chart);
+        
+        ref.current.innerHTML = svg;
+        setIsLoaded(true);
 
-            // Post-process SVG for better appearance
-            const svgElement = ref.current.querySelector('svg');
-            if (svgElement) {
-              svgElement.style.maxWidth = '100%';
-              svgElement.style.maxHeight = '400px';
-              svgElement.style.height = 'auto';
-              svgElement.style.objectFit = 'contain';
-              svgElement.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.05))';
-            }
+        // Post-process SVG for better appearance
+        const svgElement = ref.current.querySelector('svg');
+        if (svgElement) {
+          svgElement.style.maxWidth = '100%';
+          svgElement.style.maxHeight = '400px';
+          svgElement.style.height = 'auto';
+          svgElement.style.objectFit = 'contain';
+          svgElement.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.05))';
+        }
 
-            resolveMermaidError(id);
-          }
-        })
-        .catch((err) => {
-          console.error('Mermaid render error:', err);
-          setError('Failed to render diagram');
-          setIsLoaded(true);
-          reportMermaidError(id);
-        });
-    }
+        resolveMermaidError(id);
+      } catch {
+        // We catch errors silently to avoid console clutter
+        // The error is already being reported to the global store to disable print preview
+        setError('Failed to render diagram');
+        setIsLoaded(true);
+        reportMermaidError(id);
+      }
+    };
+
+    void renderDiagram();
   }, [chart, reportMermaidError, resolveMermaidError]);
 
   // Cleanup on unmount
