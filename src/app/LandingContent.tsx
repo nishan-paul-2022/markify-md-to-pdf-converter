@@ -16,6 +16,7 @@ import {
   Cpu,
   FileDown, 
   Layers,
+  Layout,
   Search,
   Sparkles, 
   Workflow,
@@ -244,14 +245,40 @@ export default function LandingContent({ session }: LandingContentProps): React.
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="sticky top-0 z-50 flex h-20 items-center justify-between border-b border-white/5 bg-slate-950/40 px-6 backdrop-blur-xl lg:px-12"
+        className="sticky top-0 z-50 flex h-24 items-center justify-between border-b border-white/5 bg-slate-950/40 px-6 backdrop-blur-2xl lg:px-12"
       >
-        <Link href="/" className="group flex items-center gap-3">
-          <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-colors group-hover:border-blue-500/50">
-            <Image src="/images/brand-logo.svg" alt="Markify" width={24} height={24} />
-          </div>
-          <span className="text-xl font-black tracking-tighter text-white/90">MARKIFY</span>
-        </Link>
+        <div className="flex items-center gap-12">
+          <Link href="/" className="group flex items-center gap-3">
+             <Image 
+               src="/images/brand-logo.svg" 
+               alt="Markify" 
+               width={32} 
+               height={32} 
+               className="transition-transform duration-500 group-hover:rotate-12"
+             />
+            <span className="text-2xl font-black tracking-tighter text-white">Markify</span>
+          </Link>
+
+          {/* New Header Navigation */}
+          <nav className="hidden items-center gap-8 md:flex">
+            <Link 
+              href="/editor" 
+              onClick={(e) => handleAuthRedirect(e, '/editor')}
+              className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-400 transition-colors hover:text-white"
+            >
+              <Layout className="h-4 w-4" />
+              Workspace
+            </Link>
+            <Link 
+              href="/converter" 
+              onClick={(e) => handleAuthRedirect(e, '/converter')}
+              className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-400 transition-colors hover:text-white"
+            >
+              <Zap className="h-4 w-4" />
+              Converter
+            </Link>
+          </nav>
+        </div>
 
         <div className="flex items-center gap-6">
           {session?.user ? (
@@ -259,10 +286,10 @@ export default function LandingContent({ session }: LandingContentProps): React.
           ) : (
             <Button
               onClick={() => void signIn('google')}
-              variant="outline"
-              className="rounded-full border-white/10 bg-white/5 font-bold hover:bg-white/10"
+              className="group relative h-12 overflow-hidden rounded-full bg-white px-8 text-sm font-black uppercase tracking-widest text-slate-950 transition-all hover:scale-105 hover:bg-slate-100"
             >
-              Sign In
+              <span className="relative z-10">Sign In</span>
+              <div className="absolute inset-0 z-0 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 opacity-0 transition-opacity group-hover:opacity-100" />
             </Button>
           )}
         </div>
