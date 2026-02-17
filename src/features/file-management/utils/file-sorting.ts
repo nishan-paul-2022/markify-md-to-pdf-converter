@@ -109,10 +109,10 @@ export function sortFileTreeNodes(
     if (isDefaultA && !isDefaultB) return -1;
     if (!isDefaultA && isDefaultB) return 1;
 
-    // If both are defaults, maintain consistent order: sample-file first
+    // If both are defaults, they will fall through to folder-first and name sorting
+    // This ensures folders like 'sample-folder' appear before 'sample-file.md'
     if (isDefaultA && isDefaultB) {
-      if (a.batchId === 'sample-file' && b.batchId !== 'sample-file') return -1;
-      if (a.batchId !== 'sample-file' && b.batchId === 'sample-file') return 1;
+      // We don't return here, letting it fall through to type and name checks
     }
 
     // Always put folders before files

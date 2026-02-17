@@ -83,14 +83,9 @@ export function buildFileTree(files: AppFile[]): FileTreeNode[] {
         return 1;
       }
 
-      // If both are defaults, sample-file goes before others
+      // If both are defaults, let them fall through to folder and name sorting
       if (isDefaultA && isDefaultB) {
-        if (a.batchId === 'sample-file' && b.batchId !== 'sample-file') {
-          return -1;
-        }
-        if (a.batchId !== 'sample-file' && b.batchId === 'sample-file') {
-          return 1;
-        }
+        // Fall through
       }
 
       if (a.type !== b.type) {
