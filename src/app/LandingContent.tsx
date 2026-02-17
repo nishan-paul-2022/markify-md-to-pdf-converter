@@ -128,18 +128,20 @@ const WorkflowAnimation = () => {
               />
               
               {/* Pulsing Core */}
-              <div className="relative z-10 flex h-32 w-32 items-center justify-center rounded-[2.5rem] bg-white text-slate-950 shadow-[0_0_50px_rgba(255,255,255,0.2)]">
+              <div className="relative z-10 flex h-32 w-32 items-center justify-center rounded-full bg-white text-slate-950 shadow-[0_0_60px_rgba(255,255,255,0.3)]">
+                {/* Always Rotating Border */}
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  className="absolute -inset-3 rounded-full border-2 border-dashed border-white/20"
+                />
+                <motion.div 
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                  className="absolute -inset-6 rounded-full border border-dotted border-white/10"
+                />
+
                 <Image src="/images/brand-logo.svg" alt="Core" width={48} height={48} />
-                
-                {/* Outward spreading "data waves" */}
-                {[1, 2, 3].map(i => (
-                  <motion.div 
-                    key={i}
-                    animate={{ scale: [1, 2], opacity: [0.5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: i * 0.6 }}
-                    className="absolute inset-0 rounded-[2.5rem] border border-white/30"
-                  />
-                ))}
               </div>
 
            </div>
