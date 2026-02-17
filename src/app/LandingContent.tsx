@@ -388,7 +388,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
 
                 <div className="mt-auto">
                   <Link href="/editor" onClick={(e) => handleAuthRedirect(e, '/editor')}>
-                    <Button className="group/btn relative h-16 w-full overflow-hidden rounded-2xl bg-blue-500 text-lg font-black text-white transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/25">
+                    <Button className="group/btn relative h-16 w-full overflow-hidden rounded-2xl bg-blue-500 text-lg font-black text-white transition-all hover:bg-blue-400 hover:shadow-lg hover:shadow-blue-500/25">
                       <span className="relative z-10">Launch Workspace</span>
                       <div className="absolute inset-0 translate-y-full bg-gradient-to-t from-white/20 to-transparent transition-transform duration-300 group-hover/btn:translate-y-0" />
                     </Button>
@@ -434,7 +434,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
 
                 <div className="mt-auto">
                   <Link href="/converter" onClick={(e) => handleAuthRedirect(e, '/converter')}>
-                    <Button className="group/btn relative h-16 w-full overflow-hidden rounded-2xl bg-emerald-500 text-lg font-black text-white transition-all hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-500/25">
+                    <Button className="group/btn relative h-16 w-full overflow-hidden rounded-2xl bg-emerald-500 text-lg font-black text-white transition-all hover:bg-emerald-400 hover:shadow-lg hover:shadow-emerald-500/25">
                       <span className="relative z-10">Quick Convert</span>
                       <div className="absolute inset-0 translate-y-full bg-gradient-to-t from-white/20 to-transparent transition-transform duration-300 group-hover/btn:translate-y-0" />
                     </Button>
