@@ -90,11 +90,13 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
 
           const svgElement = ref.current.querySelector('svg');
           if (svgElement) {
-            svgElement.setAttribute('width', '100%');
-            svgElement.setAttribute('height', 'auto');
+            // Allow natural size but constrain width to container
             svgElement.style.maxWidth = '100%';
-            svgElement.style.height = 'auto';
+            // If width attribute is present, height:auto usually maintains aspect ratio.
+            // If we don't set width, it defaults to attribute width.
+            svgElement.style.height = 'auto'; 
             svgElement.style.display = 'block';
+            svgElement.style.margin = '0 auto'; // Center the diagram
             svgElement.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.05))';
           }
 

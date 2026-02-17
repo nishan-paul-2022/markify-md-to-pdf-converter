@@ -34,7 +34,7 @@
 4. [Mastering Markdown Syntax](#4-mastering-markdown-syntax)
    - [4.1 The Group Landing Page](#41-the-group-landing-page)
    - [4.2 Navigational Table of Contents](#42-navigational-table-of-contents)
-   - [4.3 Explicit Page Breaks (\pagebreak)](#43-explicit-page-breaks-pagebreak)
+   - [4.3 Explicit Page Breaks](#43-explicit-page-breaks-pagebreak)
    - [4.4 Mermaid Diagrams](#44-mermaid-diagrams)
 5. [Image Integration](#5-image-integration)
 6. [Summary](#6-summary)
@@ -44,7 +44,7 @@
 ## 1. Welcome to Markify
 Markify is an advanced Markdown-to-PDF ecosystem designed for academics and professionals. It provides a seamless transition from raw Markdown to production-ready academic reports.
 
----
+\pagebreak
 
 ## 2. Editor Page: Your Workspace
 The Editor page is your command center for content creation.
@@ -88,8 +88,10 @@ Just add the **`Collaborative Group Members:`** table after your metadata list. 
 ### **4.2 Navigational Table of Contents**
 Creating a `# Table of Contents` section with internal links generates a clickable TOC in the final PDF. For example: `[Welcome](#1-welcome-to-markify)`.
 
-### **4.3 Explicit Page Breaks (\pagebreak)**
-The `\pagebreak` tag is a crucial feature. It forces the PDF generator to start a new page immediately, allowing you to perfectly separate your cover, TOC, and chapters.
+### **4.3 Explicit Page Breaks**
+The `pagebreak` tag is a crucial feature. It forces the PDF generator to start a new page immediately, allowing you to perfectly separate your cover, TOC, and chapters.
+
+\pagebreak
 
 ### **4.4 Mermaid Diagrams**
 Visualize complex logic without external images using Mermaid blocks:
@@ -111,7 +113,7 @@ You can display an image by using the `![Alt Text](images/filename)` syntax. Bel
 
 ![Screenshot Example](images/img.jpg)
 
----
+\pagebreak
 
 ## 6. Summary
 Markify streamlines the reporting process by combining a robust file system with a powerful rendering engine. By mastering these features, you can focus on your research while Markify handles the aesthetics.

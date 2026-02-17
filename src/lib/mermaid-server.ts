@@ -97,14 +97,16 @@ export async function renderMermaidToSvg(mermaidCode: string): Promise<string> {
     }, mermaidCode);
 
     // Post-process SVG to ensure it's responsive and not clipped
+
     const responsiveSvg = svg.replace(/<svg([\s\S]*?)>/, (_match, content) => {
-      // Remove existing width, height, style from the root svg tag
+      // Keep existing width/height attributes if present! 
+      // Only remove existing style to avoid conflicts, then inject our responsive style.
       const cleanedContent = content
-        .replace(/\bwidth\s*=\s*"[^"]*"/g, '')
-        .replace(/\bheight\s*=\s*"[^"]*"/g, '')
         .replace(/\bstyle\s*=\s*"[^"]*"/g, '');
       
-      return `<svg${cleanedContent} width="100%" height="auto" style="max-width: 100%; height: auto; display: block;">`;
+      // Use max-width: 100% to shrink if needed, but let natural width apply otherwise.
+      // Do NOT set width: 100% or width: auto (which can force expansion).
+      return `<svg${cleanedContent} style="max-width: 100%; height: auto; display: block; margin: 0 auto;">`;
     });
 
     return responsiveSvg;
