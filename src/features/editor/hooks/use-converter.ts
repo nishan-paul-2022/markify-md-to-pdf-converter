@@ -143,11 +143,28 @@ export function useConverter(
   const onMarkdownFound = useCallback(
     async (file: { id: string; originalName: string; url: string }) => {
       const text = await FilesService.getContent(file.url);
-      handleContentChange(text);
+      
+      // Update store states
+      setOriginalContent(text);
+      setRawContent(text);
       setFilename(file.originalName);
       setSelectedFileId(file.id);
+
+      // CRITICAL: Derive and set basePath so relative images resolve immediately
+      const fileUrl = file.url;
+      if (fileUrl) {
+        const lastSlashIndex = fileUrl.lastIndexOf('/');
+        if (lastSlashIndex !== -1) {
+          const directoryPath = fileUrl.substring(0, lastSlashIndex);
+          const finalBasePath =
+            directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')
+              ? directoryPath
+              : `/api${directoryPath}`;
+          setBasePath(finalBasePath);
+        }
+      }
     },
-    [handleContentChange, setFilename, setSelectedFileId],
+    [setOriginalContent, setRawContent, setFilename, setSelectedFileId, setBasePath],
   );
 
   const {
