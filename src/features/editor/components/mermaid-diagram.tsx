@@ -14,6 +14,12 @@ const initializeMermaid = () => {
     startOnLoad: false,
     logLevel: 5,
     theme: 'base',
+    flowchart: {
+      htmlLabels: false, // Force SVG labels for reliable measurement
+      useMaxWidth: false,
+      curve: 'basis',
+      padding: 20,     // Add generous padding
+    },
     themeVariables: {
       primaryColor: '#e0f2fe',
       primaryTextColor: '#0369a1',
@@ -21,8 +27,8 @@ const initializeMermaid = () => {
       lineColor: '#0ea5e9',
       secondaryColor: '#f0f9ff',
       tertiaryColor: '#ffffff',
-      fontFamily: 'Inter, sans-serif',
-      fontSize: '14px',
+      fontFamily: 'Inter, Arial, sans-serif',
+      fontSize: '16px',
       mainBkg: '#f8fafc',
       nodeBorder: '#cbd5e1',
       clusterBkg: '#f1f5f9',
@@ -30,7 +36,6 @@ const initializeMermaid = () => {
       edgeLabelBackground: '#ffffff',
     },
     securityLevel: 'loose',
-    fontFamily: 'Inter',
   });
   isMermaidInitialized = true;
 };
@@ -74,6 +79,7 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
         if (!isCurrent) return;
 
         ref.current.innerHTML = '';
+        await document.fonts.ready;
         const { svg } = await mermaid.render(id, chart);
         
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -84,10 +90,11 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
 
           const svgElement = ref.current.querySelector('svg');
           if (svgElement) {
+            svgElement.setAttribute('width', '100%');
+            svgElement.setAttribute('height', 'auto');
             svgElement.style.maxWidth = '100%';
-            svgElement.style.maxHeight = '400px';
             svgElement.style.height = 'auto';
-            svgElement.style.objectFit = 'contain';
+            svgElement.style.display = 'block';
             svgElement.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.05))';
           }
 

@@ -33,11 +33,24 @@ export const createMarkdownComponents = ({ basePath }: MarkdownComponentsProps) 
       </code>
     );
   },
-  pre: ({ children }: React.ComponentPropsWithoutRef<'pre'>) => (
-    <pre className="relative mt-[0.2cm] mb-[0.8cm] overflow-hidden rounded-lg border border-white/5 bg-[#0f172a] p-[15px] font-mono text-[9pt] leading-[1.45] break-words whitespace-pre-wrap text-[#f8fafc] shadow-sm">
-      {children}
-    </pre>
-  ),
+  pre: ({ children }: React.ComponentPropsWithoutRef<'pre'>) => {
+    // Check if the children contain a code block with the mermaid language
+    const isMermaid = React.Children.toArray(children).some(
+      (child) =>
+        React.isValidElement(child) &&
+        (child.props as { className?: string }).className?.includes('language-mermaid'),
+    );
+
+    if (isMermaid) {
+      return <>{children}</>;
+    }
+
+    return (
+      <pre className="relative mt-[0.2cm] mb-[0.8cm] overflow-hidden rounded-lg border border-white/5 bg-[#0f172a] p-[15px] font-mono text-[9pt] leading-[1.45] break-words whitespace-pre-wrap text-[#f8fafc] shadow-sm">
+        {children}
+      </pre>
+    );
+  },
   h2: ({ children, ...props }: React.ComponentPropsWithoutRef<'h2'>) => {
     const id = children?.toString().toLowerCase().replace(/\s+/g, '-');
     return (

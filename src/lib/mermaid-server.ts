@@ -13,20 +13,43 @@ export async function renderMermaidToSvg(mermaidCode: string): Promise<string> {
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
-    const page = await browser.newPage();
+    const context = await browser.newContext({
+      viewport: { width: 2000, height: 2000 },
+    });
+    const page = await context.newPage();
 
-    // Create a minimal HTML page with Mermaid
+    // Create a HTML page with Mermaid and Inter font
     const html = `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="UTF-8">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+          body { 
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: white;
+          }
+          #mermaid-diagram {
+            display: inline-block;
+          }
+        </style>
         <script type="module">
           import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
           
           mermaid.initialize({
             startOnLoad: false,
             theme: 'base',
+            flowchart: {
+              htmlLabels: false, // Force SVG labels for reliable measurement
+              useMaxWidth: false,
+              curve: 'basis',
+              padding: 20,     // Add generous padding
+              nodeSpacing: 50,
+              rankSpacing: 50,
+            },
             themeVariables: {
               primaryColor: '#e0f2fe',
               primaryTextColor: '#0369a1',
@@ -34,8 +57,8 @@ export async function renderMermaidToSvg(mermaidCode: string): Promise<string> {
               lineColor: '#0ea5e9',
               secondaryColor: '#f0f9ff',
               tertiaryColor: '#ffffff',
-              fontFamily: 'Inter, sans-serif',
-              fontSize: '14px',
+              fontFamily: 'Inter, Arial, sans-serif',
+              fontSize: '16px', // Slightly larger font
               mainBkg: '#f8fafc',
               nodeBorder: '#cbd5e1',
               clusterBkg: '#f1f5f9',
@@ -43,11 +66,12 @@ export async function renderMermaidToSvg(mermaidCode: string): Promise<string> {
               edgeLabelBackground: '#ffffff',
             },
             securityLevel: 'loose',
-            fontFamily: 'Inter',
           });
 
           window.renderMermaid = async (code) => {
             try {
+              // Ensure fonts are loaded before rendering
+              await document.fonts.ready;
               const { svg } = await mermaid.render('mermaid-diagram', code);
               return svg;
             } catch (error) {
@@ -64,7 +88,7 @@ export async function renderMermaidToSvg(mermaidCode: string): Promise<string> {
 
     await page.setContent(html, { waitUntil: 'networkidle' });
 
-    // Wait for mermaid to be available
+    // Wait for mermaid and fonts
     await page.waitForFunction(() => typeof window.renderMermaid === 'function', { timeout: 10000 });
 
     // Render the diagram
@@ -72,7 +96,18 @@ export async function renderMermaidToSvg(mermaidCode: string): Promise<string> {
       return await window.renderMermaid(code);
     }, mermaidCode);
 
-    return svg;
+    // Post-process SVG to ensure it's responsive and not clipped
+    const responsiveSvg = svg.replace(/<svg([\s\S]*?)>/, (_match, content) => {
+      // Remove existing width, height, style from the root svg tag
+      const cleanedContent = content
+        .replace(/\bwidth\s*=\s*"[^"]*"/g, '')
+        .replace(/\bheight\s*=\s*"[^"]*"/g, '')
+        .replace(/\bstyle\s*=\s*"[^"]*"/g, '');
+      
+      return `<svg${cleanedContent} width="100%" height="auto" style="max-width: 100%; height: auto; display: block;">`;
+    });
+
+    return responsiveSvg;
   } catch (error) {
     logger.error('Failed to render Mermaid diagram:', error);
     // Return an error message as SVG
