@@ -229,7 +229,7 @@ const WorkflowAnimation = () => {
       </div>
 
       {/* Extreme ambient backglow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[150%] -z-10 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.05)_0%,transparent_70%)] blur-3xl" />
+
     </div>
   );
 };
@@ -243,27 +243,22 @@ export default function LandingContent({ session }: LandingContentProps): React.
   };
 
   return (
-    <div className="dark min-h-screen overflow-x-hidden bg-[#020617] font-sans text-slate-100 selection:bg-blue-500/30">
+    <div className="dark min-h-screen overflow-x-hidden bg-[#212121] font-sans text-slate-100 selection:bg-blue-500/30">
       {/* Background/Ambient Effects */}
+      {/* Background/Ambient Effects Removed */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] h-[40%] w-[40%] animate-pulse rounded-full bg-blue-600/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] h-[40%] w-[40%] animate-pulse rounded-full bg-indigo-600/10 blur-[120px]" />
-        <div className="absolute inset-0 mix-blend-overlay opacity-[0.02] bg-[url('/noise.png')]" />
-        <div
-          className="absolute inset-0 opacity-[0.05]"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.1) 1px, transparent 0)',
-            backgroundSize: '40px 40px',
-          }}
-        />
+        {/* Subtle noise/grid can stay if desired, but user said 'no gradient'. 
+            Removing the blobs. Keeping subtle texture if it's not a gradient. 
+            The user said specifically 'no need to use gradient in bg'. 
+            The blobs are definitely gradients. The grid is a gradient too technically.
+            Let's remove all to be safe and clean. */}
       </div>
 
       {/* Header */}
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="sticky top-0 z-50 flex h-24 items-center justify-between border-b border-white px-6 backdrop-blur-2xl lg:px-12"
+        className="sticky top-0 z-50 flex h-24 items-center justify-between border-b border-white/5 bg-slate-950/80 px-6 backdrop-blur-2xl lg:px-12"
       >
         <div className="flex items-center gap-12">
           <Link href="/" className="group flex items-center gap-3">
@@ -341,105 +336,108 @@ export default function LandingContent({ session }: LandingContentProps): React.
         {/* Feature Cards Section */}
         <section className="mx-auto max-w-7xl px-6 pb-40">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
-            {/* Editor Card */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="group relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-slate-900/40 p-1 backdrop-blur-sm transition-all hover:border-blue-500/30"
+              className="group relative overflow-hidden rounded-[3rem] border border-white/[0.08] bg-[#030712] backdrop-blur-3xl transition-all duration-700 hover:border-blue-500/50 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="relative p-8 lg:p-12">
+              {/* Glossy Top Edge Highlight */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/[0.07] via-transparent to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
+              
+              <div className="relative p-8 lg:p-12 h-full flex flex-col">
                 <div className="mb-8 flex items-center justify-between">
-                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
                     <Code2 className="h-7 w-7" />
                   </div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
                     Workspace
                   </div>
                 </div>
 
                 <h3 className="mb-4 text-3xl font-black text-white">Integrated Editor</h3>
-                <p className="mb-10 text-lg leading-relaxed text-slate-400">
+                <p className="mb-10 text-lg leading-relaxed text-slate-400 min-h-[90px]">
                   Advanced workspace featuring real-time side-by-side rendering. Native folder asset support and instant Mermaid diagram generation.
                 </p>
 
-                <div className="shadow-2xl relative mb-10 aspect-video overflow-hidden rounded-2xl border border-white/10">
-                  <div className="absolute inset-0 animate-pulse bg-blue-500/5" />
+                <div className="shadow-2xl relative mb-12 aspect-video overflow-hidden rounded-3xl border border-white/[0.08] bg-[#020617]">
+                  <div className="absolute inset-0 animate-pulse bg-blue-500/[0.02]" />
                   <Image
                     src="/presentation/page-editor.gif"
                     alt="Editor Demo"
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#030712]/50 to-transparent" />
                 </div>
 
-                <Link href="/editor" onClick={(e) => handleAuthRedirect(e, '/editor')}>
-                  <Button className="group/btn shadow-[0_0_20px_rgba(255,255,255,0.1)] relative h-16 w-full overflow-hidden rounded-2xl bg-white text-lg font-black text-slate-950 transition-all hover:bg-white/90">
-                    <span className="relative z-10 flex items-center justify-center gap-2">
-                      Launch Workspace
-                    </span>
-                    <div className="absolute inset-x-0 bottom-0 h-1 translate-y-1 transform bg-blue-500 transition-transform group-hover/btn:translate-y-0" />
-                  </Button>
-                </Link>
+                <div className="mt-auto">
+                  <Link href="/editor" onClick={(e) => handleAuthRedirect(e, '/editor')}>
+                    <Button className="group/btn relative h-16 w-full overflow-hidden rounded-2xl bg-blue-600 text-lg font-black text-white transition-all hover:bg-blue-500">
+                      <span className="relative z-10">Launch Workspace</span>
+                      <div className="absolute inset-0 translate-y-full bg-gradient-to-t from-white/20 to-transparent transition-transform duration-300 group-hover/btn:translate-y-0" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </motion.div>
 
-            {/* Converter Card */}
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="group relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-slate-900/40 p-1 backdrop-blur-sm transition-all hover:border-indigo-500/30"
+              className="group relative overflow-hidden rounded-[3rem] border border-white/[0.08] bg-[#030712] backdrop-blur-3xl transition-all duration-700 hover:border-indigo-500/50 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="relative p-8 lg:p-12">
+              {/* Glossy Top Edge Highlight */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/[0.07] via-transparent to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
+              
+              <div className="relative p-8 lg:p-12 h-full flex flex-col">
                 <div className="mb-8 flex items-center justify-between">
-                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.1)]">
                     <Zap className="h-7 w-7" />
                   </div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
                     Pipeline
                   </div>
                 </div>
 
                 <h3 className="mb-4 text-3xl font-black text-white">Batch Converter</h3>
-                <p className="mb-10 text-lg leading-relaxed text-slate-400">
+                <p className="mb-10 text-lg leading-relaxed text-slate-400 min-h-[90px]">
                   Industrial-grade conversion engine. Process single files or massive zip archives into pixel-perfect PDF documents with one click.
                 </p>
 
-                <div className="shadow-2xl relative mb-10 aspect-video overflow-hidden rounded-2xl border border-white/10">
-                  <div className="absolute inset-0 animate-pulse bg-indigo-500/5" />
+                <div className="shadow-2xl relative mb-12 aspect-video overflow-hidden rounded-3xl border border-white/[0.08] bg-[#020617]">
+                  <div className="absolute inset-0 animate-pulse bg-indigo-500/[0.02]" />
                   <Image
                     src="/presentation/page-converter.gif"
                     alt="Converter Demo"
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#030712]/50 to-transparent" />
                 </div>
 
-                <Link href="/converter" onClick={(e) => handleAuthRedirect(e, '/converter')}>
-                  <Button
-                    variant="outline"
-                    className="group/btn relative h-16 w-full overflow-hidden rounded-2xl border-white/10 bg-white/5 text-lg font-black text-white transition-all hover:bg-white/10"
-                  >
-                    <span className="relative z-10 flex items-center justify-center gap-2">
-                      Quick Convert
-                    </span>
-                    <div className="absolute inset-0 -translate-x-full transition-transform duration-500 bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent group-hover:translate-x-0" />
-                  </Button>
-                </Link>
+                <div className="mt-auto">
+                  <Link href="/converter" onClick={(e) => handleAuthRedirect(e, '/converter')}>
+                    <Button className="group/btn relative h-16 w-full overflow-hidden rounded-2xl bg-indigo-600 text-lg font-black text-white transition-all hover:bg-indigo-500">
+                      <span className="relative z-10">Quick Convert</span>
+                      <div className="absolute inset-0 translate-y-full bg-gradient-to-t from-white/20 to-transparent transition-transform duration-300 group-hover/btn:translate-y-0" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </motion.div>
           </div>
         </section>
 
         {/* Super Modern Footer */}
-        <footer className="relative border-t border-white/5 bg-slate-950/40 py-20 px-6 backdrop-blur-3xl">
+        <footer className="relative border-t border-white/5 bg-slate-950 py-20 px-6">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-12 md:flex-row">
             <div className="flex flex-col items-center gap-4 md:items-start">
               <div className="flex items-center gap-3">
