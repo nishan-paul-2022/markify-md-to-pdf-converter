@@ -61,7 +61,7 @@ const WorkflowAnimation = () => {
           viewport={{ once: true }}
           className="relative z-10 h-full"
         >
-          <div className="group relative h-full p-8 rounded-[3rem] border border-blue-500/30 bg-[#030712] backdrop-blur-3xl overflow-hidden transition-all duration-700 flex flex-col shadow-2xl">
+          <div className="group relative h-full p-8 rounded-[3rem] border border-blue-500/30 bg-gradient-to-br from-black/50 via-black/20 to-transparent backdrop-blur-3xl overflow-hidden transition-all duration-700 flex flex-col shadow-2xl">
             {/* Glossy Top Edge Highlight */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             
@@ -111,7 +111,7 @@ const WorkflowAnimation = () => {
                     <motion.div 
                       key={i}
                       whileHover={{ scale: 1.03, backgroundColor: "rgba(255,255,255,0.05)" }}
-                      className="group flex items-center gap-4 py-6 px-4 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-md transition-all duration-300"
+                      className="group flex items-center gap-4 py-6 px-4 rounded-2xl bg-transparent border border-white/5 transition-all duration-300"
                     >
                       <item.icon className={`h-5 w-5 ${item.iconColor} group-hover:scale-110 transition-transform`} />
                       <span className="text-xs font-black uppercase tracking-[0.15em] text-slate-300 group-hover:text-white transition-colors">
@@ -174,7 +174,7 @@ const WorkflowAnimation = () => {
           transition={{ delay: 0.4 }}
           className="relative z-10 h-full"
         >
-          <div className="group relative h-full p-8 rounded-[3rem] border border-emerald-500/30 bg-[#030712] backdrop-blur-3xl overflow-hidden transition-all duration-700 flex flex-col shadow-2xl">
+          <div className="group relative h-full p-8 rounded-[3rem] border border-emerald-500/30 bg-gradient-to-br from-black/50 via-black/20 to-transparent backdrop-blur-3xl overflow-hidden transition-all duration-700 flex flex-col shadow-2xl">
              {/* Glossy Top Edge Highlight */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
@@ -212,7 +212,7 @@ const WorkflowAnimation = () => {
                      <motion.div 
                         key={i} 
                         whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.05)" }}
-                        className="group flex flex-col items-center justify-center py-6 px-3 rounded-[1.5rem] bg-white/[0.03] border border-white/5 backdrop-blur-md h-full transition-all duration-300"
+                        className="group flex flex-col items-center justify-center py-6 px-3 rounded-[1.5rem] bg-transparent border border-white/5 h-full transition-all duration-300"
                       >
                         <item.icon className={`h-6 w-6 mb-4 ${item.iconColor} group-hover:rotate-12 transition-transform`} />
                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-white transition-colors text-center">
@@ -340,7 +340,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="group relative overflow-hidden rounded-[3rem] border border-blue-500/30 bg-[#030712] backdrop-blur-3xl transition-all duration-700 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
+              className="group relative overflow-hidden rounded-[3rem] border border-blue-500/30 bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent backdrop-blur-3xl transition-all duration-700 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
             >
               {/* Glossy Top Edge Highlight */}
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
@@ -386,7 +386,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="group relative overflow-hidden rounded-[3rem] border border-emerald-500/30 bg-[#030712] backdrop-blur-3xl transition-all duration-700 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
+              className="group relative overflow-hidden rounded-[3rem] border border-emerald-500/30 bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent backdrop-blur-3xl transition-all duration-700 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
             >
               {/* Glossy Top Edge Highlight */}
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
