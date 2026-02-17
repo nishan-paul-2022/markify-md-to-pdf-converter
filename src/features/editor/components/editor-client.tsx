@@ -45,7 +45,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
     [handleDelete, handleBulkDelete]
   );
 
-  const converterState = useConverter(files, handleUnifiedDelete);
+  const converterState = useConverter(files, handleUnifiedDelete, refreshFiles);
 
   const {
     setIsLoading,

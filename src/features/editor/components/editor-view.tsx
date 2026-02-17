@@ -112,7 +112,7 @@ export default function EditorView({
     setActiveImage,
     setUploadRulesModal,
     handleUploadModalConfirm,
-  } = useConverter(files, handleFileDelete);
+  } = useConverter(files, handleFileDelete, refreshFiles);
 
   // Sort preference state
   const [sortPreference, setSortPreference] = React.useState<SortPreference>(() =>
@@ -275,7 +275,6 @@ export default function EditorView({
                 handleFileUpload={handleFileUpload}
                 handleFolderUpload={handleFolderUpload}
                 handleZipUpload={handleZipUpload}
-                refreshFiles={refreshFiles}
                 scrollToStart={scrollToStart}
                 scrollToEnd={scrollToEnd}
                 handleCopy={handleCopy}

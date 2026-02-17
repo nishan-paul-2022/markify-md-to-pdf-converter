@@ -22,6 +22,7 @@ const getBaseName = (name: string): string => {
 export function useConverter(
   files: AppFile[] = [],
   onDelete?: (id: string | string[]) => Promise<void>,
+  refreshFiles?: () => Promise<void>,
 ) {
   const {
     rawContent,
@@ -123,8 +124,11 @@ export function useConverter(
   // Use the universal upload hook
   const onUploadSuccess = useCallback(async () => {
     setIsUploaded(true);
+    if (refreshFiles) {
+      await refreshFiles();
+    }
     setTimeout(() => setIsUploaded(false), 2000);
-  }, [setIsUploaded]);
+  }, [setIsUploaded, refreshFiles]);
 
   const onMarkdownFound = useCallback(
     async (file: { id: string; originalName: string; url: string }) => {

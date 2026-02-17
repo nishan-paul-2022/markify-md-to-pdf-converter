@@ -34,7 +34,6 @@ interface EditorToolbarProps {
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   handleFolderUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   handleZipUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-  refreshFiles: () => Promise<void>;
   scrollToStart: () => void;
   scrollToEnd: () => void;
   handleCopy: () => Promise<void>;
@@ -56,7 +55,6 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   handleFileUpload,
   handleFolderUpload,
   handleZipUpload,
-  refreshFiles,
   scrollToStart,
   scrollToEnd,
   handleCopy,
@@ -94,10 +92,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
             multiple
             ref={fileInputRef}
             onChange={(e) => {
-              void (async () => {
-                await handleFileUpload(e);
-                void refreshFiles();
-              })();
+              void handleFileUpload(e);
             }}
             className="hidden"
           />
@@ -113,10 +108,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
               directory: string;
             })}
             onChange={(e) => {
-              void (async () => {
-                await handleFolderUpload(e);
-                void refreshFiles();
-              })();
+              void handleFolderUpload(e);
             }}
           />
           <input
@@ -124,10 +116,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
             accept=".zip"
             ref={zipInputRef}
             onChange={(e) => {
-              void (async () => {
-                await handleZipUpload(e);
-                void refreshFiles();
-              })();
+              void handleZipUpload(e);
             }}
             className="hidden"
           />

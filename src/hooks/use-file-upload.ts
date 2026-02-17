@@ -66,7 +66,7 @@ export function useFileUpload({
 
         // Check for markdown file to open (editor only mostly)
         if (onMarkdownFound) {
-          const mdResult = results.find((r) => r.originalName.endsWith('.md'));
+          const mdResult = [...results].reverse().find((r) => r.originalName.endsWith('.md'));
           if (mdResult) {
             await onMarkdownFound(mdResult);
           }
@@ -123,7 +123,7 @@ export function useFileUpload({
         if (onUploadSuccess) await onUploadSuccess();
 
         if (onMarkdownFound) {
-          const mdResult = results.find((r) => r.originalName.endsWith('.md'));
+          const mdResult = [...results].reverse().find((r) => r.originalName.endsWith('.md'));
           if (mdResult) {
             await onMarkdownFound(mdResult);
           }
@@ -222,7 +222,7 @@ export function useFileUpload({
         if (onUploadSuccess) await onUploadSuccess();
 
         if (onMarkdownFound) {
-          const mdResult = results.find((r) => r.originalName.endsWith('.md'));
+          const mdResult = [...results].reverse().find((r) => r.originalName.endsWith('.md'));
           if (mdResult) {
             await onMarkdownFound(mdResult);
           }
