@@ -378,7 +378,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
                 <div className="shadow-2xl relative mb-12 aspect-video overflow-hidden rounded-3xl border border-white/[0.08] bg-[#020617]">
                   <div className="absolute inset-0 animate-pulse bg-blue-500/[0.02]" />
                   <Image
-                    src="/presentation/page-editor.gif"
+                    src="/previews/page-editor.gif"
                     alt="Editor Demo"
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -424,7 +424,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
                 <div className="shadow-2xl relative mb-12 aspect-video overflow-hidden rounded-3xl border border-white/[0.08] bg-[#020617]">
                   <div className="absolute inset-0 animate-pulse bg-emerald-500/[0.02]" />
                   <Image
-                    src="/presentation/page-converter.gif"
+                    src="/previews/page-converter.gif"
                     alt="Converter Demo"
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
