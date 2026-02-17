@@ -271,12 +271,7 @@ export function useConverter(
       const a = document.createElement('a');
       a.href = url;
 
-      const isDefault = selectedFileId?.startsWith('default-');
-      if (isDefault) {
-        a.download = `${getBaseName(filename)}.pdf`;
-      } else {
-        a.download = generateTimestampedPdfName(filename);
-      }
+      a.download = generateTimestampedPdfName(filename);
 
       document.body.appendChild(a);
       a.click();
@@ -286,7 +281,7 @@ export function useConverter(
     } catch (error) {
       logger.error('Failed to download PDF:', error);
     }
-  }, [generatePdfBlob, filename, setIsPdfDownloaded, selectedFileId]);
+  }, [generatePdfBlob, filename, setIsPdfDownloaded]);
 
 
 
