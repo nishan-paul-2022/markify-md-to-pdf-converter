@@ -61,6 +61,7 @@ interface MdPreviewToolbarProps {
   onDownload?: () => void;
   isGenerating: boolean;
   isDownloaded: boolean;
+  mermaidErrorCount?: number;
 }
 
 export const MdPreviewToolbar = ({
@@ -91,6 +92,7 @@ export const MdPreviewToolbar = ({
   onDownload,
   isGenerating,
   isDownloaded,
+  mermaidErrorCount = 0,
 }: MdPreviewToolbarProps) => {
   return (
     <div className="relative flex h-12 shrink-0 items-center justify-center border-b border-slate-800 bg-slate-900/80 px-4 backdrop-blur-sm transition-colors select-none">
@@ -116,20 +118,34 @@ export const MdPreviewToolbar = ({
                 <Eye className="h-3.5 w-3.5" />
                 LIVE
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setViewMode('preview')}
-                className={cn(
-                  'flex h-6 items-center justify-center gap-1 rounded-full border border-transparent px-2 text-[10px] font-bold tracking-wider uppercase transition-all duration-200 sm:gap-1.5 md:px-3',
-                  viewMode === 'preview'
-                    ? 'border-white/20 bg-white/10 text-white shadow-sm'
-                    : 'text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-200',
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-block">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={mermaidErrorCount > 0}
+                      onClick={() => setViewMode('preview')}
+                      className={cn(
+                        'flex h-6 items-center justify-center gap-1 rounded-full border border-transparent px-2 text-[10px] font-bold tracking-wider uppercase transition-all duration-200 sm:gap-1.5 md:px-3',
+                        viewMode === 'preview'
+                          ? 'border-white/20 bg-white/10 text-white shadow-sm'
+                          : 'text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-200',
+                        mermaidErrorCount > 0 && 'cursor-not-allowed opacity-50',
+                      )}
+                    >
+                      <Printer className="h-3.5 w-3.5" />
+                      PRINT
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {mermaidErrorCount > 0 && (
+                  <TooltipContent side="bottom" className="max-w-xs border-red-500/50 bg-red-950 text-red-200">
+                    <p className="text-[10px] font-bold">MERMAID ERROR</p>
+                    <p className="text-[10px] opacity-80">Fix Mermaid diagrams to enable Print Preview</p>
+                  </TooltipContent>
                 )}
-              >
-                <Printer className="h-3.5 w-3.5" />
-                PRINT
-              </Button>
+              </Tooltip>
         </div>
 
         {/* Pill 2: Sync (Preview Mode Only) */}

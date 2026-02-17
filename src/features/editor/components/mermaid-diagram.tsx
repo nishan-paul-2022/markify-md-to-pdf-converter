@@ -2,11 +2,15 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
+import { useEditorStore } from '@/store/use-editor-store';
+
 import { Loader2 } from 'lucide-react';
 import mermaid from 'mermaid';
 
 export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
+  const instanceId = useRef(`mermaid-${Math.random().toString(36).substring(2, 11)}`);
+  const { reportMermaidError, resolveMermaidError } = useEditorStore();
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [prevChart, setPrevChart] = useState(chart);
@@ -43,7 +47,7 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
 
   useEffect(() => {
     if (ref.current) {
-      const id = `mermaid-${Math.random().toString(36).substring(2, 11)}`;
+      const id = instanceId.current;
 
       // Clear previous content
       ref.current.innerHTML = '';
@@ -64,15 +68,26 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
               svgElement.style.objectFit = 'contain';
               svgElement.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.05))';
             }
+
+            resolveMermaidError(id);
           }
         })
         .catch((err) => {
           console.error('Mermaid render error:', err);
           setError('Failed to render diagram');
           setIsLoaded(true);
+          reportMermaidError(id);
         });
     }
-  }, [chart]);
+  }, [chart, reportMermaidError, resolveMermaidError]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    const id = instanceId.current;
+    return () => {
+      resolveMermaidError(id);
+    };
+  }, [resolveMermaidError]);
 
   return (
     <div className="diagram-wrapper my-3 flex w-full flex-col items-center">

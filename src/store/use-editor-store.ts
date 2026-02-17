@@ -60,6 +60,12 @@ interface EditorState {
 
   // Computed Stats
   getStats: () => { chars: number; words: number };
+
+  // --- Mermaid State ---
+  mermaidErrorCount: number;
+  mermaidErrors: Set<string>;
+  reportMermaidError: (id: string) => void;
+  resolveMermaidError: (id: string) => void;
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -86,6 +92,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   imageGallery: [],
   isSelectionMode: false,
   selectedIds: new Set(),
+  mermaidErrorCount: 0,
+  mermaidErrors: new Set<string>(),
 
   // Actions
   setRawContent: (rawContent) => set({ rawContent }),
@@ -129,5 +137,23 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const chars = rawContent.length;
     const words = rawContent.trim() ? rawContent.trim().split(/\s+/).length : 0;
     return { chars, words };
+  },
+
+  reportMermaidError: (id) => {
+    const { mermaidErrors } = get();
+    if (!mermaidErrors.has(id)) {
+      const next = new Set(mermaidErrors);
+      next.add(id);
+      set({ mermaidErrors: next, mermaidErrorCount: next.size });
+    }
+  },
+
+  resolveMermaidError: (id) => {
+    const { mermaidErrors } = get();
+    if (mermaidErrors.has(id)) {
+      const next = new Set(mermaidErrors);
+      next.delete(id);
+      set({ mermaidErrors: next, mermaidErrorCount: next.size });
+    }
   },
 }));
