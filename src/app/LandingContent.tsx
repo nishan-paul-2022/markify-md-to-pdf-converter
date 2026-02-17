@@ -61,7 +61,7 @@ const WorkflowAnimation = () => {
           viewport={{ once: true }}
           className="relative z-10 h-full"
         >
-          <div className="group relative h-full p-8 rounded-[3rem] border border-white/[0.08] bg-[#030712] backdrop-blur-3xl overflow-hidden hover:border-blue-500/50 transition-all duration-700 flex flex-col shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] hover:shadow-[0_0_50px_-12px_rgba(59,130,246,0.3)]">
+          <div className="group relative h-full p-8 rounded-[3rem] border border-blue-500/30 bg-[#030712] backdrop-blur-3xl overflow-hidden transition-all duration-700 flex flex-col shadow-2xl">
             {/* Glossy Top Edge Highlight */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             
@@ -174,7 +174,7 @@ const WorkflowAnimation = () => {
           transition={{ delay: 0.4 }}
           className="relative z-10 h-full"
         >
-          <div className="group relative h-full p-8 rounded-[3rem] border border-white/[0.08] bg-[#030712] backdrop-blur-3xl overflow-hidden hover:border-emerald-500/50 transition-all duration-700 flex flex-col shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] hover:shadow-[0_0_50px_-12px_rgba(16,185,129,0.3)]">
+          <div className="group relative h-full p-8 rounded-[3rem] border border-emerald-500/30 bg-[#030712] backdrop-blur-3xl overflow-hidden transition-all duration-700 flex flex-col shadow-2xl">
              {/* Glossy Top Edge Highlight */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
@@ -340,13 +340,10 @@ export default function LandingContent({ session }: LandingContentProps): React.
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="group relative overflow-hidden rounded-[3rem] border border-white/[0.08] bg-[#030712] backdrop-blur-3xl transition-all duration-700 hover:border-blue-500/50 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
+              className="group relative overflow-hidden rounded-[3rem] border border-blue-500/30 bg-[#030712] backdrop-blur-3xl transition-all duration-700 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
             >
               {/* Glossy Top Edge Highlight */}
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/[0.07] via-transparent to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
               
               <div className="relative p-8 lg:p-12 h-full flex flex-col">
                 <div className="mb-8 flex items-center justify-between">
@@ -376,7 +373,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
 
                 <div className="mt-auto">
                   <Link href="/editor" onClick={(e) => handleAuthRedirect(e, '/editor')}>
-                    <Button className="group/btn relative h-16 w-full overflow-hidden rounded-2xl bg-blue-600 text-lg font-black text-white transition-all hover:bg-blue-500">
+                    <Button className="group/btn relative h-16 w-full overflow-hidden rounded-2xl bg-blue-500 text-lg font-black text-white transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/25">
                       <span className="relative z-10">Launch Workspace</span>
                       <div className="absolute inset-0 translate-y-full bg-gradient-to-t from-white/20 to-transparent transition-transform duration-300 group-hover/btn:translate-y-0" />
                     </Button>
@@ -389,17 +386,14 @@ export default function LandingContent({ session }: LandingContentProps): React.
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="group relative overflow-hidden rounded-[3rem] border border-white/[0.08] bg-[#030712] backdrop-blur-3xl transition-all duration-700 hover:border-indigo-500/50 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
+              className="group relative overflow-hidden rounded-[3rem] border border-emerald-500/30 bg-[#030712] backdrop-blur-3xl transition-all duration-700 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
             >
               {/* Glossy Top Edge Highlight */}
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/[0.07] via-transparent to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
               
               <div className="relative p-8 lg:p-12 h-full flex flex-col">
                 <div className="mb-8 flex items-center justify-between">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.1)]">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
                     <Zap className="h-7 w-7" />
                   </div>
                   <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
@@ -413,7 +407,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
                 </p>
 
                 <div className="shadow-2xl relative mb-12 aspect-video overflow-hidden rounded-3xl border border-white/[0.08] bg-[#020617]">
-                  <div className="absolute inset-0 animate-pulse bg-indigo-500/[0.02]" />
+                  <div className="absolute inset-0 animate-pulse bg-emerald-500/[0.02]" />
                   <Image
                     src="/presentation/page-converter.gif"
                     alt="Converter Demo"
@@ -425,7 +419,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
 
                 <div className="mt-auto">
                   <Link href="/converter" onClick={(e) => handleAuthRedirect(e, '/converter')}>
-                    <Button className="group/btn relative h-16 w-full overflow-hidden rounded-2xl bg-indigo-600 text-lg font-black text-white transition-all hover:bg-indigo-500">
+                    <Button className="group/btn relative h-16 w-full overflow-hidden rounded-2xl bg-emerald-500 text-lg font-black text-white transition-all hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-500/25">
                       <span className="relative z-10">Quick Convert</span>
                       <div className="absolute inset-0 translate-y-full bg-gradient-to-t from-white/20 to-transparent transition-transform duration-300 group-hover/btn:translate-y-0" />
                     </Button>
