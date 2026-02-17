@@ -9,9 +9,7 @@ import UserNav from '@/features/auth/components/user-nav';
 
 import { motion } from 'framer-motion';
 import { 
-  ArrowRight, 
   CheckCircle2,
-  ChevronRight, 
   Code2,
   FileDown,
   Layers,
@@ -334,8 +332,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
 
                 <h3 className="mb-4 text-3xl font-black text-white">Integrated Editor</h3>
                 <p className="mb-10 text-lg leading-relaxed text-slate-400">
-                  Advanced workspace with real-time side-by-side rendering. Full folder support for
-                  assets, live Mermaid diagrams, and instant styling.
+                  Advanced workspace featuring real-time side-by-side rendering. Native folder asset support and instant Mermaid diagram generation.
                 </p>
 
                 <div className="shadow-2xl relative mb-10 aspect-video overflow-hidden rounded-2xl border border-white/10">
@@ -352,8 +349,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
                 <Link href="/editor" onClick={(e) => handleAuthRedirect(e, '/editor')}>
                   <Button className="group/btn shadow-[0_0_20px_rgba(255,255,255,0.1)] relative h-16 w-full overflow-hidden rounded-2xl bg-white text-lg font-black text-slate-950 transition-all hover:bg-white/90">
                     <span className="relative z-10 flex items-center justify-center gap-2">
-                      Launch Workspace{' '}
-                      <ArrowRight className="h-5 w-5 transition-transform group-hover/btn:translate-x-1" />
+                      Launch Workspace
                     </span>
                     <div className="absolute inset-x-0 bottom-0 h-1 translate-y-1 transform bg-blue-500 transition-transform group-hover/btn:translate-y-0" />
                   </Button>
@@ -382,8 +378,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
 
                 <h3 className="mb-4 text-3xl font-black text-white">Batch Converter</h3>
                 <p className="mb-10 text-lg leading-relaxed text-slate-400">
-                  Industrial-grade conversion engine. Process single files or massive zip archives
-                  into pixel-perfect PDFs with one click.
+                  Industrial-grade conversion engine. Process single files or massive zip archives into pixel-perfect PDF documents with one click.
                 </p>
 
                 <div className="shadow-2xl relative mb-10 aspect-video overflow-hidden rounded-2xl border border-white/10">
@@ -403,8 +398,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
                     className="group/btn relative h-16 w-full overflow-hidden rounded-2xl border-white/10 bg-white/5 text-lg font-black text-white transition-all hover:bg-white/10"
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2">
-                      Quick Convert{' '}
-                      <ChevronRight className="h-5 w-5 transition-transform group-hover/btn:translate-x-1" />
+                      Quick Convert
                     </span>
                     <div className="absolute inset-0 -translate-x-full transition-transform duration-500 bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent group-hover:translate-x-0" />
                   </Button>
