@@ -2,7 +2,7 @@
 
 - **University:** [University Name]
 - **Program:** [Your Degree Program]
-- **Title:** [Assignment/Report Title]
+- **Title:** [Assignment Title]
 - **Subtitle:** [Course Code & Assessment Name]
 - **Course:** [Course Full Name]
 - **Name:** [Your Name]
