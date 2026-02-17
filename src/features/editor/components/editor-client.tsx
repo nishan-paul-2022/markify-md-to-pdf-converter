@@ -31,6 +31,9 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
     refreshFiles,
   } = useFiles('editor');
 
+  // Navigation history to handle redirection after deletion
+  const [navigationHistory, setNavigationHistory] = React.useState<string[]>([]);
+
   const handleUnifiedDelete = useCallback(
     async (id: string | string[]) => {
       if (Array.isArray(id)) {
@@ -39,10 +42,24 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         await handleDelete(id);
       }
     },
-    [handleDelete, handleBulkDelete],
+    [handleDelete, handleBulkDelete]
   );
 
   const converterState = useConverter(files, handleUnifiedDelete);
+
+  const {
+    setIsLoading,
+    handleContentChange,
+    setMetadata,
+    setContent,
+    setFilename,
+    setSelectedFileId,
+    setBasePath,
+    setActiveImage,
+    setImageGallery,
+    isLoading: isEditorLoading,
+    selectedFileId,
+  } = converterState;
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -51,7 +68,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
   // Helper to load file content
   const loadFileContent = useCallback(
     async (targetFile: (typeof files)[0]) => {
-      converterState.setIsLoading(true);
+      setIsLoading(true);
       try {
         const fileUrl = targetFile.url || '';
         const fetchUrl =
@@ -72,16 +89,16 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
             }
           }
 
-          converterState.handleContentChange(text);
+          handleContentChange(text);
 
           // Update derived content immediately to avoid flash/delay
           const parsedMetadata = parseMetadataFromMarkdown(text);
           const contentWithoutLandingPage = removeLandingPageSection(text);
-          converterState.setMetadata(parsedMetadata);
-          converterState.setContent(contentWithoutLandingPage);
+          setMetadata(parsedMetadata);
+          setContent(contentWithoutLandingPage);
 
-          converterState.setFilename(targetFile.originalName);
-          converterState.setSelectedFileId(targetFile.id);
+          setFilename(targetFile.originalName);
+          setSelectedFileId(targetFile.id);
 
           if (fileUrl) {
             const lastSlashIndex = fileUrl.lastIndexOf('/');
@@ -91,17 +108,25 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
                 directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')
                   ? directoryPath
                   : `/api${directoryPath}`;
-              converterState.setBasePath(finalBasePath);
+              setBasePath(finalBasePath);
             }
           }
         }
       } catch (error) {
         logger.error('Failed to load file:', error);
       } finally {
-        converterState.setIsLoading(false);
+        setIsLoading(false);
       }
     },
-    [converterState],
+    [
+      setIsLoading,
+      handleContentChange,
+      setMetadata,
+      setContent,
+      setFilename,
+      setSelectedFileId,
+      setBasePath,
+    ],
   );
 
   // Initial selection of file (URL -> LocalStorage -> Default)
@@ -111,7 +136,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
 
     if (files.length === 0) {
       if (!initialLoadDone.current) {
-        converterState.setIsLoading(false);
+        setIsLoading(false);
         initialLoadDone.current = true;
       }
       return;
@@ -119,7 +144,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
 
     if (initialLoadDone.current) return;
 
-    if (!converterState.selectedFileId) {
+    if (!selectedFileId) {
       initialLoadDone.current = true;
 
       // 1. Check if we have a fileId in the URL
@@ -149,33 +174,108 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       if (defaultFile) {
         void loadFileContent(defaultFile);
       } else {
-        converterState.setIsLoading(false);
+        setIsLoading(false);
       }
     }
   }, [
     files,
     filesLoading,
-    converterState.selectedFileId,
-    converterState,
+    selectedFileId,
     fileIdFromUrl,
     user.email,
     loadFileContent,
+    setIsLoading,
+  ]);
+
+  // Track navigation history
+  useEffect(() => {
+    if (selectedFileId) {
+      setNavigationHistory((prev) => {
+        // Don't add if it's already the last one
+        if (prev[prev.length - 1] === selectedFileId) return prev;
+        
+        // Keep unique entries, move new one to the end
+        const newHistory = [...prev.filter((id) => id !== selectedFileId), selectedFileId];
+        
+        // Limit history size to 20
+        return newHistory.slice(-20);
+      });
+    }
+  }, [selectedFileId]);
+
+  // Handle redirection when current file is deleted
+  useEffect(() => {
+    if (
+      filesLoading ||
+      isEditorLoading ||
+      files.length === 0 ||
+      !selectedFileId ||
+      !initialLoadDone.current
+    )
+      return;
+
+    const currentFileExists = files.some((f) => f.id === selectedFileId);
+
+    if (!currentFileExists) {
+      logger.info(`🔍 Current file ${selectedFileId} no longer exists. Redirecting...`);
+
+      // 1. Try to find the last valid file from history
+      const validHistory = navigationHistory.filter((id) => files.some((f) => f.id === id));
+      const fallbackId = validHistory[validHistory.length - 1];
+
+      if (fallbackId) {
+        const fallbackFile = files.find((f) => f.id === fallbackId);
+        if (fallbackFile) {
+          void loadFileContent(fallbackFile);
+          return;
+        }
+      }
+
+      // 2. Fallback to first available markdown file
+      const anyMdFile = files.find((f) => f.originalName.endsWith('.md'));
+      if (anyMdFile) {
+        void loadFileContent(anyMdFile);
+        return;
+      }
+
+      // 3. Fallback to default file
+      const defaultFile = files.find((f) => f.url === DEFAULT_MARKDOWN_PATH);
+      if (defaultFile) {
+        void loadFileContent(defaultFile);
+        return;
+      }
+
+      // 4. Last resort: clear state
+      setSelectedFileId(null);
+      handleContentChange('');
+      setFilename('document.md');
+    }
+  }, [
+    files,
+    filesLoading,
+    isEditorLoading,
+    selectedFileId,
+    navigationHistory,
+    loadFileContent,
+    setSelectedFileId,
+    handleContentChange,
+    setFilename,
   ]);
 
   // Sync state changes to URL and LocalStorage
   useEffect(() => {
-    if (converterState.selectedFileId) {
+    if (selectedFileId) {
       // URL Sync
       const params = new URLSearchParams(searchParams.toString());
-      if (params.get('fileId') !== converterState.selectedFileId) {
-        params.set('fileId', converterState.selectedFileId);
+      if (params.get('fileId') !== selectedFileId) {
+        params.set('fileId', selectedFileId);
         router.replace(`?${params.toString()}`, { scroll: false });
       }
 
       // LocalStorage Sync
       if (user.email) {
         const storageKey = `markify_last_file_${user.email}`;
-        localStorage.setItem(storageKey, converterState.selectedFileId);
+        localStorage.setItem(storageKey, selectedFileId);
       }
     } else {
       // Cleanup if deselected
@@ -186,7 +286,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       }
       // Optional: Clear local storage? No, let's keep the last one unless explicitly handled.
     }
-  }, [converterState.selectedFileId, searchParams, router, user.email]);
+  }, [selectedFileId, searchParams, router, user.email]);
 
   const handleFileSelect = useCallback(
     async (node: FileTreeNode) => {
@@ -220,8 +320,8 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
             return fParentDir === parentDir && fBatchId === targetBatchId;
           });
 
-          converterState.setActiveImage(node.file);
-          converterState.setImageGallery(gallery);
+          setActiveImage(node.file); // Changed from converterState.setActiveImage
+          setImageGallery(gallery); // Changed from converterState.setImageGallery
           return;
         }
 
@@ -230,7 +330,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         }
 
         try {
-          converterState.setIsLoading(true);
+          setIsLoading(true); // Changed from converterState.setIsLoading
           const fileUrl = node.file.url || '';
           const fetchUrl =
             fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/')
@@ -250,16 +350,16 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
               }
             }
             
-            converterState.handleContentChange(text);
+            handleContentChange(text); // Changed from converterState.handleContentChange
 
             // Update derived content immediately to avoid flash/delay
             const parsedMetadata = parseMetadataFromMarkdown(text);
             const contentWithoutLandingPage = removeLandingPageSection(text);
-            converterState.setMetadata(parsedMetadata);
-            converterState.setContent(contentWithoutLandingPage);
+            setMetadata(parsedMetadata); // Changed from converterState.setMetadata
+            setContent(contentWithoutLandingPage); // Changed from converterState.setContent
 
-            converterState.setFilename(node.file.originalName);
-            converterState.setSelectedFileId(node.file.id);
+            setFilename(node.file.originalName); // Changed from converterState.setFilename
+            setSelectedFileId(node.file.id); // Changed from converterState.setSelectedFileId
 
             // Set base path for images if it's a batch/folder upload
             if (fileUrl) {
@@ -271,18 +371,29 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
                   directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')
                     ? directoryPath
                     : `/api${directoryPath}`;
-                converterState.setBasePath(finalBasePath);
+                setBasePath(finalBasePath); // Changed from converterState.setBasePath
               }
             }
           }
         } catch (error) {
           logger.error('Failed to load file content:', error);
         } finally {
-          converterState.setIsLoading(false);
+          setIsLoading(false); // Changed from converterState.setIsLoading
         }
       }
     },
-    [converterState, files],
+    [
+      files,
+      setActiveImage,
+      setImageGallery,
+      setIsLoading,
+      handleContentChange,
+      setMetadata,
+      setContent,
+      setFilename,
+      setSelectedFileId,
+      setBasePath,
+    ],
   );
 
   return (
