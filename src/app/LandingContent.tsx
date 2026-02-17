@@ -12,6 +12,8 @@ import {
   CheckCircle2,
   Code2,
   FileDown,
+  FileText,
+  Image as LucideImage,
   Layers,
   Layout,
   Search,
@@ -47,7 +49,7 @@ const stagger = {
 const WorkflowAnimation = () => {
   return (
     <div className="relative mx-auto mt-32 mb-52 max-w-5xl px-6">
-      <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+      <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-12 items-stretch">
         
         {/* The Central "Core" Beam */}
         <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent -translate-y-1/2 hidden lg:block" />
@@ -57,9 +59,9 @@ const WorkflowAnimation = () => {
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
-          className="relative z-10"
+          className="relative z-10 h-full"
         >
-          <div className="group relative p-8 rounded-[3rem] border border-white/5 bg-slate-950/50 backdrop-blur-2xl overflow-hidden hover:border-blue-500/30 transition-all duration-700">
+          <div className="group relative h-full p-8 rounded-[3rem] border border-white/5 bg-slate-950/50 backdrop-blur-2xl overflow-hidden hover:border-blue-500/30 transition-all duration-700 flex flex-col">
             {/* Background scanline animation */}
             <motion.div 
               animate={{ y: ["0%", "200%"] }}
@@ -67,40 +69,51 @@ const WorkflowAnimation = () => {
               className="absolute inset-x-0 h-20 bg-gradient-to-b from-blue-500/0 via-blue-500/5 to-blue-500/0 top-[-100%]"
             />
             
-            <div className="relative z-10">
+            <div className="relative z-10 flex-1 flex flex-col">
               <div className="flex items-center gap-4 mb-6">
                 <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-400">
                   <Code2 className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="text-white font-black text-sm uppercase tracking-tighter">Content Ingestion</h4>
-                  <div className="flex gap-1 mt-1">
-                    {[1, 2, 3].map(i => (
-                      <motion.div 
-                        key={i}
-                        animate={{ opacity: [0.2, 1, 0.2] }}
-                        transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                        className="h-1 w-3 bg-blue-500/40 rounded-full"
-                      />
-                    ))}
-                  </div>
+                  <h4 className="text-white font-black text-sm uppercase tracking-tighter">Markdown Input</h4>
+                  <p className="text-[10px] text-blue-400 font-black flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" /> SYNTAX READY
+                  </p>
                 </div>
               </div>
               
-              <div className="space-y-3">
-                {[
-                  { icon: Search, label: "Parsing Syntax tree", color: "text-blue-400" },
-                  { icon: Layers, label: "Resolving assets", color: "text-indigo-400" },
-                ].map((item, i) => (
-                  <motion.div 
-                    key={i}
-                    whileHover={{ x: 5 }}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 text-[11px] font-bold text-slate-400"
-                  >
-                    <item.icon className={`h-3.5 w-3.5 ${item.color}`} />
-                    {item.label}
-                  </motion.div>
-                ))}
+              <div className="flex-1 flex flex-col justify-center">
+                <div className="flex gap-1.5 px-1">
+                  {[1, 2, 3, 4, 5, 6].map(i => (
+                    <motion.div 
+                      key={i}
+                      animate={{ 
+                        backgroundColor: ["rgba(59, 130, 246, 0.1)", "rgba(59, 130, 246, 0.5)", "rgba(59, 130, 246, 0.1)"] 
+                      }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
+                      className="h-1.5 flex-1 rounded-full bg-blue-500/10"
+                    />
+                  ))}
+                </div>
+                
+                <div className="mt-8 space-y-4">
+                  {[
+                    { icon: Search, label: "Write your docs", color: "from-blue-500/20 to-blue-500/0", iconColor: "text-blue-400" },
+                    { icon: Layers, label: "Add diagrams", color: "from-indigo-500/20 to-indigo-500/0", iconColor: "text-indigo-400" },
+                    { icon: LucideImage, label: "Add images", color: "from-violet-500/20 to-violet-500/0", iconColor: "text-violet-400" },
+                  ].map((item, i) => (
+                    <motion.div 
+                      key={i}
+                      whileHover={{ x: 8, backgroundColor: "rgba(255,255,255,0.05)" }}
+                      className="group flex items-center gap-4 py-6 px-4 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-md transition-all duration-300"
+                    >
+                      <item.icon className={`h-5 w-5 ${item.iconColor} group-hover:scale-110 transition-transform`} />
+                      <span className="text-xs font-black uppercase tracking-[0.15em] text-slate-300 group-hover:text-white transition-colors">
+                        {item.label}
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -112,7 +125,7 @@ const WorkflowAnimation = () => {
            whileInView={{ opacity: 1, scale: 1 }}
            viewport={{ once: true }}
            transition={{ delay: 0.2 }}
-           className="relative flex justify-center py-12 lg:py-0"
+           className="relative z-10 h-full flex items-center justify-center py-12 lg:py-0"
         >
            {/* Abstract swirling particles around logo */}
            <div className="relative h-64 w-64 flex items-center justify-center">
@@ -128,20 +141,20 @@ const WorkflowAnimation = () => {
               />
               
               {/* Pulsing Core */}
-              <div className="relative z-10 flex h-32 w-32 items-center justify-center rounded-full bg-white text-slate-950 shadow-[0_0_60px_rgba(255,255,255,0.3)]">
+              <div className="relative z-10 flex h-44 w-44 items-center justify-center rounded-full bg-white text-slate-950 shadow-[0_0_80px_rgba(255,255,255,0.4)]">
                 {/* Always Rotating Border */}
                 <motion.div 
                   animate={{ rotate: 360 }}
                   transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                  className="absolute -inset-3 rounded-full border-2 border-dashed border-white/20"
+                  className="absolute -inset-4 rounded-full border-2 border-dashed border-white/20"
                 />
                 <motion.div 
                   animate={{ rotate: -360 }}
                   transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-                  className="absolute -inset-6 rounded-full border border-dotted border-white/10"
+                  className="absolute -inset-8 rounded-full border border-dotted border-white/10"
                 />
 
-                <Image src="/images/brand-logo.svg" alt="Core" width={48} height={48} />
+                <Image src="/images/brand-logo.svg" alt="Core" width={72} height={72} />
               </div>
 
            </div>
@@ -153,23 +166,23 @@ const WorkflowAnimation = () => {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
-          className="relative z-10"
+          className="relative z-10 h-full"
         >
-          <div className="group relative p-8 rounded-[3rem] border border-white/5 bg-slate-950/50 backdrop-blur-2xl overflow-hidden hover:border-emerald-500/30 transition-all duration-700">
-            <div className="relative z-10">
+          <div className="group relative h-full p-8 rounded-[3rem] border border-white/5 bg-slate-950/50 backdrop-blur-2xl overflow-hidden hover:border-emerald-500/30 transition-all duration-700 flex flex-col">
+            <div className="relative z-10 flex-1 flex flex-col">
               <div className="flex items-center gap-4 mb-6">
                 <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400">
                   <FileDown className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="text-white font-black text-sm uppercase tracking-tighter">PDF Synthesis</h4>
+                  <h4 className="text-white font-black text-sm uppercase tracking-tighter">PDF Generation</h4>
                   <p className="text-[10px] text-emerald-400 font-black flex items-center gap-1">
                     <CheckCircle2 className="h-3 w-3" /> PIXEL PERFECT
                   </p>
                 </div>
               </div>
               
-              <div className="space-y-4">
+              <div className="flex-1 flex flex-col justify-center">
                 <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
                   <motion.div 
                     animate={{ width: ["0%", "100%", "100%"] }}
@@ -177,15 +190,23 @@ const WorkflowAnimation = () => {
                     className="h-full bg-gradient-to-r from-blue-500 to-emerald-500"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="mt-8 grid grid-cols-2 gap-3 flex-1">
                    {[
-                     { icon: Workflow, label: "Mermaid" },
-                     { icon: Sparkles, label: "Style" }
+                     { icon: Workflow, label: "Branded", color: "from-emerald-500/20 to-emerald-500/0", iconColor: "text-emerald-400" },
+                     { icon: Zap, label: "Fast", color: "from-blue-500/20 to-blue-500/0", iconColor: "text-blue-400" },
+                     { icon: Sparkles, label: "Stylized", color: "from-amber-500/20 to-amber-500/0", iconColor: "text-amber-400" },
+                     { icon: FileText, label: "Multi-page", color: "from-indigo-500/20 to-indigo-500/0", iconColor: "text-indigo-400" }
                    ].map((item, i) => (
-                     <div key={i} className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/5">
-                        <item.icon className="h-4 w-4 text-slate-400 mb-2" />
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
-                     </div>
+                     <motion.div 
+                        key={i} 
+                        whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.05)" }}
+                        className="group flex flex-col items-center justify-center py-6 px-3 rounded-[1.5rem] bg-white/[0.03] border border-white/5 backdrop-blur-md h-full transition-all duration-300"
+                      >
+                        <item.icon className={`h-6 w-6 mb-4 ${item.iconColor} group-hover:rotate-12 transition-transform`} />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-white transition-colors text-center">
+                          {item.label}
+                        </span>
+                     </motion.div>
                    ))}
                 </div>
               </div>
