@@ -15,7 +15,7 @@
  */
 export async function fetchDraft(fileId: string): Promise<string | null> {
   try {
-    const response = await fetch(`/api/drafts/${fileId}`);
+    const response = await fetch(`/api/drafts/${encodeURIComponent(fileId)}`);
     if (!response.ok) {
       // Treat 404 (not found) and 401 (unauthorized) as "no draft available"
       if (response.status === 404 || response.status === 401) return null;
@@ -35,15 +35,36 @@ export async function fetchDraft(fileId: string): Promise<string | null> {
  */
 export async function saveDraftToServer(fileId: string, content: string): Promise<boolean> {
   try {
-    const response = await fetch(`/api/drafts/${fileId}`, {
+    const body = JSON.stringify({ content });
+    
+    // browser keepalive has a budget (typically 64KiB). 
+    // If exceeded, fetch will throw TypeError: Failed to fetch.
+    // We only use keepalive for small payloads.
+    const useKeepAlive = body.length < 60000;
+
+    const response = await fetch(`/api/drafts/${encodeURIComponent(fileId)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content }),
-      keepalive: true, // Crucial for saving on page unload
+      body,
+      keepalive: useKeepAlive,
     });
 
     return response.ok;
   } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      // If keepalive fails due to budget, retry once without keepalive
+      try {
+        const response = await fetch(`/api/drafts/${encodeURIComponent(fileId)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content }),
+          keepalive: false,
+        });
+        return response.ok;
+      } catch (retryError) {
+        console.error('Error saving draft (retry):', retryError);
+      }
+    }
     console.error('Error saving draft:', error);
     return false;
   }
@@ -54,7 +75,7 @@ export async function saveDraftToServer(fileId: string, content: string): Promis
  */
 export async function deleteDraft(fileId: string): Promise<boolean> {
   try {
-    const response = await fetch(`/api/drafts/${fileId}`, {
+    const response = await fetch(`/api/drafts/${encodeURIComponent(fileId)}`, {
       method: 'DELETE',
     });
 
