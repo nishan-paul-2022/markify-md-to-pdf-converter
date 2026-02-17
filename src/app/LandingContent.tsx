@@ -12,15 +12,15 @@ import {
   ArrowRight, 
   CheckCircle2,
   ChevronRight, 
-  Code2, 
-  Cpu,
-  FileDown, 
+  Code2,
+  FileDown,
   Layers,
   Layout,
   Search,
-  Sparkles, 
+  Sparkles,
   Workflow,
-  Zap} from 'lucide-react';
+  Zap,
+} from 'lucide-react';
 
 interface LandingContentProps {
   session: {
@@ -144,21 +144,6 @@ const WorkflowAnimation = () => {
                 ))}
               </div>
 
-              {/* Floaties */}
-              <motion.div 
-                animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
-                transition={{ duration: 5, repeat: Infinity }}
-                className="absolute -top-4 right-0 p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-md"
-              >
-                <Cpu className="h-5 w-5 text-indigo-400" />
-              </motion.div>
-              <motion.div 
-                animate={{ y: [0, 20, 0], x: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, delay: 1 }}
-                className="absolute -bottom-4 left-0 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md"
-              >
-                <Zap className="h-5 w-5 text-emerald-400" />
-              </motion.div>
            </div>
         </motion.div>
 
