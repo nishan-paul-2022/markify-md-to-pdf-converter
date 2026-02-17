@@ -61,7 +61,13 @@ const WorkflowAnimation = () => {
           viewport={{ once: true }}
           className="relative z-10 h-full"
         >
-          <div className="group relative h-full p-8 rounded-[3rem] border border-white/5 bg-slate-950/50 backdrop-blur-2xl overflow-hidden hover:border-blue-500/30 transition-all duration-700 flex flex-col">
+          <div className="group relative h-full p-8 rounded-[3rem] border border-white/[0.08] bg-[#030712] backdrop-blur-3xl overflow-hidden hover:border-blue-500/50 transition-all duration-700 flex flex-col shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] hover:shadow-[0_0_50px_-12px_rgba(59,130,246,0.3)]">
+            {/* Glossy Top Edge Highlight */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            
+            {/* Sleek Inner Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/[0.07] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            
             {/* Background scanline animation */}
             <motion.div 
               animate={{ y: ["0%", "200%"] }}
@@ -104,7 +110,7 @@ const WorkflowAnimation = () => {
                   ].map((item, i) => (
                     <motion.div 
                       key={i}
-                      whileHover={{ x: 8, backgroundColor: "rgba(255,255,255,0.05)" }}
+                      whileHover={{ scale: 1.03, backgroundColor: "rgba(255,255,255,0.05)" }}
                       className="group flex items-center gap-4 py-6 px-4 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-md transition-all duration-300"
                     >
                       <item.icon className={`h-5 w-5 ${item.iconColor} group-hover:scale-110 transition-transform`} />
@@ -168,7 +174,13 @@ const WorkflowAnimation = () => {
           transition={{ delay: 0.4 }}
           className="relative z-10 h-full"
         >
-          <div className="group relative h-full p-8 rounded-[3rem] border border-white/5 bg-slate-950/50 backdrop-blur-2xl overflow-hidden hover:border-emerald-500/30 transition-all duration-700 flex flex-col">
+          <div className="group relative h-full p-8 rounded-[3rem] border border-white/[0.08] bg-[#030712] backdrop-blur-3xl overflow-hidden hover:border-emerald-500/50 transition-all duration-700 flex flex-col shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] hover:shadow-[0_0_50px_-12px_rgba(16,185,129,0.3)]">
+             {/* Glossy Top Edge Highlight */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+            {/* Sleek Inner Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/[0.07] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            
             <div className="relative z-10 flex-1 flex flex-col">
               <div className="flex items-center gap-4 mb-6">
                 <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400">
