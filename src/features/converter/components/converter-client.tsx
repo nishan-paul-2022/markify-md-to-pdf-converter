@@ -20,7 +20,6 @@ import { formatConverterDate, formatFileSize } from '@/utils/formatters';
 // Utilities
 import {
   formatFilenameTimestamp,
-  generateStandardName,
   generateTimestampedPdfName,
 } from '@/utils/naming';
 
@@ -251,31 +250,14 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
         return;
       }
 
-      const isDefault =
-        file.id.startsWith('default-') ||
-        file.batchId === 'sample-file' ||
-        file.batchId === 'sample-folder' ||
-        file.batchId === 'v1-samples';
-
       const a = document.createElement('a');
       if (pdfUrl && !blob) {
         a.href = pdfUrl as string;
-        if (isDefault) {
-          a.download = `${generateStandardName(file.originalName)}.pdf`;
-        } else {
-          a.download = generateTimestampedPdfName(file.originalName);
-        }
+        a.download = generateTimestampedPdfName(file.originalName);
       } else {
         const url = URL.createObjectURL(blob as Blob);
         a.href = url;
-        if (isDefault) {
-          a.download = `${generateStandardName(file.originalName)}.pdf`;
-        } else {
-          a.download = generateTimestampedPdfName(file.originalName);
-        }
-        // For blob URLs, we should revoke them, but since we use a.click() synchronously
-        // and document.body.removeChild(a), we can handle it.
-        // The original code revoked it.
+        a.download = generateTimestampedPdfName(file.originalName);
         a.dataset.revokeUrl = 'true';
       }
 
@@ -318,15 +300,8 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
           return null;
         }
 
-        const isDefault =
-          file.id.startsWith('default-') ||
-          file.batchId === 'sample-file' ||
-          file.batchId === 'sample-folder';
-
         return {
-          name: isDefault
-            ? `${generateStandardName(file.originalName)}.pdf`
-            : generateTimestampedPdfName(file.originalName),
+          name: generateTimestampedPdfName(file.originalName),
           blob: blob,
         };
       }),
