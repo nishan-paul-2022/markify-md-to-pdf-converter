@@ -39,6 +39,7 @@ export async function saveDraftToServer(fileId: string, content: string): Promis
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content }),
+      keepalive: true, // Crucial for saving on page unload
     });
 
     return response.ok;
@@ -65,22 +66,37 @@ export async function deleteDraft(fileId: string): Promise<boolean> {
 }
 
 /**
- * Create a debounced save function
- * Usage: const debouncedSave = createDebouncedDraftSave(fileId, 1000);
+ * Create a debounced save function with flush capability
+ * Usage: const { save, flush } = createDebouncedDraftSave(fileId, 1000);
  */
 export function createDebouncedDraftSave(
   fileId: string,
   delayMs = 1000,
-): (content: string) => void {
+) {
   let timeoutId: NodeJS.Timeout | null = null;
+  let lastContent: string | null = null;
 
-  return (content: string) => {
+  const save = (content: string) => {
+    lastContent = content;
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
 
     timeoutId = setTimeout(() => {
       void saveDraftToServer(fileId, content);
+      timeoutId = null;
     }, delayMs);
   };
+
+  const flush = async () => {
+    if (timeoutId && lastContent !== null) {
+      clearTimeout(timeoutId);
+      const success = await saveDraftToServer(fileId, lastContent);
+      timeoutId = null;
+      return success;
+    }
+    return true;
+  };
+
+  return { save, flush };
 }

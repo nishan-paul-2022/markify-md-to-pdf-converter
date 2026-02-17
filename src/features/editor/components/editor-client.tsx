@@ -59,6 +59,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
     setImageGallery,
     isLoading: isEditorLoading,
     selectedFileId,
+    flushDraft,
   } = converterState;
 
   const router = useRouter();
@@ -69,6 +70,10 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
   const loadFileContent = useCallback(
     async (targetFile: (typeof files)[0]) => {
       setIsLoading(true);
+
+      // CRITICAL: Flush pending drafts of the OLD file before changing rawContent
+      await flushDraft();
+
       try {
         const fileUrl = targetFile.url || '';
         const fetchUrl =
@@ -89,13 +94,16 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
             }
           }
 
-          handleContentChange(text);
-
           // Update derived content immediately to avoid flash/delay
           const parsedMetadata = parseMetadataFromMarkdown(text);
           const contentWithoutLandingPage = removeLandingPageSection(text);
           setMetadata(parsedMetadata);
           setContent(contentWithoutLandingPage);
+
+          // CRITICAL: Use setRawContent instead of handleContentChange for initial load.
+          // This prevents the "auto-save" from triggering for the new content 
+          // before the selectedFileId has updated in the store/hook.
+          converterState.setRawContent(text);
 
           setFilename(targetFile.originalName);
           setSelectedFileId(targetFile.id);
@@ -120,12 +128,13 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
     },
     [
       setIsLoading,
-      handleContentChange,
       setMetadata,
       setContent,
       setFilename,
       setSelectedFileId,
       setBasePath,
+      flushDraft,
+      converterState,
     ],
   );
 
@@ -290,6 +299,9 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
 
   const handleFileSelect = useCallback(
     async (node: FileTreeNode) => {
+      // First, flush any pending drafts from the current file
+      await flushDraft();
+
       if (node.type === 'file' && node.file) {
         // Check if it's an image
         const isImage =
@@ -320,65 +332,14 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
             return fParentDir === parentDir && fBatchId === targetBatchId;
           });
 
-          setActiveImage(node.file); // Changed from converterState.setActiveImage
-          setImageGallery(gallery); // Changed from converterState.setImageGallery
+          setActiveImage(node.file);
+          setImageGallery(gallery);
           return;
         }
 
-        if (!node.file.originalName.endsWith('.md')) {
-          return;
-        }
-
-        try {
-          setIsLoading(true); // Changed from converterState.setIsLoading
-          const fileUrl = node.file.url || '';
-          const fetchUrl =
-            fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/')
-              ? `/api${fileUrl}`
-              : fileUrl;
-
-          const response = await fetch(fetchUrl);
-          if (response.ok) {
-            let text = await response.text();
-            
-            // Check for draft from server
-            if (node.file.id && !node.file.id.startsWith('default-')) {
-              const draft = await fetchDraft(node.file.id);
-              if (draft) {
-                text = draft;
-                logger.info(`📝 Loaded draft from server for ${node.name}`);
-              }
-            }
-            
-            handleContentChange(text); // Changed from converterState.handleContentChange
-
-            // Update derived content immediately to avoid flash/delay
-            const parsedMetadata = parseMetadataFromMarkdown(text);
-            const contentWithoutLandingPage = removeLandingPageSection(text);
-            setMetadata(parsedMetadata); // Changed from converterState.setMetadata
-            setContent(contentWithoutLandingPage); // Changed from converterState.setContent
-
-            setFilename(node.file.originalName); // Changed from converterState.setFilename
-            setSelectedFileId(node.file.id); // Changed from converterState.setSelectedFileId
-
-            // Set base path for images if it's a batch/folder upload
-            if (fileUrl) {
-              const lastSlashIndex = fileUrl.lastIndexOf('/');
-              if (lastSlashIndex !== -1) {
-                const directoryPath = fileUrl.substring(0, lastSlashIndex);
-                // Only prepend /api for uploaded files (in /uploads), not for default content (in /content-x)
-                const finalBasePath =
-                  directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')
-                    ? directoryPath
-                    : `/api${directoryPath}`;
-                setBasePath(finalBasePath); // Changed from converterState.setBasePath
-              }
-            }
-          }
-        } catch (error) {
-          logger.error('Failed to load file content:', error);
-        } finally {
-          setIsLoading(false); // Changed from converterState.setIsLoading
+        // If it's a markdown file, load it using the shared logic
+        if (node.file.originalName.endsWith('.md')) {
+          await loadFileContent(node.file);
         }
       }
     },
@@ -386,13 +347,8 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       files,
       setActiveImage,
       setImageGallery,
-      setIsLoading,
-      handleContentChange,
-      setMetadata,
-      setContent,
-      setFilename,
-      setSelectedFileId,
-      setBasePath,
+      loadFileContent,
+      flushDraft,
     ],
   );
 
@@ -405,6 +361,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       handleFileRename={handleRename}
       onFileSelect={handleFileSelect}
       refreshFiles={refreshFiles}
+      converter={converterState}
     />
   );
 }

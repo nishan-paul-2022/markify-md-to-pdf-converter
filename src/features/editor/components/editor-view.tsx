@@ -12,7 +12,7 @@ import { EditorSidebar } from '@/features/editor/components/editor-sidebar';
 import { EditorStats } from '@/features/editor/components/editor-stats';
 import { EditorToolbar } from '@/features/editor/components/editor-toolbar';
 import MdPreview from '@/features/editor/components/md-preview';
-import { useConverter } from '@/features/editor/hooks/use-converter';
+import type { useConverter } from '@/features/editor/hooks/use-converter';
 import { ImageModal } from '@/features/file-management/components/image-modal';
 import type { AppFile } from '@/features/file-management/hooks/use-files';
 import {
@@ -44,6 +44,7 @@ interface EditorViewProps {
   ) => Promise<void>;
   refreshFiles: () => Promise<void>;
   onFileSelect: (node: FileTreeNode) => Promise<void> | void;
+  converter: ReturnType<typeof useConverter>;
 }
 
 export default function EditorView({
@@ -54,6 +55,7 @@ export default function EditorView({
   handleFileRename,
   refreshFiles,
   onFileSelect,
+  converter,
 }: EditorViewProps) {
   const {
     // State
@@ -112,7 +114,7 @@ export default function EditorView({
     setActiveImage,
     setUploadRulesModal,
     handleUploadModalConfirm,
-  } = useConverter(files, handleFileDelete, refreshFiles);
+  } = converter;
 
   // Sort preference state
   const [sortPreference, setSortPreference] = React.useState<SortPreference>(() =>

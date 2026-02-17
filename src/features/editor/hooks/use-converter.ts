@@ -84,7 +84,10 @@ export function useConverter(
   });
 
   const statsRef = useRef<HTMLDivElement | null>(null);
-  const debouncedSaveRef = useRef<((content: string) => void) | null>(null);
+  const debouncedSaveRef = useRef<{
+    save: (content: string) => void;
+    flush: () => Promise<boolean>;
+  } | null>(null);
 
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -115,7 +118,7 @@ export function useConverter(
 
       // Auto-save draft to server (debounced)
       if (debouncedSaveRef.current) {
-        debouncedSaveRef.current(newRawContent);
+        debouncedSaveRef.current.save(newRawContent);
       }
     },
     [setRawContent],
@@ -179,11 +182,21 @@ export function useConverter(
 
   // Update debounced save function when selectedFileId changes
   useEffect(() => {
+    let currentSaveRef: { save: (content: string) => void; flush: () => Promise<boolean> } | null = null;
+    
     if (selectedFileId && !selectedFileId.startsWith('default-')) {
-      debouncedSaveRef.current = createDebouncedDraftSave(selectedFileId, 1000);
+      currentSaveRef = createDebouncedDraftSave(selectedFileId, 1000);
+      debouncedSaveRef.current = currentSaveRef;
     } else {
       debouncedSaveRef.current = null;
     }
+
+    return () => {
+      if (currentSaveRef) {
+        // Flush any pending changes when switching files or unmounting
+        void currentSaveRef.flush();
+      }
+    };
   }, [selectedFileId]);
 
 
@@ -310,6 +323,15 @@ export function useConverter(
   const getSelectedCount = useCallback(() => selectedIds.size, [selectedIds]);
 
   const handleReset = useCallback(async (): Promise<void> => {
+    const confirmed = await confirm({
+      title: 'Reset Content?',
+      message: 'Are you sure you want to revert to the original file content? All unsaved changes in your current draft will be permanently lost.',
+      confirmText: 'Reset',
+      variant: 'destructive',
+    });
+
+    if (!confirmed) return;
+
     try {
       setIsReset(true);
 
@@ -321,6 +343,11 @@ export function useConverter(
         if (currentFile) {
           // Clear local storage for this file
           localStorage.removeItem(`markify_content_${selectedFileId}`);
+
+          // Delete draft from server
+          if (!selectedFileId.startsWith('default-')) {
+            await deleteDraft(selectedFileId);
+          }
 
           // Fetch original content
           const fileUrl = currentFile.url || '';
@@ -362,6 +389,7 @@ export function useConverter(
     files,
     setMetadata,
     setContent,
+    confirm,
   ]);
 
   const handleCopy = useCallback(async (): Promise<void> => {
@@ -480,6 +508,12 @@ export function useConverter(
       getAllDeletableFileIds,
       setUploadRulesModal,
       handleUploadModalConfirm,
+      flushDraft: async () => {
+        if (debouncedSaveRef.current) {
+          return await debouncedSaveRef.current.flush();
+        }
+        return true;
+      },
       MAX_FILENAME_LENGTH: 30,
       getBaseName,
       uploadTime: (() => {
@@ -489,6 +523,7 @@ export function useConverter(
       statsRef,
       setMetadata,
       setContent,
+      setRawContent,
     }),
     [
       rawContent,
@@ -557,6 +592,7 @@ export function useConverter(
       files,
       setMetadata,
       setContent,
+      setRawContent,
     ],
   );
 }
