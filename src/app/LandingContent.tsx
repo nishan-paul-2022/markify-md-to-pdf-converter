@@ -124,7 +124,7 @@ const WorkflowAnimation = () => {
                     <motion.div 
                       key={i}
                       whileHover={{ scale: 1.03, backgroundColor: "rgba(255,255,255,0.08)" }}
-                      style={{ backgroundColor: `rgba(255, 255, 255, ${0.02 + i * 0.015})` }}
+                      style={{ backgroundColor: "rgba(255, 255, 255, 0.03)" }}
                       className="group flex items-center gap-4 py-6 px-4 rounded-2xl border border-white/5 transition-all duration-300"
                     >
                       <item.icon className={`h-5 w-5 ${item.iconColor} group-hover:scale-110 transition-transform`} />
@@ -226,7 +226,7 @@ const WorkflowAnimation = () => {
                      <motion.div 
                         key={i} 
                         whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.08)" }}
-                        style={{ backgroundColor: `rgba(255, 255, 255, ${0.02 + i * 0.015})` }}
+                        style={{ backgroundColor: "rgba(255, 255, 255, 0.03)" }}
                         className="group flex flex-col items-center justify-center py-6 px-3 rounded-[1.5rem] border border-white/5 h-full transition-all duration-300"
                       >
                         <item.icon className={`h-6 w-6 mb-4 ${item.iconColor} group-hover:rotate-12 transition-transform`} />
