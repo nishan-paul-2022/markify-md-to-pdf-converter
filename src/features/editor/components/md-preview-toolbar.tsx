@@ -159,10 +159,8 @@ export const MdPreviewToolbar = ({
                   onClick={() => setIsAutoRender(!isAutoRender)}
                   aria-label="Toggle auto-sync"
                   className={cn(
-                    'flex h-6 w-6 items-center justify-center rounded-full border transition-all duration-200 active:scale-90',
-                    isAutoRender
-                      ? 'border-transparent text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-200'
-                      : 'border-white/20 bg-white/10 text-white shadow-sm hover:bg-white/15',
+                    'flex h-6 w-6 items-center justify-center rounded-full border border-transparent transition-all duration-200 active:scale-90',
+                    'text-slate-500 hover:bg-white/5 hover:text-slate-200',
                   )}
                 >
                   {isAutoRender ? (
@@ -192,10 +190,10 @@ export const MdPreviewToolbar = ({
                     className={cn(
                       'flex h-6 w-6 items-center justify-center rounded-full border border-transparent transition-all duration-200 active:scale-90',
                       renderSuccess
-                        ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                        ? 'text-green-400 hover:bg-white/5 hover:text-green-300'
                         : !isAutoRender && !isPdfRendering && hasChanges
-                          ? 'text-blue-400 hover:border-white/10 hover:bg-blue-400/10'
-                          : 'text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 disabled:opacity-20 disabled:hover:bg-transparent',
+                          ? 'text-blue-400 hover:bg-white/5 hover:text-blue-300'
+                          : 'text-slate-500 hover:bg-white/5 hover:text-slate-200 disabled:opacity-20 disabled:hover:bg-transparent',
                     )}
                   >
                     {renderSuccess ? (
