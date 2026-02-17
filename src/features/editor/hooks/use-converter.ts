@@ -69,6 +69,8 @@ export function useConverter(
     setSelectedIds,
     toggleSelection,
     getStats,
+    originalContent,
+    setOriginalContent,
   } = useEditorStore();
 
   const { confirm } = useAlert();
@@ -82,6 +84,11 @@ export function useConverter(
     isOpen: false,
     type: 'file',
   });
+  
+  const isModified = useMemo(() => {
+    if (!rawContent || !originalContent) return false;
+    return rawContent.trim() !== originalContent.trim();
+  }, [rawContent, originalContent]);
 
   const statsRef = useRef<HTMLDivElement | null>(null);
   const debouncedSaveRef = useRef<{
@@ -524,6 +531,8 @@ export function useConverter(
       setMetadata,
       setContent,
       setRawContent,
+      setOriginalContent,
+      isModified,
     }),
     [
       rawContent,
@@ -593,6 +602,8 @@ export function useConverter(
       setMetadata,
       setContent,
       setRawContent,
+      setOriginalContent,
+      isModified,
     ],
   );
 }

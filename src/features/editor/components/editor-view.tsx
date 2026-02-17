@@ -82,6 +82,7 @@ export default function EditorView({
     statsRef,
     stats,
     uploadTime,
+    isModified,
 
     // Refs
     textareaRef,
@@ -286,6 +287,7 @@ export default function EditorView({
                 isCopied={isCopied}
                 isReset={isReset}
                 isDownloaded={isDownloaded}
+                isModified={isModified}
                 setUploadRulesModal={setUploadRulesModal}
               />
 

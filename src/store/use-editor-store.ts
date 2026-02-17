@@ -11,6 +11,7 @@ interface EditorState {
   metadata: Metadata;
   filename: string;
   tempFilename: string;
+  originalContent: string;
 
   // --- UI State ---
   activeTab: 'editor' | 'preview';
@@ -38,6 +39,7 @@ interface EditorState {
   setMetadata: (metadata: Metadata) => void;
   setFilename: (name: string) => void;
   setTempFilename: (name: string) => void;
+  setOriginalContent: (content: string) => void;
   setActiveTab: (tab: 'editor' | 'preview') => void;
   setIsSidebarOpen: (open: boolean) => void;
   setIsEditingTitle: (editing: boolean) => void;
@@ -67,6 +69,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   metadata: DEFAULT_METADATA,
   filename: 'document.md',
   tempFilename: '',
+  originalContent: '',
   activeTab: 'editor',
   isSidebarOpen: true,
   isEditingTitle: false,
@@ -90,6 +93,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setMetadata: (metadata) => set({ metadata }),
   setFilename: (filename) => set({ filename }),
   setTempFilename: (tempFilename) => set({ tempFilename }),
+  setOriginalContent: (originalContent) => set({ originalContent }),
   setActiveTab: (activeTab) => set({ activeTab }),
   setIsSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),
   setIsEditingTitle: (isEditingTitle) => set({ isEditingTitle }),

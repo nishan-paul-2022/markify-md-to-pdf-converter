@@ -60,6 +60,8 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
     isLoading: isEditorLoading,
     selectedFileId,
     flushDraft,
+    setOriginalContent,
+    setRawContent,
   } = converterState;
 
   const router = useRouter();
@@ -83,27 +85,31 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
 
         const response = await fetch(fetchUrl);
         if (response.ok) {
-          let text = await response.text();
+          const originalText = await response.text();
+          let currentText = originalText;
+          
+          // Store the authentic file content from server as "original"
+          setOriginalContent(originalText);
           
           // Check for draft from server
           if (targetFile.id && !targetFile.id.startsWith('default-')) {
             const draft = await fetchDraft(targetFile.id);
             if (draft) {
-              text = draft;
+              currentText = draft;
               logger.info(`📝 Loaded draft from server for ${targetFile.originalName}`);
             }
           }
 
           // Update derived content immediately to avoid flash/delay
-          const parsedMetadata = parseMetadataFromMarkdown(text);
-          const contentWithoutLandingPage = removeLandingPageSection(text);
+          const parsedMetadata = parseMetadataFromMarkdown(currentText);
+          const contentWithoutLandingPage = removeLandingPageSection(currentText);
           setMetadata(parsedMetadata);
           setContent(contentWithoutLandingPage);
 
           // CRITICAL: Use setRawContent instead of handleContentChange for initial load.
           // This prevents the "auto-save" from triggering for the new content 
           // before the selectedFileId has updated in the store/hook.
-          converterState.setRawContent(text);
+          setRawContent(currentText);
 
           setFilename(targetFile.originalName);
           setSelectedFileId(targetFile.id);
@@ -134,7 +140,8 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       setSelectedFileId,
       setBasePath,
       flushDraft,
-      converterState,
+      setOriginalContent,
+      setRawContent,
     ],
   );
 
