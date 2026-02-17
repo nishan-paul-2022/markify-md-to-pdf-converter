@@ -152,7 +152,7 @@ export default function EditorView({
             <Link href="/" className="group flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center transition-transform group-hover:scale-110">
                 <Image
-                  src="/brand-logo.svg"
+                  src="/images/brand-logo.svg"
                   alt="Markify"
                   width={32}
                   height={32}

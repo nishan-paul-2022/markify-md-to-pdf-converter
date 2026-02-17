@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/brand-logo.svg" alt="Markify Logo" width="120" height="120" />
+  <img src="public/images/brand-logo.svg" alt="Markify Logo" width="120" height="120" />
   <h1>Markify</h1>
   <p>Professional Markdown to PDF Conversion Suite</p>
 </div>
@@ -135,6 +135,6 @@ Visit [http://localhost:3000](http://localhost:3000) to access the app.
 ---
 
 <div align="center">
-  <img src="public/company-logo.svg" alt="KAI Team Logo" width="80" height="80" />
+  <img src="public/images/company-logo.svg" alt="KAI Team Logo" width="80" height="80" />
   <p>Built with ❤️ by the <b>KAI Team</b>.</p>
 </div>

@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   title: 'Markify',
   description: 'Markdown to PDF generator',
   icons: {
-    icon: '/brand-logo.svg',
-    apple: '/brand-logo.svg',
+    icon: '/images/brand-logo.svg',
+    apple: '/images/brand-logo.svg',
   },
 };
 

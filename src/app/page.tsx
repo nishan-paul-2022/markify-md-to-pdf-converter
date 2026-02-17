@@ -35,7 +35,7 @@ function PipelineDiagram(): React.JSX.Element {
           <div className="relative flex h-24 w-24 items-center justify-center rounded-[2.5rem] border border-white/20 bg-white/5 shadow-inner backdrop-blur-2xl transition-all group-hover:scale-110">
             <div className="absolute inset-0 animate-pulse rounded-[2.5rem] bg-indigo-500/10 blur-xl" />
             <Image
-              src="/brand-logo.svg"
+              src="/images/brand-logo.svg"
               alt="Markify Engine"
               width={48}
               height={48}
@@ -99,7 +99,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
       <header className="sticky top-0 z-50 flex h-20 items-center justify-between border-b border-white/5 bg-slate-950/40 px-6 backdrop-blur-xl lg:px-12">
         <Link href="/" className="group/logo flex cursor-pointer items-center gap-2.5">
           <div className="transition-transform group-hover/logo:scale-105">
-            <Image src="/brand-logo.svg" alt="Markify" width={30} height={30} priority />
+            <Image src="/images/brand-logo.svg" alt="Markify" width={30} height={30} priority />
           </div>
           <span className="text-lg font-bold tracking-tight text-white/90 transition-colors group-hover:text-white">
             Markify
@@ -302,7 +302,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
             <div className="flex justify-center md:justify-start">
               <div className="flex items-center gap-2.5">
                 <Image
-                  src="/brand-logo.svg"
+                  src="/images/brand-logo.svg"
                   alt="Markify"
                   width={28}
                   height={28}
@@ -318,7 +318,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
                 <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-b from-blue-500/5 to-transparent opacity-0 blur-xl transition-opacity group-hover:opacity-100" />
                 <div className="relative flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-6 py-3 backdrop-blur-md transition-all group-hover:border-white/20 group-hover:bg-white/10">
                   <Image
-                    src="/company-logo.svg"
+                    src="/images/company-logo.svg"
                     alt="KAI"
                     width={18}
                     height={18}

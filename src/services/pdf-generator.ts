@@ -23,8 +23,8 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
     page.on('pageerror', (error) => logger.error('Browser page error:', error));
 
     // Load images as base64
-    const logoPath = path.join(process.cwd(), 'public', 'university-logo.png');
-    const bgPath = path.join(process.cwd(), 'public', 'cover-bg.png');
+    const logoPath = path.join(process.cwd(), 'public', 'images', 'university-logo.png');
+    const bgPath = path.join(process.cwd(), 'public', 'images', 'cover-bg.png');
 
     let logoBase64 = '';
     let bgBase64 = '';
