@@ -1,3 +1,4 @@
+import { processMermaidInHtml } from '@/lib/mermaid-server';
 import prisma from '@/lib/prisma';
 import type { Metadata } from '@/services/pdf-generator';
 import { generatePdf } from '@/services/pdf-generator';
@@ -95,12 +96,15 @@ export const PdfService = {
     // 2. Embed images
     htmlContent = await PdfService.processHtmlImages(htmlContent, basePath);
 
-    // 3. Generate PDF Buffer
+    // 3. Process Mermaid diagrams (convert code blocks to SVG)
+    htmlContent = await processMermaidInHtml(htmlContent);
+
+    // 4. Generate PDF Buffer
     const pdfBuffer = await generatePdf(htmlContent, metadata);
 
     let pdfFileRecord = null;
 
-    // 4. Persistence logic (Sink)
+    // 5. Persistence logic (Sink)
     if (saveToServer && sourceFileId) {
       const sourceFile = await prisma.file.findUnique({
         where: { id: sourceFileId, userId },

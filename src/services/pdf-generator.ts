@@ -215,6 +215,32 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
         word-break: break-word;
       }
 
+      /* Mermaid Diagram Styles */
+      .diagram-wrapper {
+        margin: 0.3cm 0 0.8cm 0;
+        display: flex;
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+        page-break-inside: avoid;
+      }
+      
+      .mermaid-container {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        background-color: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+      }
+      
+      .mermaid-container svg {
+        max-width: 100%;
+        height: auto;
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.05));
+      }
+
+
       /* Cover Page - Exact match to PageTemplates.tsx */
       .cover-page {
         width: 794px;
