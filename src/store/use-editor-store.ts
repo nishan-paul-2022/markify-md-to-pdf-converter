@@ -63,9 +63,13 @@ interface EditorState {
 
   // --- Mermaid State ---
   mermaidErrorCount: number;
+  mermaidLoadingCount: number;
   mermaidErrors: Set<string>;
+  pendingMermaidIds: Set<string>;
   reportMermaidError: (id: string) => void;
   resolveMermaidError: (id: string) => void;
+  reportMermaidLoading: (id: string) => void;
+  resolveMermaidLoading: (id: string) => void;
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -93,7 +97,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   isSelectionMode: false,
   selectedIds: new Set(),
   mermaidErrorCount: 0,
+  mermaidLoadingCount: 0,
   mermaidErrors: new Set<string>(),
+  pendingMermaidIds: new Set<string>(),
 
   // Actions
   setRawContent: (rawContent) => set({ rawContent }),
@@ -154,6 +160,24 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const next = new Set(mermaidErrors);
       next.delete(id);
       set({ mermaidErrors: next, mermaidErrorCount: next.size });
+    }
+  },
+
+  reportMermaidLoading: (id) => {
+    const { pendingMermaidIds } = get();
+    if (!pendingMermaidIds.has(id)) {
+      const next = new Set(pendingMermaidIds);
+      next.add(id);
+      set({ pendingMermaidIds: next, mermaidLoadingCount: next.size });
+    }
+  },
+
+  resolveMermaidLoading: (id) => {
+    const { pendingMermaidIds } = get();
+    if (pendingMermaidIds.has(id)) {
+      const next = new Set(pendingMermaidIds);
+      next.delete(id);
+      set({ pendingMermaidIds: next, mermaidLoadingCount: next.size });
     }
   },
 }));

@@ -7,10 +7,43 @@ import { useEditorStore } from '@/store/use-editor-store';
 import { Loader2 } from 'lucide-react';
 import mermaid from 'mermaid';
 
+let isMermaidInitialized = false;
+const initializeMermaid = () => {
+  if (isMermaidInitialized) return;
+  mermaid.initialize({
+    startOnLoad: false,
+    logLevel: 5,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#e0f2fe',
+      primaryTextColor: '#0369a1',
+      primaryBorderColor: '#0ea5e9',
+      lineColor: '#0ea5e9',
+      secondaryColor: '#f0f9ff',
+      tertiaryColor: '#ffffff',
+      fontFamily: 'Inter, sans-serif',
+      fontSize: '14px',
+      mainBkg: '#f8fafc',
+      nodeBorder: '#cbd5e1',
+      clusterBkg: '#f1f5f9',
+      titleColor: '#0f172a',
+      edgeLabelBackground: '#ffffff',
+    },
+    securityLevel: 'loose',
+    fontFamily: 'Inter',
+  });
+  isMermaidInitialized = true;
+};
+
 export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const instanceId = useRef(`mermaid-${Math.random().toString(36).substring(2, 11)}`);
-  const { reportMermaidError, resolveMermaidError } = useEditorStore();
+  const {
+    reportMermaidError,
+    resolveMermaidError,
+    reportMermaidLoading,
+    resolveMermaidLoading,
+  } = useEditorStore();
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [prevChart, setPrevChart] = useState(chart);
@@ -22,76 +55,66 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
   }
 
   useEffect(() => {
-    mermaid.initialize({
-      startOnLoad: false,
-      logLevel: 5, // Silence mermaid's internal logging (5 = Fatal/Off)
-      theme: 'base',
-      themeVariables: {
-        primaryColor: '#e0f2fe',
-        primaryTextColor: '#0369a1',
-        primaryBorderColor: '#0ea5e9',
-        lineColor: '#0ea5e9',
-        secondaryColor: '#f0f9ff',
-        tertiaryColor: '#ffffff',
-        fontFamily: 'Inter, sans-serif',
-        fontSize: '14px',
-        mainBkg: '#f8fafc',
-        nodeBorder: '#cbd5e1',
-        clusterBkg: '#f1f5f9',
-        titleColor: '#0f172a',
-        edgeLabelBackground: '#ffffff',
-      },
-      securityLevel: 'loose',
-      fontFamily: 'Inter',
-    });
+    initializeMermaid();
   }, []);
 
   useEffect(() => {
+    const id = instanceId.current;
+    const taskId = `task-${Math.random().toString(36).substring(2, 11)}`;
+    let isCurrent = true;
+
     const renderDiagram = async () => {
       if (!ref.current) return;
-      const id = instanceId.current;
+      
+      reportMermaidLoading(taskId);
 
       try {
-        // Pre-validate syntax to avoid internal mermaid logging during render
-        // suppressErrors: true ensures mermaid doesn't log the parse error to console
-        const isValid = await mermaid.parse(chart, { suppressErrors: true });
+        await mermaid.parse(chart, { suppressErrors: true });
         
-        if (!isValid) {
-          throw new Error('Invalid Mermaid syntax');
-        }
+        if (!isCurrent) return;
 
-        // Clear previous content before success render
         ref.current.innerHTML = '';
-        
         const { svg } = await mermaid.render(id, chart);
         
-        ref.current.innerHTML = svg;
-        setIsLoaded(true);
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (isCurrent) {
+          ref.current.innerHTML = svg;
+          setIsLoaded(true);
+          setError(null);
 
-        // Post-process SVG for better appearance
-        const svgElement = ref.current.querySelector('svg');
-        if (svgElement) {
-          svgElement.style.maxWidth = '100%';
-          svgElement.style.maxHeight = '400px';
-          svgElement.style.height = 'auto';
-          svgElement.style.objectFit = 'contain';
-          svgElement.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.05))';
+          const svgElement = ref.current.querySelector('svg');
+          if (svgElement) {
+            svgElement.style.maxWidth = '100%';
+            svgElement.style.maxHeight = '400px';
+            svgElement.style.height = 'auto';
+            svgElement.style.objectFit = 'contain';
+            svgElement.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.05))';
+          }
+
+          resolveMermaidError(id);
         }
-
-        resolveMermaidError(id);
-      } catch {
-        // We catch errors silently to avoid console clutter
-        // The error is already being reported to the global store to disable print preview
+      } catch (err) {
+        if (!isCurrent) return;
+        console.error('Mermaid render error:', err);
         setError('Failed to render diagram');
         setIsLoaded(true);
         reportMermaidError(id);
+      } finally {
+        if (isCurrent) {
+          resolveMermaidLoading(taskId);
+        }
       }
     };
 
     void renderDiagram();
-  }, [chart, reportMermaidError, resolveMermaidError]);
 
-  // Cleanup on unmount
+    return () => {
+      isCurrent = false;
+      resolveMermaidLoading(taskId);
+    };
+  }, [chart, reportMermaidError, resolveMermaidError, reportMermaidLoading, resolveMermaidLoading]);
+
+  // Cleanup error state on unmount
   useEffect(() => {
     const id = instanceId.current;
     return () => {

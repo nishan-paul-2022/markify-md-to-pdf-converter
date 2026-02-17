@@ -24,7 +24,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
   const [zoomInput, setZoomInput] = useState('');
   const [fitWidthScale, setFitWidthScale] = useState(0.75);
   const [fitPageScale, setFitPageScale] = useState(0.5);
-  const { mermaidErrorCount } = useEditorStore();
+  const { mermaidErrorCount, mermaidLoadingCount } = useEditorStore();
   const [viewMode, setViewMode] = useState<ViewMode>('live');
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [numPages, setNumPages] = useState<number>(0);
@@ -141,10 +141,10 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
 
       setPaginatedPages(pages);
       setIsPaginating(false);
-    }, 0);
+    }, 250);
 
     return () => clearTimeout(timer);
-  }, [content, metadata, viewMode, basePath]);
+  }, [content, metadata, viewMode, basePath, mermaidLoadingCount, mermaidErrorCount]);
 
   const hasMetadataValues = (meta: Record<string, unknown> | null | undefined): boolean => {
     if (!meta) {
