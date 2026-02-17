@@ -52,7 +52,19 @@ const WorkflowAnimation = () => {
       <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-12 items-stretch">
         
         {/* The Central "Core" Beam */}
-        <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent -translate-y-1/2 hidden lg:block" />
+        {/* The Central "Core" Beam & Moving Dot */}
+        <div className="absolute top-1/2 left-0 w-full -translate-y-1/2 hidden lg:block pointer-events-none z-0">
+          <div className="absolute inset-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              initial={{ left: "10%", opacity: 0 }}
+              animate={{ left: "90%", opacity: [0, 1, 1, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "linear", delay: i * 0.5 }}
+              className="absolute top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,1)] z-20"
+            />
+          ))}
+        </div>
         
         {/* Step 1: Input / Parsing */}
         <motion.div 
