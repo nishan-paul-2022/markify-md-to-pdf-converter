@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { logger } from '@/lib/logger';
+import { useEditorStore } from '@/store/use-editor-store';
 
 export type ViewMode = 'live' | 'preview';
 export type ZoomMode = 'fit-page' | 'fit-width' | 'custom';
@@ -23,6 +24,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
   const [zoomInput, setZoomInput] = useState('');
   const [fitWidthScale, setFitWidthScale] = useState(0.75);
   const [fitPageScale, setFitPageScale] = useState(0.5);
+  const { mermaidErrorCount, mermaidLoadingCount } = useEditorStore();
   const [viewMode, setViewMode] = useState<ViewMode>('live');
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [numPages, setNumPages] = useState<number>(0);
@@ -54,7 +56,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
   }, []);
 
   useEffect(() => {
-    if (viewMode === 'preview' && onGeneratePdf && !pdfBlobUrl) {
+    if (viewMode === 'preview' && onGeneratePdf && !pdfBlobUrl && mermaidErrorCount === 0) {
       setIsPdfLoading(true);
       onGeneratePdf()
         .then((blob) => {
@@ -65,7 +67,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
         .catch((err: unknown) => logger.error('PDF generation failed:', err))
         .finally(() => setIsPdfLoading(false));
     }
-  }, [viewMode, onGeneratePdf, pdfBlobUrl, content, metadata]);
+  }, [viewMode, onGeneratePdf, pdfBlobUrl, content, metadata, mermaidErrorCount]);
 
   useEffect(() => {
     return () => {
@@ -91,6 +93,14 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
 
     return () => clearTimeout(timer);
   }, [content, metadata, isAutoRender, viewMode, lastRenderedSignature]);
+
+  // If mermaid error occurs while in preview mode, switch back to live mode
+  useEffect(() => {
+    if (mermaidErrorCount > 0 && viewMode === 'preview') {
+      setViewMode('live');
+      logger.warn('Switched to live view due to mermaid rendering errors');
+    }
+  }, [mermaidErrorCount, viewMode]);
 
   const handleManualRefresh = useCallback(() => {
     setPdfBlobUrl(null);
@@ -131,10 +141,10 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
 
       setPaginatedPages(pages);
       setIsPaginating(false);
-    }, 0);
+    }, 250);
 
     return () => clearTimeout(timer);
-  }, [content, metadata, viewMode, basePath]);
+  }, [content, metadata, viewMode, basePath, mermaidLoadingCount, mermaidErrorCount]);
 
   const hasMetadataValues = (meta: Record<string, unknown> | null | undefined): boolean => {
     if (!meta) {
@@ -291,7 +301,8 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     let scale = 1;
     if (zoomMode === 'fit-page') {
       scale = fitPageScale;
-    } else if (zoomMode === 'fit-width') {
+    }
+    else if (zoomMode === 'fit-width') {
       scale = fitWidthScale;
     } else {
       scale = customZoom / 100;
@@ -469,6 +480,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     totalPages,
     setZoomMode,
     isInitializing: !isScaleCalculated,
+    mermaidErrorCount,
     showCoverPage,
   };
 }

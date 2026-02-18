@@ -4,9 +4,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import prisma from '@/lib/prisma';
-
-import { unlink } from 'fs/promises';
-import { join } from 'path';
+import { ServerFilesService } from '@/services/files-service';
 
 export async function DELETE(
   _request: NextRequest,
@@ -21,38 +19,16 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Find the file and verify ownership
-    const file = await prisma.file.findUnique({
-      where: { id: fileId },
-    });
-
-    if (!file) {
-      return NextResponse.json({ error: 'File not found' }, { status: 404 });
-    }
-
-    if (file.userId !== userId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    // Delete file from disk
-    try {
-      const filePath = join(process.cwd(), 'public', file.storageKey);
-      await unlink(filePath);
-    } catch (error: unknown) {
-      logger.error('Error deleting file from disk:', error);
-      // Continue with database deletion even if file doesn't exist on disk
-    }
-
-    // Delete file record from database
-    await prisma.file.delete({
-      where: { id: fileId },
-    });
+    await ServerFilesService.delete(userId, fileId);
 
     return NextResponse.json({
       success: true,
       message: 'File deleted successfully',
     });
   } catch (error: unknown) {
+    if (error instanceof Error && error.message === 'File not found') {
+      return NextResponse.json({ error: 'File not found' }, { status: 404 });
+    }
     logger.error('File deletion error:', error);
     return NextResponse.json({ error: 'Failed to delete file' }, { status: 500 });
   }

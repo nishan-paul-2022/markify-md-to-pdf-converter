@@ -1,3 +1,3 @@
 # Guide
 
-![Step](images/img-03.jpg)
+![Step](images/img-01.jpg)

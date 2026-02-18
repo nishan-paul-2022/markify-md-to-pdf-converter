@@ -12,7 +12,7 @@ import { EditorSidebar } from '@/features/editor/components/editor-sidebar';
 import { EditorStats } from '@/features/editor/components/editor-stats';
 import { EditorToolbar } from '@/features/editor/components/editor-toolbar';
 import MdPreview from '@/features/editor/components/md-preview';
-import { useConverter } from '@/features/editor/hooks/use-converter';
+import type { useConverter } from '@/features/editor/hooks/use-converter';
 import { ImageModal } from '@/features/file-management/components/image-modal';
 import type { AppFile } from '@/features/file-management/hooks/use-files';
 import {
@@ -44,6 +44,7 @@ interface EditorViewProps {
   ) => Promise<void>;
   refreshFiles: () => Promise<void>;
   onFileSelect: (node: FileTreeNode) => Promise<void> | void;
+  converter: ReturnType<typeof useConverter>;
 }
 
 export default function EditorView({
@@ -54,6 +55,7 @@ export default function EditorView({
   handleFileRename,
   refreshFiles,
   onFileSelect,
+  converter,
 }: EditorViewProps) {
   const {
     // State
@@ -77,10 +79,10 @@ export default function EditorView({
     isCopied,
     isReset,
     isDownloaded,
-    isEditorAtTop,
+    statsRef,
     stats,
     uploadTime,
-    lastModifiedTime,
+    isModified,
 
     // Refs
     textareaRef,
@@ -113,7 +115,7 @@ export default function EditorView({
     setActiveImage,
     setUploadRulesModal,
     handleUploadModalConfirm,
-  } = useConverter(files, handleFileDelete);
+  } = converter;
 
   // Sort preference state
   const [sortPreference, setSortPreference] = React.useState<SortPreference>(() =>
@@ -153,7 +155,7 @@ export default function EditorView({
             <Link href="/" className="group flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center transition-transform group-hover:scale-110">
                 <Image
-                  src="/brand-logo.svg"
+                  src="/images/brand-logo.svg"
                   alt="Markify"
                   width={32}
                   height={32}
@@ -276,7 +278,6 @@ export default function EditorView({
                 handleFileUpload={handleFileUpload}
                 handleFolderUpload={handleFolderUpload}
                 handleZipUpload={handleZipUpload}
-                refreshFiles={refreshFiles}
                 scrollToStart={scrollToStart}
                 scrollToEnd={scrollToEnd}
                 handleCopy={handleCopy}
@@ -286,15 +287,15 @@ export default function EditorView({
                 isCopied={isCopied}
                 isReset={isReset}
                 isDownloaded={isDownloaded}
+                isModified={isModified}
                 setUploadRulesModal={setUploadRulesModal}
               />
 
               <div className="group/editor relative flex-grow overflow-hidden">
                 <EditorStats
-                  isEditorAtTop={isEditorAtTop}
+                  ref={statsRef}
                   stats={stats}
                   uploadTime={uploadTime}
-                  lastModifiedTime={lastModifiedTime}
                 />
 
                 {isLoading && (
@@ -307,7 +308,7 @@ export default function EditorView({
                   innerRef={textareaRef}
                   value={rawContent}
                   onChange={handleContentChange}
-                  className="selection:bg-primary/30 custom-scrollbar dark-editor absolute inset-0 h-full w-full resize-none border-none bg-slate-950 p-4 pt-10 font-mono text-sm text-slate-300 focus-visible:ring-0 lg:p-6 lg:pt-10"
+                  className="selection:bg-primary/30 custom-scrollbar dark-editor absolute inset-0 h-full w-full resize-none border-none rounded-none bg-slate-950 p-4 pt-10 font-mono text-sm text-slate-300 focus-visible:ring-0 lg:p-6 lg:pt-10"
                   placeholder="Write your markdown here..."
                 />
               </div>

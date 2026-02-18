@@ -77,7 +77,7 @@ async function getFilesRecursively(
       }
 
       files.push({
-        id: `default-${batchId}-${relativeToFolder.replace(/\//g, '-')}`,
+        id: `default-folder-file-${relativeToFolder.replace(/\//g, '-')}`,
         filename: entry.name,
         originalName: entry.name,
         mimeType,
@@ -104,7 +104,7 @@ export async function getDefaultFiles(): Promise<DefaultFile[]> {
     const sampleFilePath = join(publicDir, 'sample-file.md');
     const sampleFileStats = await stat(sampleFilePath);
     files.push({
-      id: 'default-samples-v1-sample-file.md',
+      id: 'default-root-file',
       filename: 'sample-file.md',
       originalName: 'sample-file.md',
       mimeType: 'text/markdown',

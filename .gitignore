@@ -4,6 +4,7 @@
 .env
 .next/
 .vscode/
+.gemini/
 /src/generated/prisma
 build/
 coverage/

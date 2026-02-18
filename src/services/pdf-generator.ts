@@ -23,8 +23,8 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
     page.on('pageerror', (error) => logger.error('Browser page error:', error));
 
     // Load images as base64
-    const logoPath = path.join(process.cwd(), 'public', 'university-logo.png');
-    const bgPath = path.join(process.cwd(), 'public', 'cover-bg.png');
+    const logoPath = path.join(process.cwd(), 'public', 'images', 'university-logo.png');
+    const bgPath = path.join(process.cwd(), 'public', 'images', 'cover-bg.png');
 
     let logoBase64 = '';
     let bgBase64 = '';
@@ -214,6 +214,32 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata): Pro
         padding: 0; 
         word-break: break-word;
       }
+
+      /* Mermaid Diagram Styles */
+      .diagram-wrapper {
+        margin: 0.3cm 0 0.8cm 0;
+        display: flex;
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+        page-break-inside: avoid;
+      }
+      
+      .mermaid-container {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        background-color: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+      }
+      
+      .mermaid-container svg {
+        max-width: 100%;
+        height: auto;
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.05));
+      }
+
 
       /* Cover Page - Exact match to PageTemplates.tsx */
       .cover-page {

@@ -3,8 +3,8 @@ import prisma from '@/lib/prisma';
 import { getDefaultFiles } from '@/services/defaults';
 
 import { randomUUID } from 'crypto';
-import { mkdir, stat, unlink, writeFile } from 'fs/promises';
-import { join } from 'path';
+import { mkdir, rmdir, stat, unlink, writeFile } from 'fs/promises';
+import { dirname, join } from 'path';
 
 export const ServerFilesService = {
   list: async (userId: string, source?: string | null, page = 1, limit = 100) => {
@@ -123,10 +123,29 @@ export const ServerFilesService = {
       },
     });
 
+    const uploadsRoot = join(process.cwd(), 'public', 'uploads');
+
     const deletePromises = files.map(async (file) => {
       try {
         const filePath = join(process.cwd(), 'public', file.storageKey);
         await unlink(filePath);
+        
+        // Clean up empty directories
+        const fileDir = dirname(filePath);
+        if (fileDir.startsWith(uploadsRoot)) {
+          let currentDir = fileDir;
+          // Traverse up and delete empty directories
+          // Stop when we reach uploadsRoot or if deletion fails (not empty)
+          while (currentDir !== uploadsRoot && currentDir.length > uploadsRoot.length) {
+            try {
+              await rmdir(currentDir);
+              currentDir = dirname(currentDir);
+            } catch {
+              // Directory not empty or other error, stop traversing
+              break;
+            }
+          }
+        }
       } catch (error) {
         logger.error(`Error deleting file from disk: ${file.storageKey}`, error);
       }
@@ -139,6 +158,42 @@ export const ServerFilesService = {
         id: { in: files.map((f) => f.id) },
         userId,
       },
+    });
+  },
+
+  delete: async (userId: string, id: string) => {
+    const file = await prisma.file.findFirst({
+      where: { id, userId },
+    });
+
+    if (!file) throw new Error('File not found');
+
+    const filePath = join(process.cwd(), 'public', file.storageKey);
+    const uploadsRoot = join(process.cwd(), 'public', 'uploads');
+
+    try {
+      await unlink(filePath);
+      
+      // Clean up empty directories
+      const fileDir = dirname(filePath);
+      if (fileDir.startsWith(uploadsRoot)) {
+        let currentDir = fileDir;
+        while (currentDir !== uploadsRoot && currentDir.length > uploadsRoot.length) {
+          try {
+            await rmdir(currentDir);
+            currentDir = dirname(currentDir);
+          } catch {
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      // Log error but continue with DB deletion (e.g., file possibly already gone)
+      logger.error(`Error deleting file from disk: ${file.storageKey}`, error);
+    }
+
+    return prisma.file.delete({
+      where: { id },
     });
   },
 

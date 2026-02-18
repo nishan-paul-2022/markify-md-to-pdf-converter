@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAlert } from '@/components/alert-provider';
 import {
@@ -7,11 +7,11 @@ import {
   removeLandingPageSection,
 } from '@/constants/default-content';
 import type { AppFile } from '@/features/file-management/hooks/use-files';
+import { useFileUpload } from '@/hooks/use-file-upload';
 import { logger } from '@/lib/logger';
 import { FilesService } from '@/services/api/files-service';
 import { PdfApiService } from '@/services/api/pdf-service';
 import { createDebouncedDraftSave, deleteDraft } from '@/services/draft-service';
-import { validateUploadStructure } from '@/services/upload-validator';
 import { useEditorStore } from '@/store/use-editor-store';
 import { generateStandardName, generateTimestampedPdfName } from '@/utils/naming';
 
@@ -22,6 +22,7 @@ const getBaseName = (name: string): string => {
 export function useConverter(
   files: AppFile[] = [],
   onDelete?: (id: string | string[]) => Promise<void>,
+  refreshFiles?: () => Promise<void>,
 ) {
   const {
     rawContent,
@@ -68,7 +69,11 @@ export function useConverter(
     setSelectedIds,
     toggleSelection,
     getStats,
+    originalContent,
+    setOriginalContent,
   } = useEditorStore();
+
+  const { confirm } = useAlert();
 
   // Local UI State (Not in Global Store)
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,14 +84,19 @@ export function useConverter(
     isOpen: false,
     type: 'file',
   });
+  
+  const isModified = useMemo(() => {
+    if (!rawContent || !originalContent) return false;
+    return rawContent.trim() !== originalContent.trim();
+  }, [rawContent, originalContent]);
 
-  const uploadTimeRef = useRef<Date | null>(null);
-  const lastModifiedTimeRef = useRef<Date | null>(null);
-  const debouncedSaveRef = useRef<((content: string) => void) | null>(null);
+  const statsRef = useRef<HTMLDivElement | null>(null);
+  const debouncedSaveRef = useRef<{
+    save: (content: string) => void;
+    flush: () => Promise<boolean>;
+  } | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const folderInputRef = useRef<HTMLInputElement | null>(null);
-  const zipInputRef = useRef<HTMLInputElement | null>(null);
+
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -96,14 +106,83 @@ export function useConverter(
     }
 
     const handleScroll = () => {
-      // Logic for isEditorAtTop
+      const top = textarea.scrollTop;
+      if (statsRef.current) {
+        statsRef.current.style.transform = `translateY(${-top}px)`;
+      }
     };
 
     textarea.addEventListener('scroll', handleScroll, { passive: true });
+    // Initial sync
     handleScroll();
 
     return () => textarea.removeEventListener('scroll', handleScroll);
   }, [isLoading]);
+
+  const handleContentChange = useCallback(
+    (newRawContent: string) => {
+      setRawContent(newRawContent);
+
+      // Auto-save draft to server (debounced)
+      if (debouncedSaveRef.current) {
+        debouncedSaveRef.current.save(newRawContent);
+      }
+    },
+    [setRawContent],
+  );
+
+  // Use the universal upload hook
+  const onUploadSuccess = useCallback(async () => {
+    setIsUploaded(true);
+    if (refreshFiles) {
+      await refreshFiles();
+    }
+    setTimeout(() => setIsUploaded(false), 2000);
+  }, [setIsUploaded, refreshFiles]);
+
+  const onMarkdownFound = useCallback(
+    async (file: { id: string; originalName: string; url: string }) => {
+      const text = await FilesService.getContent(file.url);
+      
+      // Update store states
+      setOriginalContent(text);
+      setRawContent(text);
+      setFilename(file.originalName);
+      setSelectedFileId(file.id);
+
+      // CRITICAL: Derive and set basePath so relative images resolve immediately
+      const fileUrl = file.url;
+      if (fileUrl) {
+        const lastSlashIndex = fileUrl.lastIndexOf('/');
+        if (lastSlashIndex !== -1) {
+          const directoryPath = fileUrl.substring(0, lastSlashIndex);
+          const finalBasePath =
+            directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')
+              ? directoryPath
+              : `/api${directoryPath}`;
+          setBasePath(finalBasePath);
+        }
+      }
+    },
+    [setOriginalContent, setRawContent, setFilename, setSelectedFileId, setBasePath],
+  );
+
+  const {
+    fileInputRef: fileInputRefObj,
+    folderInputRef: folderInputRefObj,
+    zipInputRef: zipInputRefObj,
+    handleFileUpload,
+    handleFolderUpload,
+    handleZipUpload,
+    triggerFileUpload,
+    triggerFolderUpload,
+    triggerZipUpload,
+  } = useFileUpload({
+    setIsLoading,
+    onUploadSuccess,
+    onMarkdownFound,
+    source: 'editor',
+  });
 
   const stats = getStats();
 
@@ -127,25 +206,24 @@ export function useConverter(
 
   // Update debounced save function when selectedFileId changes
   useEffect(() => {
+    let currentSaveRef: { save: (content: string) => void; flush: () => Promise<boolean> } | null = null;
+    
     if (selectedFileId && !selectedFileId.startsWith('default-')) {
-      debouncedSaveRef.current = createDebouncedDraftSave(selectedFileId, 1000);
+      currentSaveRef = createDebouncedDraftSave(selectedFileId, 1000);
+      debouncedSaveRef.current = currentSaveRef;
     } else {
       debouncedSaveRef.current = null;
     }
+
+    return () => {
+      if (currentSaveRef) {
+        // Flush any pending changes when switching files or unmounting
+        void currentSaveRef.flush();
+      }
+    };
   }, [selectedFileId]);
 
-  const handleContentChange = useCallback(
-    (newRawContent: string) => {
-      setRawContent(newRawContent);
-      lastModifiedTimeRef.current = new Date();
 
-      // Auto-save draft to server (debounced)
-      if (debouncedSaveRef.current) {
-        debouncedSaveRef.current(newRawContent);
-      }
-    },
-    [setRawContent],
-  );
 
   useEffect(() => {
     if (isLoading) {
@@ -193,12 +271,7 @@ export function useConverter(
       const a = document.createElement('a');
       a.href = url;
 
-      const isDefault = selectedFileId?.startsWith('default-');
-      if (isDefault) {
-        a.download = `${getBaseName(filename)}.pdf`;
-      } else {
-        a.download = generateTimestampedPdfName(filename);
-      }
+      a.download = generateTimestampedPdfName(filename);
 
       document.body.appendChild(a);
       a.click();
@@ -208,173 +281,13 @@ export function useConverter(
     } catch (error) {
       logger.error('Failed to download PDF:', error);
     }
-  }, [generatePdfBlob, filename, setIsPdfDownloaded, selectedFileId]);
+  }, [generatePdfBlob, filename, setIsPdfDownloaded]);
 
-  const handleFileUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-      const files = event.target.files;
-      if (!files || files.length === 0) return;
 
-      setIsLoading(true);
-      const batchId = self.crypto.randomUUID();
 
-      try {
-        const uploadPromises = Array.from(files).map((file) =>
-          FilesService.upload(file, batchId, file.name, 'editor'),
-        );
 
-        const results = await Promise.all(uploadPromises);
 
-        const mdResult = results.find((r) => r.originalName.endsWith('.md'));
-        if (mdResult) {
-          const text = await FilesService.getContent(mdResult.url);
-          handleContentChange(text);
-          setFilename(mdResult.originalName);
-          setSelectedFileId(mdResult.id);
-        }
 
-        setIsUploaded(true);
-        setTimeout(() => setIsUploaded(false), 2000);
-      } catch (error: unknown) {
-        logger.error('Upload failed:', error);
-      } finally {
-        setIsLoading(false);
-        event.target.value = '';
-      }
-    },
-    [handleContentChange, setFilename, setIsLoading, setSelectedFileId, setIsUploaded],
-  );
-
-  const handleFolderUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-      const fileList = event.target.files;
-      if (!fileList || fileList.length === 0) return;
-
-      setIsLoading(true);
-      const batchId = self.crypto.randomUUID();
-
-      try {
-        const filesArray = Array.from(fileList);
-        
-        // 1. Run high-precision validation (async)
-        const validation = await validateUploadStructure(filesArray, 'folder');
-        if (!validation.valid) {
-          throw new Error(validation.error);
-        }
-
-        // 3. Proceed with upload
-        const uploadPromises = validation.filteredFiles.map((file) => {
-          const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
-          return FilesService.upload(file, batchId, relativePath, 'editor');
-        });
-
-        const results = await Promise.all(uploadPromises);
-
-        // Find the first markdown file to display
-        const mdResult = results.find((r) => r.originalName.endsWith('.md'));
-        if (mdResult) {
-          const text = await FilesService.getContent(mdResult.url);
-          handleContentChange(text);
-          setFilename(mdResult.originalName);
-          setSelectedFileId(mdResult.id);
-        }
-
-        setIsUploaded(true);
-        setTimeout(() => setIsUploaded(false), 2000);
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Folder upload failed';
-        logger.error('Folder validation error:', message);
-        alert(message); // Provide immediate feedback
-      } finally {
-        setIsLoading(false);
-        event.target.value = '';
-      }
-    },
-    [handleContentChange, setFilename, setIsLoading, setSelectedFileId, setIsUploaded],
-  );
-
-  const handleZipUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-      const files = event.target.files;
-      if (!files || files.length === 0) return;
-
-      const zipFile = files[0];
-      if (!zipFile.name.endsWith('.zip')) {
-        logger.error('Invalid file type. Only .zip files are allowed.');
-        return;
-      }
-
-      setIsLoading(true);
-      const batchId = self.crypto.randomUUID();
-
-      try {
-        // Dynamically import JSZip
-        const JSZip = (await import('jszip')).default;
-        const zip = new JSZip();
-        const zipContent = await zip.loadAsync(zipFile);
-
-        // 1. Convert zip contents to Virtual Files for validation
-        const virtualFiles: File[] = [];
-        const fileDataPromises: Promise<void>[] = [];
-
-        zipContent.forEach((relativePath, file) => {
-          if (!file.dir) {
-            fileDataPromises.push(
-              (async () => {
-                const blob = await file.async('blob');
-                const virtualFile = new File([blob], relativePath, { type: blob.type });
-                // We fake webkitRelativePath for the validator to treat it as a folder structure
-                Object.defineProperty(virtualFile, 'webkitRelativePath', {
-                  value: relativePath,
-                });
-                virtualFiles.push(virtualFile);
-              })(),
-            );
-          }
-        });
-
-        await Promise.all(fileDataPromises);
-
-        // 2. Run high-precision validation (async)
-        const validation = await validateUploadStructure(virtualFiles, 'zip');
-        if (!validation.valid) {
-          throw new Error(validation.error);
-        }
-
-        const uploadPromises: Promise<{ id: string; url: string; originalName: string }>[] = [];
-
-        // 4. Proceed with upload
-        validation.filteredFiles.forEach((file) => {
-          const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
-          uploadPromises.push(
-            (async () => {
-              return FilesService.upload(file, batchId, relativePath, 'editor');
-            })(),
-          );
-        });
-
-        const results = await Promise.all(uploadPromises);
-
-        // Find the first markdown file to display
-        const mdResult = results.find((r) => r.originalName.endsWith('.md'));
-        if (mdResult) {
-          const text = await FilesService.getContent(mdResult.url);
-          handleContentChange(text);
-          setFilename(mdResult.originalName);
-          setSelectedFileId(mdResult.id);
-        }
-
-        setIsUploaded(true);
-        setTimeout(() => setIsUploaded(false), 2000);
-      } catch (error: unknown) {
-        logger.error('Zip upload failed:', error);
-      } finally {
-        setIsLoading(false);
-        event.target.value = '';
-      }
-    },
-    [handleContentChange, setFilename, setIsLoading, setSelectedFileId, setIsUploaded],
-  );
 
   const getAllDeletableFileIds = useCallback(() => {
     return files
@@ -398,8 +311,6 @@ export function useConverter(
       setSelectedIds(new Set(deletableIds));
     }
   }, [selectedIds, getAllDeletableFileIds, setSelectedIds]);
-
-  const { confirm } = useAlert();
 
   const handleBulkDeleteClick = useCallback(async () => {
     if (selectedIds.size === 0) return;
@@ -431,6 +342,15 @@ export function useConverter(
   const getSelectedCount = useCallback(() => selectedIds.size, [selectedIds]);
 
   const handleReset = useCallback(async (): Promise<void> => {
+    const confirmed = await confirm({
+      title: 'Reset Content?',
+      message: 'Are you sure you want to revert to the original file content? All unsaved changes in your current draft will be permanently lost.',
+      confirmText: 'Reset',
+      variant: 'destructive',
+    });
+
+    if (!confirmed) return;
+
     try {
       setIsReset(true);
 
@@ -442,6 +362,11 @@ export function useConverter(
         if (currentFile) {
           // Clear local storage for this file
           localStorage.removeItem(`markify_content_${selectedFileId}`);
+
+          // Delete draft from server
+          if (!selectedFileId.startsWith('default-')) {
+            await deleteDraft(selectedFileId);
+          }
 
           // Fetch original content
           const fileUrl = currentFile.url || '';
@@ -483,6 +408,7 @@ export function useConverter(
     files,
     setMetadata,
     setContent,
+    confirm,
   ]);
 
   const handleCopy = useCallback(async (): Promise<void> => {
@@ -528,84 +454,168 @@ export function useConverter(
   }, []);
 
   const handleUploadModalConfirm = useCallback(() => {
-    if (uploadRulesModal.type === 'file') fileInputRef.current?.click();
-    else if (uploadRulesModal.type === 'folder') folderInputRef.current?.click();
-    else zipInputRef.current?.click();
+    if (uploadRulesModal.type === 'file') triggerFileUpload();
+    else if (uploadRulesModal.type === 'folder') triggerFolderUpload();
+    else triggerZipUpload();
     setUploadRulesModal((prev) => ({ ...prev, isOpen: false }));
-  }, [uploadRulesModal.type]);
+  }, [uploadRulesModal.type, triggerFileUpload, triggerFolderUpload, triggerZipUpload]);
 
-  return {
-    rawContent,
-    content,
-    metadata,
-    isGenerating,
-    filename,
-    isEditing,
-    isUploaded,
-    isReset,
-    tempFilename,
-    activeTab,
-    isLoading,
-    basePath,
-    isCopied,
-    isDownloaded,
-    isPdfDownloaded,
-    selectedFileId,
-    isSidebarOpen,
-    searchQuery,
-    isSelectionMode,
-    selectedIds,
-    uploadRulesModal,
-    activeImage,
-    imageGallery,
-    fileInputRef,
-    folderInputRef,
-    zipInputRef,
-    textareaRef,
-    stats,
-    setActiveTab,
-    setIsSidebarOpen,
-    setTempFilename,
-    handleStartEdit,
-    handleSave,
-    handleCancel,
-    handleContentChange,
-    handleFileUpload,
-    handleFolderUpload,
-    handleZipUpload,
-    onFileSelect,
-    triggerFileUpload: () => fileInputRef.current?.click(),
-    triggerFolderUpload: () => folderInputRef.current?.click(),
-    triggerZipUpload: () => zipInputRef.current?.click(),
-    handleReset,
-    handleCopy,
-    handleDownloadMd,
-    handleDownloadPdf,
-    generatePdfBlob,
-    scrollToStart,
-    scrollToEnd,
-    setFilename,
-    setSelectedFileId,
-    setIsLoading,
-    setBasePath,
-    setActiveImage,
-    setImageGallery,
-    setSearchQuery,
-    setIsSelectionMode,
-    toggleSelection,
-    setSelectedIds,
-    handleSelectAll,
-    handleBulkDeleteClick,
-    getSelectedCount,
-    getAllDeletableFileIds,
-    setUploadRulesModal,
-    handleUploadModalConfirm,
-    MAX_FILENAME_LENGTH: 30,
-    getBaseName,
-    uploadTime: uploadTimeRef.current,
-    lastModifiedTime: lastModifiedTimeRef.current,
-    isEditorAtTop: true, // simplified for now
-    setMetadata,
-    setContent,
-  };
+  return useMemo(
+    () => ({
+      rawContent,
+      content,
+      metadata,
+      isGenerating,
+      filename,
+      isEditing,
+      isUploaded,
+      isReset,
+      tempFilename,
+      activeTab,
+      isLoading,
+      basePath,
+      isCopied,
+      isDownloaded,
+      isPdfDownloaded,
+      selectedFileId,
+      isSidebarOpen,
+      searchQuery,
+      isSelectionMode,
+      selectedIds,
+      uploadRulesModal,
+      activeImage,
+      imageGallery,
+      fileInputRef: fileInputRefObj,
+      folderInputRef: folderInputRefObj,
+      zipInputRef: zipInputRefObj,
+      textareaRef,
+      stats,
+      setActiveTab,
+      setIsSidebarOpen,
+      setTempFilename,
+      handleStartEdit,
+      handleSave,
+      handleCancel,
+      handleContentChange,
+      handleFileUpload,
+      handleFolderUpload,
+      handleZipUpload,
+      onFileSelect,
+      triggerFileUpload,
+      triggerFolderUpload,
+      triggerZipUpload,
+      handleReset,
+      handleCopy,
+      handleDownloadMd,
+      handleDownloadPdf,
+      generatePdfBlob,
+      scrollToStart,
+      scrollToEnd,
+      setFilename,
+      setSelectedFileId,
+      setIsLoading,
+      setBasePath,
+      setActiveImage,
+      setImageGallery,
+      setSearchQuery,
+      setIsSelectionMode,
+      toggleSelection,
+      setSelectedIds,
+      handleSelectAll,
+      handleBulkDeleteClick,
+      getSelectedCount,
+      getAllDeletableFileIds,
+      setUploadRulesModal,
+      handleUploadModalConfirm,
+      flushDraft: async () => {
+        if (debouncedSaveRef.current) {
+          return await debouncedSaveRef.current.flush();
+        }
+        return true;
+      },
+      MAX_FILENAME_LENGTH: 30,
+      getBaseName,
+      uploadTime: (() => {
+        const f = files.find((f) => f.id === selectedFileId);
+        return f?.createdAt ? new Date(f.createdAt) : null;
+      })(),
+      statsRef,
+      setMetadata,
+      setContent,
+      setRawContent,
+      setOriginalContent,
+      isModified,
+    }),
+    [
+      rawContent,
+      content,
+      metadata,
+      isGenerating,
+      filename,
+      isEditing,
+      isUploaded,
+      isReset,
+      tempFilename,
+      activeTab,
+      isLoading,
+      basePath,
+      isCopied,
+      isDownloaded,
+      isPdfDownloaded,
+      selectedFileId,
+      isSidebarOpen,
+      searchQuery,
+      isSelectionMode,
+      selectedIds,
+      uploadRulesModal,
+      activeImage,
+      imageGallery,
+      fileInputRefObj,
+      folderInputRefObj,
+      zipInputRefObj,
+      stats,
+      setActiveTab,
+      setIsSidebarOpen,
+      setTempFilename,
+      handleStartEdit,
+      handleSave,
+      handleCancel,
+      handleContentChange,
+      handleFileUpload,
+      handleFolderUpload,
+      handleZipUpload,
+      onFileSelect,
+      triggerFileUpload,
+      triggerFolderUpload,
+      triggerZipUpload,
+      handleReset,
+      handleCopy,
+      handleDownloadMd,
+      handleDownloadPdf,
+      generatePdfBlob,
+      scrollToStart,
+      scrollToEnd,
+      setFilename,
+      setSelectedFileId,
+      setIsLoading,
+      setBasePath,
+      setActiveImage,
+      setImageGallery,
+      setSearchQuery,
+      setIsSelectionMode,
+      toggleSelection,
+      setSelectedIds,
+      handleSelectAll,
+      handleBulkDeleteClick,
+      getSelectedCount,
+      getAllDeletableFileIds,
+      handleUploadModalConfirm,
+      files,
+      setMetadata,
+      setContent,
+      setRawContent,
+      setOriginalContent,
+      isModified,
+    ],
+  );
 }

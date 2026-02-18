@@ -34,7 +34,6 @@ interface EditorToolbarProps {
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   handleFolderUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   handleZipUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-  refreshFiles: () => Promise<void>;
   scrollToStart: () => void;
   scrollToEnd: () => void;
   handleCopy: () => Promise<void>;
@@ -44,6 +43,7 @@ interface EditorToolbarProps {
   isCopied: boolean;
   isReset: boolean;
   isDownloaded: boolean;
+  isModified: boolean;
   setUploadRulesModal: (modal: { isOpen: boolean; type: 'file' | 'folder' | 'zip' }) => void;
 }
 
@@ -56,7 +56,6 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   handleFileUpload,
   handleFolderUpload,
   handleZipUpload,
-  refreshFiles,
   scrollToStart,
   scrollToEnd,
   handleCopy,
@@ -66,6 +65,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   isCopied,
   isReset,
   isDownloaded,
+  isModified,
   setUploadRulesModal,
 }) => {
   return (
@@ -94,10 +94,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
             multiple
             ref={fileInputRef}
             onChange={(e) => {
-              void (async () => {
-                await handleFileUpload(e);
-                void refreshFiles();
-              })();
+              void handleFileUpload(e);
             }}
             className="hidden"
           />
@@ -113,10 +110,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
               directory: string;
             })}
             onChange={(e) => {
-              void (async () => {
-                await handleFolderUpload(e);
-                void refreshFiles();
-              })();
+              void handleFolderUpload(e);
             }}
           />
           <input
@@ -124,10 +118,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
             accept=".zip"
             ref={zipInputRef}
             onChange={(e) => {
-              void (async () => {
-                await handleZipUpload(e);
-                void refreshFiles();
-              })();
+              void handleZipUpload(e);
             }}
             className="hidden"
           />
@@ -243,12 +234,16 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
                   e.stopPropagation();
                   void handleReset();
                 }}
-                className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
+                className={`flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95 ${
+                  isModified && !isReset ? 'text-blue-400' : 'text-slate-500'
+                }`}
               >
                 {isReset ? (
                   <Check className="mr-1.5 h-3.5 w-3.5 text-green-400" />
                 ) : (
-                  <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                  <RotateCcw
+                    className={`mr-1.5 h-3.5 w-3.5 ${isModified ? 'text-blue-400' : ''}`}
+                  />
                 )}
                 {isReset ? 'Done' : 'Reset'}
               </Button>
