@@ -16,10 +16,7 @@ export function useConverterFiles(files: AppFile[]) {
     return files
       .filter(
         (f) =>
-          !f.id.startsWith('default-') &&
-          f.batchId !== 'sample-file' &&
-          f.batchId !== 'sample-folder' &&
-          (f.originalName.toLowerCase().endsWith('.md') || f.mimeType === 'text/markdown'),
+          f.originalName.toLowerCase().endsWith('.md') || f.mimeType === 'text/markdown',
       )
       .filter(
         (f) =>
@@ -27,6 +24,7 @@ export function useConverterFiles(files: AppFile[]) {
           (f.relativePath && f.relativePath.toLowerCase().includes(searchQuery.toLowerCase())),
       )
       .sort((a, b) => {
+
         let comparison = 0;
         if (sortBy === 'name') {
           comparison = a.originalName.localeCompare(b.originalName);

@@ -1,16 +1,24 @@
 <div align="center">
-  <img src="public/brand-logo.svg" alt="Markify Logo" width="120" height="120" />
+  <img src="public/images/brand-logo.svg" alt="Markify Logo" width="120" height="120" />
   <h1>Markify</h1>
   <p>Professional Markdown to PDF Conversion Suite</p>
 </div>
 
-Markify is a professional, high-performance web application designed to convert Markdown into beautiful, high-fidelity PDF reports. Built with **Next.js**, **Playwright**, and **Tailwind CSS v4**, it features real-time preview and seamless Mermaid diagram support.
+Markify is a professional, high-performance web application designed to convert Markdown into beautiful, high-fidelity PDF reports. Built with **Next.js**, **Playwright**, and **Tailwind CSS v4**, it features real-time preview, image support, and seamless Mermaid diagram support.
+
+<div align="center">
+  <br />
+  <img src="public/previews/page-home.gif" alt="Markify Dashboard" width="100%" style="border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" />
+  <br />
+</div>
+
 
 ## ✨ Core Features
 
 - **📄 Pro PDF Generation**: High-fidelity PDF output using Playwright engine.
 - **📊 Mermaid Support**: Native support for diagrams and charts within Markdown.
 - **📝 Live Preview**: Real-time side-by-side rendering as you type.
+- **🖼️ Image Support**: Seamless rendering of local images.
 - **🔐 Secure Auth**: Seamless Google OAuth integration with NextAuth.js v5.
 - **📁 File Management**: Robust storage and organization of your documents.
 - **🎨 Elite UI**: Stunning dark-mode interface built with Shadcn UI.
@@ -18,24 +26,44 @@ Markify is a professional, high-performance web application designed to convert 
 
 ---
 
-## 🛠️ Technology Stack
+## 📸 Interface In Action
 
-- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Server Components)
-- **Language**: [TypeScript](https://www.typescriptlang.org/) (Full Type Safety)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **UI Components**: [Shadcn UI](https://ui.shadcn.com/) (Radix UI)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Database**: [PostgreSQL](https://www.postgresql.org/)
-- **ORM**: [Prisma](https://www.prisma.io/)
-- **Authentication**: [NextAuth.js v5](https://authjs.dev/) (Auth.js)
-- **PDF Engine**: [Playwright](https://playwright.dev/) (Chromium)
-- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+### Intelligent Workspace
+Real-time side-by-side editing with instant feedback, local image rendering, and diagram support.
+
+<img src="public/previews/page-editor.gif" alt="Editor Preview" width="100%" style="border-radius: 8px; border: 1px solid #333;" />
+
+<br />
+
+### Batch Processing Pipeline
+Convert entire folders, extensive archives, or multiple files into polished PDFs in seconds.
+
+<img src="public/previews/page-converter.gif" alt="Converter Preview" width="100%" style="border-radius: 8px; border: 1px solid #333;" />
+
+<br />
 
 ---
 
-## 🚀 Step-by-Step Installation
+## 🛠️ Technology Stack
 
-Follow these steps to get Markify up and running in minutes.
+- **Framework**: [Next.js 16](https://nextjs.org/)
+- **Core Library**: [React 19](https://react.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **UI Components**: [Shadcn UI](https://ui.shadcn.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Database**: [PostgreSQL](https://www.postgresql.org/)
+- **ORM**: [Prisma](https://www.prisma.io/)
+- **Authentication**: [NextAuth.js v5](https://authjs.dev/)
+- **PDF Engine**: [Playwright](https://playwright.dev/)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Containerization**: [Docker](https://www.docker.com/)
+
+---
+
+## 🚀 Installation & Setup
+
+Markify uses a hybrid setup: Docker for services (Database) and either Docker or local Node.js for the application.
 
 ### 1. Prerequisites
 
@@ -43,98 +71,92 @@ Ensure you have the following installed:
 
 - **Node.js 20+**
 - **Docker** and **Docker Compose**
+- **Git**
 
-### 2. Environment Configuration
+### 2. Setup Playwright
 
-Clone the repository and set up your local environment file:
-
-```bash
-cp .env.example .env
-```
-
-Generate a secure authentication secret and add it to `AUTH_SECRET` in your `.env`:
-
-```bash
-openssl rand -base64 32
-```
-
-### 3. Google OAuth Setup
-
-To enable authentication, you need to create credentials in the [Google Cloud Console](https://console.cloud.google.com/).
-
-**Step-by-step Guide:**
-
-1.  **Create a Project**: Click the project dropdown and select "New Project".
-2.  **OAuth Consent Screen**: Search for "OAuth consent screen", choose "External", and fill in the required fields.
-3.  **Create Credentials**: Go to "Credentials" > "Create Credentials" > "OAuth client ID".
-4.  **Configure**:
-    - **Application type**: Web application.
-    - **Authorized redirect URIs**: Add `http://localhost:3000/api/auth/callback/google`.
-5.  **Save**: Copy the **Client ID** and **Client Secret** into your `.env` file.
-
-### 4. Launch the Application
-
-Choose your preferred method of running the app:
-
-#### Option A: Docker (Recommended)
-
-This installs all dependencies and starts the database/app in containers.
-
-```bash
-make setup    # First-time initialization
-make up       # Subsequent runs
-```
-
-#### Option B: Local Development
-
-Fastest for coding. Runs the database in Docker and the app on your host machine.
-
-1. **Install Dependencies:**
-
-```bash
-npm install
-```
-
-2. **Setup Playwright (Required for PDF):**
+Install the necessary browser binaries for PDF generation (Only required for local development):
 
 ```bash
 npx playwright install chromium
 sudo npx playwright install-deps chromium  # Linux only
 ```
 
-3. **Fix Directory Permissions (Linux Only):**
-   Prevents `EACCES` errors when uploading files:
+### 3. Configuration
+
+Clone the repository and create your environment configuration:
 
 ```bash
-make fix-perms
+cp .env.example .env
 ```
 
-4. **Run Server:**
+Open `.env` and configure the following:
+
+#### 1. ⚙️ App Configuration
+Essential settings for the application server.
+- `NEXTAUTH_URL`: The base URL of your application. Defaults to `http://localhost:3000`.
+- `AUTH_TRUST_HOST`: Required for authentication to work inside Docker. Defaults to `true`.
+- `AUTH_SECRET`: Run `openssl rand -base64 32` in your terminal and paste the output string here.
+
+#### 2. 🌐 Google OAuth
+To enable user login, you must set up Google OAuth:
+- Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
+- Navigate to **APIs & Services** > **Credentials** > **Create Credentials** > **OAuth client ID**.
+- Select **Web application** as the application type.
+- Fill in the **App Name**
+- Under **Authorized redirect URIs**, add: `http://localhost:3000/api/auth/callback/google`
+- Click **Create**.
+- Copy the **Client ID** and **Client Secret** into the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` fields in your `.env` file.
+
+#### 3. 🗄️ Database Configuration
+Settings for the PostgreSQL database connection. **All have workable defaults.**
+- `POSTGRES_USER`: Database username.
+- `POSTGRES_PASSWORD`: Database password.
+- `POSTGRES_DB`: Name of the database.
+- `DATABASE_URL`: Full connection string for local development.
+
+#### 4. 🐳 Docker Configuration
+Configuration for container-to-container communication. **All have workable defaults.**
+- `DOCKER_DATABASE_URL`: Connection string used by the app container to reach the database container.
+- `APP_CONTAINER_NAME`: Name for the application service container.
+- `DB_CONTAINER_NAME`: Name for the database service container.
+
+#### 5. 👤 PgAdmin Configuration
+Credentials for the PgAdmin database management interface. **All have workable defaults.**
+- `PGADMIN_DEFAULT_EMAIL`: Email for PgAdmin login.
+- `PGADMIN_DEFAULT_PASSWORD`: Password for PgAdmin login.
+
+### 4. Initial Installation
+
+Run the setup command to install dependencies, build containers, and sync the database schema.
+
+```bash
+make setup
+```
+
+### 5. Running the Application
+
+Choose the method that fits your needs:
+
+#### Option A: Docker Environment
+Runs the entire application suite in Docker containers.
+
+```bash
+make up
+```
+
+#### Option B: Local Development
+Runs the app locally with hot-reloading enabled, connected to the Dockerized database. Best for coding.
 
 ```bash
 make dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) to access the app.
-
----
-
-## 📑 Management Commands
-
-| Command          | Description                                             |
-| :--------------- | :------------------------------------------------------ |
-| `make setup`     | **First-time install**: Docker setup + DB schema sync   |
-| `make dev`       | Run Next.js locally with Docker DB (Fastest for coding) |
-| `make up`        | Start production-ready containers                       |
-| `make build`     | Force rebuild Docker images and restart                 |
-| `make logs`      | Follow application logs                                 |
-| `make fix-perms` | Fix file permission issues in `public/uploads` (Linux)  |
-| `make down`      | Stop all services                                       |
-| `make clean`     | Reset everything (removes volumes and images)           |
+> **Access the app at:** [http://localhost:3000](http://localhost:3000)
 
 ---
 
 <div align="center">
-  <img src="public/company-logo.svg" alt="KAI Team Logo" width="80" height="80" />
-  <p>Built with ❤️ by the <b>KAI Team</b>.</p>
+  <img src="public/images/company-logo.svg" alt="KAI Team Logo" width="80" height="80" />
+  <p>Built with ❤️ by the <b>KAI</b></p>
 </div>

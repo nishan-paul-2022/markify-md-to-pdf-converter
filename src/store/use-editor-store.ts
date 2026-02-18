@@ -11,6 +11,7 @@ interface EditorState {
   metadata: Metadata;
   filename: string;
   tempFilename: string;
+  originalContent: string;
 
   // --- UI State ---
   activeTab: 'editor' | 'preview';
@@ -38,6 +39,7 @@ interface EditorState {
   setMetadata: (metadata: Metadata) => void;
   setFilename: (name: string) => void;
   setTempFilename: (name: string) => void;
+  setOriginalContent: (content: string) => void;
   setActiveTab: (tab: 'editor' | 'preview') => void;
   setIsSidebarOpen: (open: boolean) => void;
   setIsEditingTitle: (editing: boolean) => void;
@@ -58,6 +60,16 @@ interface EditorState {
 
   // Computed Stats
   getStats: () => { chars: number; words: number };
+
+  // --- Mermaid State ---
+  mermaidErrorCount: number;
+  mermaidLoadingCount: number;
+  mermaidErrors: Set<string>;
+  pendingMermaidIds: Set<string>;
+  reportMermaidError: (id: string) => void;
+  resolveMermaidError: (id: string) => void;
+  reportMermaidLoading: (id: string) => void;
+  resolveMermaidLoading: (id: string) => void;
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -67,6 +79,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   metadata: DEFAULT_METADATA,
   filename: 'document.md',
   tempFilename: '',
+  originalContent: '',
   activeTab: 'editor',
   isSidebarOpen: true,
   isEditingTitle: false,
@@ -83,6 +96,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   imageGallery: [],
   isSelectionMode: false,
   selectedIds: new Set(),
+  mermaidErrorCount: 0,
+  mermaidLoadingCount: 0,
+  mermaidErrors: new Set<string>(),
+  pendingMermaidIds: new Set<string>(),
 
   // Actions
   setRawContent: (rawContent) => set({ rawContent }),
@@ -90,6 +107,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setMetadata: (metadata) => set({ metadata }),
   setFilename: (filename) => set({ filename }),
   setTempFilename: (tempFilename) => set({ tempFilename }),
+  setOriginalContent: (originalContent) => set({ originalContent }),
   setActiveTab: (activeTab) => set({ activeTab }),
   setIsSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),
   setIsEditingTitle: (isEditingTitle) => set({ isEditingTitle }),
@@ -125,5 +143,41 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const chars = rawContent.length;
     const words = rawContent.trim() ? rawContent.trim().split(/\s+/).length : 0;
     return { chars, words };
+  },
+
+  reportMermaidError: (id) => {
+    const { mermaidErrors } = get();
+    if (!mermaidErrors.has(id)) {
+      const next = new Set(mermaidErrors);
+      next.add(id);
+      set({ mermaidErrors: next, mermaidErrorCount: next.size });
+    }
+  },
+
+  resolveMermaidError: (id) => {
+    const { mermaidErrors } = get();
+    if (mermaidErrors.has(id)) {
+      const next = new Set(mermaidErrors);
+      next.delete(id);
+      set({ mermaidErrors: next, mermaidErrorCount: next.size });
+    }
+  },
+
+  reportMermaidLoading: (id) => {
+    const { pendingMermaidIds } = get();
+    if (!pendingMermaidIds.has(id)) {
+      const next = new Set(pendingMermaidIds);
+      next.add(id);
+      set({ pendingMermaidIds: next, mermaidLoadingCount: next.size });
+    }
+  },
+
+  resolveMermaidLoading: (id) => {
+    const { pendingMermaidIds } = get();
+    if (pendingMermaidIds.has(id)) {
+      const next = new Set(pendingMermaidIds);
+      next.delete(id);
+      set({ pendingMermaidIds: next, mermaidLoadingCount: next.size });
+    }
   },
 }));

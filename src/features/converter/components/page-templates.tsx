@@ -23,13 +23,13 @@ const IndividualCoverPage = ({ metadata }: CoverPageProps): React.JSX.Element =>
     >
       <div
         className="absolute inset-0 z-0 bg-cover bg-center"
-        style={{ backgroundImage: `url('/cover-bg.png')` }}
+        style={{ backgroundImage: `url('/images/cover-bg.png')` }}
       />
 
       <div className="relative z-10 flex h-full w-full flex-col items-center">
         <div className="mt-[2cm] flex justify-center p-4">
           <Image
-            src="/university-logo.png"
+            src="/images/university-logo.png"
             alt="University Logo"
             width={120}
             height={120}
@@ -125,7 +125,7 @@ const GroupCoverPage = ({ metadata }: CoverPageProps): React.JSX.Element => {
       {/* Background Image with Overlay */}
       <div
         className="absolute inset-0 z-0 bg-cover bg-center opacity-40 mix-blend-overlay"
-        style={{ backgroundImage: `url('/cover-bg.png')` }}
+        style={{ backgroundImage: `url('/images/cover-bg.png')` }}
       />
 
       <div className="relative z-10 flex h-full w-full flex-col items-center p-14">
@@ -133,7 +133,7 @@ const GroupCoverPage = ({ metadata }: CoverPageProps): React.JSX.Element => {
         <div className="mb-10 flex w-full items-start justify-between">
           <div className="">
             <Image
-              src="/university-logo.png"
+              src="/images/university-logo.png"
               alt="University Logo"
               width={100}
               height={100}

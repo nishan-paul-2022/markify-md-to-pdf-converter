@@ -31,6 +31,9 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
     refreshFiles,
   } = useFiles('editor');
 
+  // Navigation history to handle redirection after deletion
+  const [navigationHistory, setNavigationHistory] = React.useState<string[]>([]);
+
   const handleUnifiedDelete = useCallback(
     async (id: string | string[]) => {
       if (Array.isArray(id)) {
@@ -39,10 +42,27 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         await handleDelete(id);
       }
     },
-    [handleDelete, handleBulkDelete],
+    [handleDelete, handleBulkDelete]
   );
 
-  const converterState = useConverter(files, handleUnifiedDelete);
+  const converterState = useConverter(files, handleUnifiedDelete, refreshFiles);
+
+  const {
+    setIsLoading,
+    handleContentChange,
+    setMetadata,
+    setContent,
+    setFilename,
+    setSelectedFileId,
+    setBasePath,
+    setActiveImage,
+    setImageGallery,
+    isLoading: isEditorLoading,
+    selectedFileId,
+    flushDraft,
+    setOriginalContent,
+    setRawContent,
+  } = converterState;
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -51,7 +71,11 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
   // Helper to load file content
   const loadFileContent = useCallback(
     async (targetFile: (typeof files)[0]) => {
-      converterState.setIsLoading(true);
+      setIsLoading(true);
+
+      // CRITICAL: Flush pending drafts of the OLD file before changing rawContent
+      await flushDraft();
+
       try {
         const fileUrl = targetFile.url || '';
         const fetchUrl =
@@ -61,27 +85,34 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
 
         const response = await fetch(fetchUrl);
         if (response.ok) {
-          let text = await response.text();
+          const originalText = await response.text();
+          let currentText = originalText;
+          
+          // Store the authentic file content from server as "original"
+          setOriginalContent(originalText);
           
           // Check for draft from server
           if (targetFile.id && !targetFile.id.startsWith('default-')) {
             const draft = await fetchDraft(targetFile.id);
             if (draft) {
-              text = draft;
+              currentText = draft;
               logger.info(`📝 Loaded draft from server for ${targetFile.originalName}`);
             }
           }
 
-          converterState.handleContentChange(text);
-
           // Update derived content immediately to avoid flash/delay
-          const parsedMetadata = parseMetadataFromMarkdown(text);
-          const contentWithoutLandingPage = removeLandingPageSection(text);
-          converterState.setMetadata(parsedMetadata);
-          converterState.setContent(contentWithoutLandingPage);
+          const parsedMetadata = parseMetadataFromMarkdown(currentText);
+          const contentWithoutLandingPage = removeLandingPageSection(currentText);
+          setMetadata(parsedMetadata);
+          setContent(contentWithoutLandingPage);
 
-          converterState.setFilename(targetFile.originalName);
-          converterState.setSelectedFileId(targetFile.id);
+          // CRITICAL: Use setRawContent instead of handleContentChange for initial load.
+          // This prevents the "auto-save" from triggering for the new content 
+          // before the selectedFileId has updated in the store/hook.
+          setRawContent(currentText);
+
+          setFilename(targetFile.originalName);
+          setSelectedFileId(targetFile.id);
 
           if (fileUrl) {
             const lastSlashIndex = fileUrl.lastIndexOf('/');
@@ -91,17 +122,27 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
                 directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')
                   ? directoryPath
                   : `/api${directoryPath}`;
-              converterState.setBasePath(finalBasePath);
+              setBasePath(finalBasePath);
             }
           }
         }
       } catch (error) {
         logger.error('Failed to load file:', error);
       } finally {
-        converterState.setIsLoading(false);
+        setIsLoading(false);
       }
     },
-    [converterState],
+    [
+      setIsLoading,
+      setMetadata,
+      setContent,
+      setFilename,
+      setSelectedFileId,
+      setBasePath,
+      flushDraft,
+      setOriginalContent,
+      setRawContent,
+    ],
   );
 
   // Initial selection of file (URL -> LocalStorage -> Default)
@@ -111,7 +152,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
 
     if (files.length === 0) {
       if (!initialLoadDone.current) {
-        converterState.setIsLoading(false);
+        setIsLoading(false);
         initialLoadDone.current = true;
       }
       return;
@@ -119,7 +160,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
 
     if (initialLoadDone.current) return;
 
-    if (!converterState.selectedFileId) {
+    if (!selectedFileId) {
       initialLoadDone.current = true;
 
       // 1. Check if we have a fileId in the URL
@@ -149,33 +190,108 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       if (defaultFile) {
         void loadFileContent(defaultFile);
       } else {
-        converterState.setIsLoading(false);
+        setIsLoading(false);
       }
     }
   }, [
     files,
     filesLoading,
-    converterState.selectedFileId,
-    converterState,
+    selectedFileId,
     fileIdFromUrl,
     user.email,
     loadFileContent,
+    setIsLoading,
+  ]);
+
+  // Track navigation history
+  useEffect(() => {
+    if (selectedFileId) {
+      setNavigationHistory((prev) => {
+        // Don't add if it's already the last one
+        if (prev[prev.length - 1] === selectedFileId) return prev;
+        
+        // Keep unique entries, move new one to the end
+        const newHistory = [...prev.filter((id) => id !== selectedFileId), selectedFileId];
+        
+        // Limit history size to 20
+        return newHistory.slice(-20);
+      });
+    }
+  }, [selectedFileId]);
+
+  // Handle redirection when current file is deleted
+  useEffect(() => {
+    if (
+      filesLoading ||
+      isEditorLoading ||
+      files.length === 0 ||
+      !selectedFileId ||
+      !initialLoadDone.current
+    )
+      return;
+
+    const currentFileExists = files.some((f) => f.id === selectedFileId);
+
+    if (!currentFileExists) {
+      logger.info(`🔍 Current file ${selectedFileId} no longer exists. Redirecting...`);
+
+      // 1. Try to find the last valid file from history
+      const validHistory = navigationHistory.filter((id) => files.some((f) => f.id === id));
+      const fallbackId = validHistory[validHistory.length - 1];
+
+      if (fallbackId) {
+        const fallbackFile = files.find((f) => f.id === fallbackId);
+        if (fallbackFile) {
+          void loadFileContent(fallbackFile);
+          return;
+        }
+      }
+
+      // 2. Fallback to first available markdown file
+      const anyMdFile = files.find((f) => f.originalName.endsWith('.md'));
+      if (anyMdFile) {
+        void loadFileContent(anyMdFile);
+        return;
+      }
+
+      // 3. Fallback to default file
+      const defaultFile = files.find((f) => f.url === DEFAULT_MARKDOWN_PATH);
+      if (defaultFile) {
+        void loadFileContent(defaultFile);
+        return;
+      }
+
+      // 4. Last resort: clear state
+      setSelectedFileId(null);
+      handleContentChange('');
+      setFilename('document.md');
+    }
+  }, [
+    files,
+    filesLoading,
+    isEditorLoading,
+    selectedFileId,
+    navigationHistory,
+    loadFileContent,
+    setSelectedFileId,
+    handleContentChange,
+    setFilename,
   ]);
 
   // Sync state changes to URL and LocalStorage
   useEffect(() => {
-    if (converterState.selectedFileId) {
+    if (selectedFileId) {
       // URL Sync
       const params = new URLSearchParams(searchParams.toString());
-      if (params.get('fileId') !== converterState.selectedFileId) {
-        params.set('fileId', converterState.selectedFileId);
+      if (params.get('fileId') !== selectedFileId) {
+        params.set('fileId', selectedFileId);
         router.replace(`?${params.toString()}`, { scroll: false });
       }
 
       // LocalStorage Sync
       if (user.email) {
         const storageKey = `markify_last_file_${user.email}`;
-        localStorage.setItem(storageKey, converterState.selectedFileId);
+        localStorage.setItem(storageKey, selectedFileId);
       }
     } else {
       // Cleanup if deselected
@@ -186,10 +302,13 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       }
       // Optional: Clear local storage? No, let's keep the last one unless explicitly handled.
     }
-  }, [converterState.selectedFileId, searchParams, router, user.email]);
+  }, [selectedFileId, searchParams, router, user.email]);
 
   const handleFileSelect = useCallback(
     async (node: FileTreeNode) => {
+      // First, flush any pending drafts from the current file
+      await flushDraft();
+
       if (node.type === 'file' && node.file) {
         // Check if it's an image
         const isImage =
@@ -220,69 +339,24 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
             return fParentDir === parentDir && fBatchId === targetBatchId;
           });
 
-          converterState.setActiveImage(node.file);
-          converterState.setImageGallery(gallery);
+          setActiveImage(node.file);
+          setImageGallery(gallery);
           return;
         }
 
-        if (!node.file.originalName.endsWith('.md')) {
-          return;
-        }
-
-        try {
-          converterState.setIsLoading(true);
-          const fileUrl = node.file.url || '';
-          const fetchUrl =
-            fileUrl.startsWith('/uploads/') && !fileUrl.startsWith('/api/')
-              ? `/api${fileUrl}`
-              : fileUrl;
-
-          const response = await fetch(fetchUrl);
-          if (response.ok) {
-            let text = await response.text();
-            
-            // Check for draft from server
-            if (node.file.id && !node.file.id.startsWith('default-')) {
-              const draft = await fetchDraft(node.file.id);
-              if (draft) {
-                text = draft;
-                logger.info(`📝 Loaded draft from server for ${node.name}`);
-              }
-            }
-            
-            converterState.handleContentChange(text);
-
-            // Update derived content immediately to avoid flash/delay
-            const parsedMetadata = parseMetadataFromMarkdown(text);
-            const contentWithoutLandingPage = removeLandingPageSection(text);
-            converterState.setMetadata(parsedMetadata);
-            converterState.setContent(contentWithoutLandingPage);
-
-            converterState.setFilename(node.file.originalName);
-            converterState.setSelectedFileId(node.file.id);
-
-            // Set base path for images if it's a batch/folder upload
-            if (fileUrl) {
-              const lastSlashIndex = fileUrl.lastIndexOf('/');
-              if (lastSlashIndex !== -1) {
-                const directoryPath = fileUrl.substring(0, lastSlashIndex);
-                // Only prepend /api for uploaded files (in /uploads), not for default content (in /content-x)
-                const finalBasePath =
-                  directoryPath.startsWith('/api/') || !directoryPath.startsWith('/uploads')
-                    ? directoryPath
-                    : `/api${directoryPath}`;
-                converterState.setBasePath(finalBasePath);
-              }
-            }
-          }
-        } catch (error) {
-          logger.error('Failed to load file content:', error);
-        } finally {
-          converterState.setIsLoading(false);
+        // If it's a markdown file, load it using the shared logic
+        if (node.file.originalName.endsWith('.md')) {
+          await loadFileContent(node.file);
         }
       }
     },
-    [converterState, files],
+    [
+      files,
+      setActiveImage,
+      setImageGallery,
+      loadFileContent,
+      flushDraft,
+    ],
   );
 
   return (
@@ -294,6 +368,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       handleFileRename={handleRename}
       onFileSelect={handleFileSelect}
       refreshFiles={refreshFiles}
+      converter={converterState}
     />
   );
 }

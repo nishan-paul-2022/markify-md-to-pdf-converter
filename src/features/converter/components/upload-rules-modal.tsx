@@ -101,9 +101,9 @@ export function UploadRulesModal({ isOpen, onClose, onConfirm, type }: UploadRul
                   <div>
                     <h4 className="text-sm font-semibold text-slate-200">Archive Support</h4>
                     <p className="mt-1 text-xs leading-relaxed whitespace-nowrap text-slate-400">
-                      Upload one or more{' '}
+                      Upload a single{' '}
                       <span className="font-mono font-bold text-emerald-400">.zip</span> archive
-                      files at a time.
+                      file.
                     </p>
                   </div>
                 </div>

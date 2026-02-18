@@ -23,18 +23,18 @@ export function SortToggle({ onClick, isOpen }: SortToggleProps) {
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
-          variant="ghost"
+          variant={undefined}
           size="icon"
           onClick={onClick}
           className={cn(
-            "h-7 w-7 rounded-sm text-slate-500 transition-all hover:bg-white/5 hover:text-slate-200",
-            isOpen && "bg-white/10 text-slate-100"
+            "h-6.5 w-6.5 transition-all !bg-transparent hover:!bg-transparent hover:scale-110",
+            isOpen ? "text-sky-400" : "text-slate-500 hover:text-white"
           )}
         >
           <ArrowUpDown className="h-3.5 w-3.5" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="bottom" className="border-slate-800 bg-slate-900 text-xs">
+      <TooltipContent side="top" className="border-slate-800 bg-slate-900 text-xs">
         Sort Files
       </TooltipContent>
     </Tooltip>
@@ -71,7 +71,7 @@ export function SortPanel({ sortPreference, onSortChange, onClose }: SortProps) 
   };
 
   return (
-    <div className="animate-in fade-in slide-in-from-top-2 z-30 mx-3 mt-2 mb-4 flex flex-col overflow-hidden rounded-xl border border-white/10 bg-slate-950/40 shadow-2xl duration-300">
+    <div className="animate-in fade-in slide-in-from-top-2 z-30 mx-3 mt-2 mb-4 flex shrink-0 flex-col rounded-xl border border-white/10 bg-slate-950/40 shadow-2xl duration-300">
       <div className="p-2 space-y-2">
         {/* Compact Header with Close */}
         <div className="flex items-center justify-between px-1">
@@ -100,7 +100,7 @@ export function SortPanel({ sortPreference, onSortChange, onClose }: SortProps) 
                   key={type}
                   onClick={() => handleSortByChange(type)}
                   className={cn(
-                    'flex items-center gap-2 rounded-md border px-2 py-1.5 text-[9px] font-bold tracking-wider uppercase transition-all duration-300',
+                    'flex items-center gap-2 rounded-md border px-2 py-1.5 text-[9px] font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer',
                     sortBy === type
                       ? 'border-blue-500/40 bg-blue-500/10 text-blue-400'
                       : 'border-white/5 bg-transparent text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-300',
@@ -122,7 +122,7 @@ export function SortPanel({ sortPreference, onSortChange, onClose }: SortProps) 
               <button
                 onClick={() => onSortChange({ sortBy, direction: 'asc' })}
                 className={cn(
-                  'flex items-center gap-2 rounded-md border px-2 py-1.5 text-[9px] font-bold tracking-wider uppercase transition-all duration-300',
+                  'flex items-center gap-2 rounded-md border px-2 py-1.5 text-[9px] font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer',
                   direction === 'asc'
                     ? 'border-blue-500/40 bg-blue-500/10 text-blue-400'
                     : 'border-white/5 bg-transparent text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-300',
@@ -134,7 +134,7 @@ export function SortPanel({ sortPreference, onSortChange, onClose }: SortProps) 
               <button
                 onClick={() => onSortChange({ sortBy, direction: 'desc' })}
                 className={cn(
-                  'flex items-center gap-2 rounded-md border px-2 py-1.5 text-[9px] font-bold tracking-wider uppercase transition-all duration-300',
+                  'flex items-center gap-2 rounded-md border px-2 py-1.5 text-[9px] font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer',
                   direction === 'desc'
                     ? 'border-blue-500/40 bg-blue-500/10 text-blue-400'
                     : 'border-white/5 bg-transparent text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-300',

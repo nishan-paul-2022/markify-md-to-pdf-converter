@@ -85,7 +85,7 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          className="animate-in zoom-in-95 mt-2 w-64 border-white/10 bg-slate-950/80 p-2 shadow-2xl backdrop-blur-xl duration-200"
+          className="animate-in zoom-in-95 mt-2 w-64 border-white/10 bg-slate-950 p-2 shadow-2xl duration-200"
           align="end"
           forceMount
         >
@@ -102,12 +102,12 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
           <DropdownMenuSeparator className="mx-1 bg-white/5" />
           <div className="p-1">
             <DropdownMenuItem
-              className="cursor-pointer rounded-lg px-3 py-3 text-slate-300 transition-colors focus:bg-white/5 focus:text-white"
+              className="group cursor-pointer rounded-lg px-3 py-3 text-slate-300 transition-colors focus:bg-red-600 focus:text-white"
               onClick={async () => {
                 await signOut({ callbackUrl: '/' });
               }}
             >
-              <LogOut className="mr-3 h-4 w-4 text-slate-500" />
+              <LogOut className="mr-3 h-4 w-4 text-slate-500 transition-colors group-focus:text-white" />
               <span className="text-xs font-black tracking-[0.15em] uppercase">Log out</span>
             </DropdownMenuItem>
           </div>
@@ -115,10 +115,10 @@ export default function UserNav({ user }: UserNavProps): React.JSX.Element {
           <DropdownMenuSeparator className="mx-1 bg-white/5" />
           <div className="p-1">
             <DropdownMenuItem
-              className="group cursor-pointer rounded-lg px-3 py-3 text-red-500/60 transition-colors focus:bg-red-500/10 focus:text-red-500"
+              className="group cursor-pointer rounded-lg px-3 py-3 text-red-500/60 transition-colors focus:bg-red-600 focus:text-white"
               onClick={() => setShowDeleteConfirm(true)}
             >
-              <Trash2 className="mr-3 h-4 w-4 text-red-500/40 transition-colors group-hover:text-red-500" />
+              <Trash2 className="mr-3 h-4 w-4 text-red-500/40 transition-colors group-focus:text-white" />
               <span className="text-xs font-black tracking-[0.15em] uppercase">Delete account</span>
             </DropdownMenuItem>
           </div>

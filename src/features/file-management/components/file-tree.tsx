@@ -63,10 +63,63 @@ export function FileTree({
   searchQuery = '',
 }: FileTreeProps) {
   const { confirm } = useAlert();
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+  // Helper to get and save expanded folders from/to localStorage
+  const getPersistedExpandedFolders = React.useCallback((): Set<string> => {
+    if (typeof window === 'undefined') return new Set();
+    try {
+      const saved = localStorage.getItem('markify-expanded-folders');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return new Set(parsed);
+      }
+    } catch (error) {
+      console.warn('Failed to parse expanded folders:', error);
+    }
+    return new Set();
+  }, []);
+
+  const persistExpandedFolder = React.useCallback(
+    (id: string, expanded: boolean) => {
+      if (typeof window === 'undefined') return;
+      const current = getPersistedExpandedFolders();
+      if (expanded) current.add(id);
+      else current.delete(id);
+      localStorage.setItem('markify-expanded-folders', JSON.stringify(Array.from(current)));
+    },
+    [getPersistedExpandedFolders],
+  );
+
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+
+    // Priority 1: Search mode (if initial searchQuery is somehow present, though rare here)
+    // Priority 2: Persistent state
+    if (typeof window !== 'undefined') {
+      const persisted = localStorage.getItem('markify-expanded-folders');
+      if (persisted) {
+        try {
+          const parsed = JSON.parse(persisted);
+          if (Array.isArray(parsed)) {
+            parsed.forEach((p) => initial.add(p));
+          }
+        } catch (error) {
+          console.warn('Failed to parse expanded folders:', error);
+        }
+      }
+    }
+
+    return initial;
+  });
+
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const [isRenaming, setIsRenaming] = useState(false);
+
+  // Track the last file that was auto-expanded to prevent infinite/annoying re-expansion
+  const lastExpandedFileId = React.useRef<string | null>(
+    typeof window !== 'undefined' ? localStorage.getItem('markify-last-expanded-file-id') : null,
+  );
+  const isFirstLoad = React.useRef(true);
 
   // Track grid mode for individual folders. Persist in localStorage.
   const [folderGridModes, setFolderGridModes] = useState<Set<string>>(() => {
@@ -140,7 +193,9 @@ export function FileTree({
   // Optimize expansion: Only calculate when searchQuery really changes
   React.useEffect(() => {
     if (!searchQuery) {
-      setExpandedFolders(new Set());
+      // Revert to persisted expanded folders when not searching
+      const persisted = getPersistedExpandedFolders();
+      setExpandedFolders(persisted);
       return;
     }
 
@@ -164,7 +219,7 @@ export function FileTree({
 
     collectExpanded(nodes);
     setExpandedFolders(newExpanded);
-  }, [searchQuery, nodes, doesNodeMatch]);
+  }, [searchQuery, nodes, doesNodeMatch, getPersistedExpandedFolders]);
 
   const toggleFolderGridMode = (id: string) => {
     setFolderGridModes((prev) => {
@@ -255,6 +310,7 @@ export function FileTree({
   };
 
   const toggleFolder = (id: string) => {
+    const isExpanding = !expandedFolders.has(id);
     const newExpanded = new Set(expandedFolders);
     if (newExpanded.has(id)) {
       newExpanded.delete(id);
@@ -262,6 +318,9 @@ export function FileTree({
       newExpanded.add(id);
     }
     setExpandedFolders(newExpanded);
+
+    // Save to localStorage
+    persistExpandedFolder(id, isExpanding);
   };
 
   const collectFileIds = (node: FileTreeNode): string[] => {
@@ -293,6 +352,13 @@ export function FileTree({
   // Auto-expand folders containing the selected file
   React.useEffect(() => {
     if (selectedFileId && nodes.length > 0) {
+      // Only auto-expand if the selected file has changed or if it's the first build of nodes
+      // AND don't auto-expand if we're in search mode (search has its own logic)
+      if (searchQuery) return;
+
+      const isSameFile = lastExpandedFileId.current === selectedFileId;
+      if (isSameFile) return;
+
       const foldersToExpand = new Set<string>();
 
       // First, find the selected file and get its batchId
@@ -310,7 +376,9 @@ export function FileTree({
       };
 
       const selectedFile = findSelectedFile(nodes);
-      const selectedFileBatchId = selectedFile?.batchId;
+      if (!selectedFile) return;
+
+      const selectedFileBatchId = selectedFile.batchId;
 
       // Only expand folders if they're in the same batch as the selected file
       const findAndExpand = (items: FileTreeNode[]): boolean => {
@@ -336,14 +404,28 @@ export function FileTree({
       };
 
       if (findAndExpand(nodes)) {
+        lastExpandedFileId.current = selectedFileId;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('markify-last-expanded-file-id', selectedFileId);
+        }
+        isFirstLoad.current = false;
+
         setExpandedFolders((prev) => {
           const combined = new Set(prev);
-          foldersToExpand.forEach((id) => combined.add(id));
-          return combined.size === prev.size ? prev : combined;
+          let changed = false;
+          for (const id of foldersToExpand) {
+            if (!combined.has(id)) {
+              combined.add(id);
+              changed = true;
+              // Also persist auto-expansion
+              persistExpandedFolder(id, true);
+            }
+          }
+          return changed ? combined : prev;
         });
       }
     }
-  }, [selectedFileId, nodes]);
+  }, [selectedFileId, nodes, searchQuery, persistExpandedFolder]);
 
   const getFileIcon = (fileName: string, mimeType?: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase();

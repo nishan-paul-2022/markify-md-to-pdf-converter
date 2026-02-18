@@ -1,0 +1,472 @@
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { signIn } from 'next-auth/react';
+
+import { Button } from '@/components/ui/button';
+import UserNav from '@/features/auth/components/user-nav';
+
+import { motion } from 'framer-motion';
+import { 
+  CheckCircle2,
+  Code2,
+  FileDown,
+  FileText,
+  Heart,
+  Image as LucideImage,
+  Layers,
+  Layout,
+  Search,
+  Sparkles,
+  Workflow,
+  Zap,
+} from 'lucide-react';
+
+interface LandingContentProps {
+  session: {
+    user?: {
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    } | null;
+  } | null;
+}
+
+const fadeIn = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6 },
+};
+
+const stagger = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const WorkflowAnimation = () => {
+  return (
+    <div className="relative mx-auto mt-32 mb-52 max-w-5xl px-6">
+      <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-12 items-stretch">
+        
+        {/* The Central "Core" Beam */}
+        {/* The Central "Core" Beam & Moving Dot */}
+        <div className="absolute top-1/2 left-0 w-full -translate-y-1/2 hidden lg:block pointer-events-none z-0">
+          <div className="absolute inset-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              initial={{ left: "10%", opacity: 0 }}
+              animate={{ left: "90%", opacity: [0, 1, 1, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "linear", delay: i * 0.5 }}
+              className="absolute top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,1)] z-20"
+            />
+          ))}
+        </div>
+        
+        {/* Step 1: Input / Parsing */}
+        <motion.div 
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          className="relative z-10 h-full"
+        >
+          <div className="group relative h-full p-8 rounded-[3rem] border border-blue-500/30 bg-black/30 backdrop-blur-3xl overflow-hidden transition-all duration-700 flex flex-col shadow-2xl">
+            {/* Glossy Top Edge Highlight */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            
+            {/* Sleek Inner Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/[0.07] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            
+            {/* Background scanline animation */}
+            <motion.div 
+              animate={{ y: ["0%", "200%"] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-x-0 h-20 bg-gradient-to-b from-blue-500/0 via-blue-500/5 to-blue-500/0 top-[-100%]"
+            />
+            
+            <div className="relative z-10 flex-1 flex flex-col">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-400">
+                  <Code2 className="h-6 w-6" />
+                </div>
+                <div>
+                  <h4 className="text-white font-black text-sm uppercase tracking-tighter">Markdown Input</h4>
+                  <p className="text-[10px] text-blue-400 font-black flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" /> SYNTAX READY
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex-1 flex flex-col justify-center">
+                <div className="flex gap-1.5 px-1">
+                  {[1, 2, 3, 4, 5, 6].map(i => (
+                    <motion.div 
+                      key={i}
+                      animate={{ 
+                        backgroundColor: ["rgba(59, 130, 246, 0.1)", "rgba(59, 130, 246, 0.5)", "rgba(59, 130, 246, 0.1)"] 
+                      }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
+                      className="h-1.5 flex-1 rounded-full bg-blue-500/10"
+                    />
+                  ))}
+                </div>
+                
+                <div className="mt-8 space-y-4">
+                  {[
+                    { icon: Search, label: "Write your docs", color: "from-blue-500/20 to-blue-500/0", iconColor: "text-blue-400" },
+                    { icon: Layers, label: "Add diagrams", color: "from-indigo-500/20 to-indigo-500/0", iconColor: "text-indigo-400" },
+                    { icon: LucideImage, label: "Add images", color: "from-violet-500/20 to-violet-500/0", iconColor: "text-violet-400" },
+                  ].map((item, i) => (
+                    <motion.div 
+                      key={i}
+                      whileHover={{ scale: 1.03, backgroundColor: "rgba(255,255,255,0.08)" }}
+                      style={{ backgroundColor: "rgba(255, 255, 255, 0.03)" }}
+                      className="group flex items-center gap-4 py-6 px-4 rounded-2xl border border-white/5 transition-all duration-300"
+                    >
+                      <item.icon className={`h-5 w-5 ${item.iconColor} group-hover:scale-110 transition-transform`} />
+                      <span className="text-xs font-black uppercase tracking-[0.15em] text-slate-300 group-hover:text-white transition-colors">
+                        {item.label}
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Step 2: The Transformation Vortex (Unique Centerpiece) */}
+        <motion.div 
+           initial={{ opacity: 0, scale: 0.9 }}
+           whileInView={{ opacity: 1, scale: 1 }}
+           viewport={{ once: true }}
+           transition={{ delay: 0.2 }}
+           className="relative z-10 h-full flex items-center justify-center py-12 lg:py-0"
+        >
+           {/* Abstract swirling particles around logo */}
+           <div className="relative h-64 w-64 flex items-center justify-center">
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 rounded-full border border-white/5 border-dashed"
+              />
+              <motion.div 
+                animate={{ rotate: -360 }}
+                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-4 rounded-full border border-blue-500/10 border-dotted"
+              />
+              
+              {/* Pulsing Core */}
+              <div className="relative z-10 flex h-44 w-44 items-center justify-center rounded-full bg-white text-slate-950 shadow-[0_0_80px_rgba(255,255,255,0.4)]">
+                {/* Always Rotating Border */}
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  className="absolute -inset-4 rounded-full border-2 border-dashed border-white/20"
+                />
+                <motion.div 
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                  className="absolute -inset-8 rounded-full border border-dotted border-white/10"
+                />
+
+                <Image src="/images/brand-logo.svg" alt="Core" width={72} height={72} />
+              </div>
+
+           </div>
+        </motion.div>
+
+        {/* Step 3: Synthesis / Output */}
+        <motion.div 
+          initial={{ opacity: 0, x: 30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4 }}
+          className="relative z-10 h-full"
+        >
+          <div className="group relative h-full p-8 rounded-[3rem] border border-emerald-500/30 bg-black/30 backdrop-blur-3xl overflow-hidden transition-all duration-700 flex flex-col shadow-2xl">
+             {/* Glossy Top Edge Highlight */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+            {/* Sleek Inner Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/[0.07] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            
+            <div className="relative z-10 flex-1 flex flex-col">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400">
+                  <FileDown className="h-6 w-6" />
+                </div>
+                <div>
+                  <h4 className="text-white font-black text-sm uppercase tracking-tighter">PDF Generation</h4>
+                  <p className="text-[10px] text-emerald-400 font-black flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" /> PIXEL PERFECT
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex-1 flex flex-col justify-center">
+                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                  <motion.div 
+                    animate={{ width: ["0%", "100%", "100%"] }}
+                    transition={{ duration: 3, repeat: Infinity, times: [0, 0.8, 1] }}
+                    className="h-full bg-gradient-to-r from-blue-500 to-emerald-500"
+                  />
+                </div>
+                <div className="mt-8 grid grid-cols-2 gap-3 flex-1">
+                   {[
+                     { icon: Workflow, label: "Branded", color: "from-emerald-500/20 to-emerald-500/0", iconColor: "text-emerald-400" },
+                     { icon: Zap, label: "Fast", color: "from-blue-500/20 to-blue-500/0", iconColor: "text-blue-400" },
+                     { icon: Sparkles, label: "Stylized", color: "from-amber-500/20 to-amber-500/0", iconColor: "text-amber-400" },
+                     { icon: FileText, label: "Multi-page", color: "from-indigo-500/20 to-indigo-500/0", iconColor: "text-indigo-400" }
+                   ].map((item, i) => (
+                     <motion.div 
+                        key={i} 
+                        whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.08)" }}
+                        style={{ backgroundColor: "rgba(255, 255, 255, 0.03)" }}
+                        className="group flex flex-col items-center justify-center py-6 px-3 rounded-[1.5rem] border border-white/5 h-full transition-all duration-300"
+                      >
+                        <item.icon className={`h-6 w-6 mb-4 ${item.iconColor} group-hover:rotate-12 transition-transform`} />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-white transition-colors text-center">
+                          {item.label}
+                        </span>
+                     </motion.div>
+                   ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+      </div>
+
+      {/* Extreme ambient backglow */}
+
+    </div>
+  );
+};
+
+export default function LandingContent({ session }: LandingContentProps): React.JSX.Element {
+  const handleAuthRedirect = (e: React.MouseEvent, target: string) => {
+    if (!session?.user) {
+      e.preventDefault();
+      void signIn('google', { callbackUrl: target });
+    }
+  };
+
+  return (
+    <div className="dark min-h-screen overflow-x-hidden bg-[#212121] font-sans text-slate-100 selection:bg-blue-500/30">
+      {/* Background/Ambient Effects */}
+      {/* Background/Ambient Effects Removed */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        {/* Subtle noise/grid can stay if desired, but user said 'no gradient'. 
+            Removing the blobs. Keeping subtle texture if it's not a gradient. 
+            The user said specifically 'no need to use gradient in bg'. 
+            The blobs are definitely gradients. The grid is a gradient too technically.
+            Let's remove all to be safe and clean. */}
+      </div>
+
+      {/* Header */}
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className="sticky top-0 z-50 flex h-24 items-center justify-between border-b border-white/5 bg-slate-950/80 px-6 backdrop-blur-2xl lg:px-12"
+      >
+        <div className="flex items-center gap-12">
+          <Link href="/" className="group flex items-center gap-3">
+             <Image 
+               src="/images/brand-logo.svg" 
+               alt="Markify" 
+               width={32} 
+               height={32} 
+               className="transition-transform duration-500"
+             />
+            <span className="text-2xl font-black tracking-tighter text-white">Markify</span>
+          </Link>
+
+          {/* New Header Navigation */}
+          <nav className="hidden items-center gap-8 md:flex">
+            <Link 
+              href="/editor" 
+              onClick={(e) => handleAuthRedirect(e, '/editor')}
+              className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-400 transition-colors hover:text-white"
+            >
+              <Layout className="h-4 w-4" />
+              Workspace
+            </Link>
+            <Link 
+              href="/converter" 
+              onClick={(e) => handleAuthRedirect(e, '/converter')}
+              className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-400 transition-colors hover:text-white"
+            >
+              <Zap className="h-4 w-4" />
+              Converter
+            </Link>
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-6">
+          {session?.user ? (
+            <UserNav user={session.user} />
+          ) : (
+            <Button
+              onClick={() => void signIn('google')}
+              className="group relative h-12 overflow-hidden rounded-full bg-white px-8 text-sm font-black uppercase tracking-widest text-slate-950 transition-all hover:scale-105 hover:bg-white"
+            >
+              <span className="relative z-10">Sign In</span>
+            </Button>
+          )}
+        </div>
+      </motion.header>
+
+      <main className="relative z-10">
+        {/* Hero Section */}
+        <section className="mx-auto max-w-7xl px-6 pt-24 pb-12 text-center lg:pt-40">
+          <motion.div initial="initial" animate="animate" variants={stagger} className="flex flex-col items-center">
+
+
+            <motion.h1
+              variants={fadeIn}
+              className="mb-8 bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-6xl font-black leading-[1.1] tracking-tighter text-transparent md:text-8xl"
+            >
+              <span className="text-red-500">PDF</span> should look as good as <span className="text-blue-500">Markdown</span>
+            </motion.h1>
+
+            <motion.p
+              variants={fadeIn}
+              className="mx-auto mb-12 max-w-4xl text-lg leading-relaxed text-slate-400 md:text-xl"
+            >
+              The ultimate suite for converting Markdown into high-fidelity, brandable PDFs.
+              Powering modern developers with real-time feedback and intelligent tooling.
+            </motion.p>
+          </motion.div>
+        </section>
+
+        {/* Workflow Animation Section */}
+        <WorkflowAnimation />
+
+        {/* Feature Cards Section */}
+        <section className="mx-auto max-w-7xl px-6 pb-40">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="group relative overflow-hidden rounded-[3rem] border border-blue-500/30 bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent backdrop-blur-3xl transition-all duration-700 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
+            >
+              {/* Glossy Top Edge Highlight */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              
+              <div className="relative p-8 lg:p-12 h-full flex flex-col">
+                <div className="mb-8 flex items-center justify-between">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+                    <Code2 className="h-7 w-7" />
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+                    Workspace
+                  </div>
+                </div>
+
+                <h3 className="mb-4 text-3xl font-black text-white">Integrated Editor</h3>
+                <p className="mb-10 text-lg leading-relaxed text-slate-400 min-h-[90px]">
+                  Advanced workspace featuring real-time side-by-side rendering. Native folder asset support and instant Mermaid diagram generation.
+                </p>
+
+                <div className="shadow-2xl relative mb-12 aspect-video overflow-hidden rounded-3xl border border-white/[0.08] bg-[#020617]">
+                  <div className="absolute inset-0 animate-pulse bg-blue-500/[0.02]" />
+                  <Image
+                    src="/previews/page-editor.gif"
+                    alt="Editor Demo"
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#030712]/50 to-transparent" />
+                </div>
+
+                <div className="mt-auto">
+                  <Link href="/editor" onClick={(e) => handleAuthRedirect(e, '/editor')}>
+                    <Button className="group/btn relative h-16 w-full overflow-hidden rounded-2xl bg-blue-500 text-lg font-black text-white transition-all hover:bg-blue-400 hover:shadow-lg hover:shadow-blue-500/25">
+                      <span className="relative z-10">Launch Workspace</span>
+                      <div className="absolute inset-0 translate-y-full bg-gradient-to-t from-white/20 to-transparent transition-transform duration-300 group-hover/btn:translate-y-0" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="group relative overflow-hidden rounded-[3rem] border border-emerald-500/30 bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent backdrop-blur-3xl transition-all duration-700 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
+            >
+              {/* Glossy Top Edge Highlight */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              
+              <div className="relative p-8 lg:p-12 h-full flex flex-col">
+                <div className="mb-8 flex items-center justify-between">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                    <Zap className="h-7 w-7" />
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+                    Pipeline
+                  </div>
+                </div>
+
+                <h3 className="mb-4 text-3xl font-black text-white">Batch Converter</h3>
+                <p className="mb-10 text-lg leading-relaxed text-slate-400 min-h-[90px]">
+                  Industrial-grade conversion engine. Process single files or massive zip archives into pixel-perfect PDF documents with one click.
+                </p>
+
+                <div className="shadow-2xl relative mb-12 aspect-video overflow-hidden rounded-3xl border border-white/[0.08] bg-[#020617]">
+                  <div className="absolute inset-0 animate-pulse bg-emerald-500/[0.02]" />
+                  <Image
+                    src="/previews/page-converter.gif"
+                    alt="Converter Demo"
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#030712]/50 to-transparent" />
+                </div>
+
+                <div className="mt-auto">
+                  <Link href="/converter" onClick={(e) => handleAuthRedirect(e, '/converter')}>
+                    <Button className="group/btn relative h-16 w-full overflow-hidden rounded-2xl bg-emerald-500 text-lg font-black text-white transition-all hover:bg-emerald-400 hover:shadow-lg hover:shadow-emerald-500/25">
+                      <span className="relative z-10">Quick Convert</span>
+                      <div className="absolute inset-0 translate-y-full bg-gradient-to-t from-white/20 to-transparent transition-transform duration-300 group-hover/btn:translate-y-0" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Super Modern Footer */}
+        <footer className="relative border-t border-white/5 bg-slate-950 py-20 px-6">
+          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-12 md:flex-row">
+            <div className="flex flex-col items-center gap-4 md:items-start">
+
+              <p className="text-sm font-medium text-slate-500">
+                © 2026 MARKIFY. ALL RIGHTS RESERVED.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 font-mono text-[10px] font-bold uppercase text-slate-100 tracking-[0.4em] transition-all duration-300">
+              <span className="inline-block scale-y-[1.4]">Built with</span>
+              <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
+              <span className="inline-block scale-y-[1.4]">by the</span>
+              <Image src="/images/company-logo.svg" alt="KAI" width={36} height={36} className="object-contain" />
+              <span className="inline-block scale-y-[1.4]">KAI</span>
+            </div>
+
+
+          </div>
+        </footer>
+      </main>
+    </div>
+  );
+}

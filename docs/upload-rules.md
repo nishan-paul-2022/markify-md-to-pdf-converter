@@ -23,7 +23,7 @@ This document outlines the strict validation rules for all upload methods in Mar
 ---
 
 ## 3. Zip Archive Upload
-*   **Multi-Archive Support**: Users can select and upload **one or more** `.zip` archive files at once.
+*   **Single Archive Support**: Users can select and upload **a single** `.zip` archive file at a time.
 *   **Flexible Root Structure**: Zip files can contain:
     *   **Multiple folders** at the root level
     *   **Multiple `.md` files** at the root level
