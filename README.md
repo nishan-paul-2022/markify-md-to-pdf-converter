@@ -82,9 +82,16 @@ npx playwright install chromium
 sudo npx playwright install-deps chromium  # Linux only
 ```
 
-### 3. Configuration
+### 3. Clone the Repository
 
-Clone the repository and create your environment configuration:
+```bash
+git clone https://github.com/nishan-paul-2022/markify-md-to-pdf-converter
+cd markify-md-to-pdf-converter
+```
+
+### 4. Configuration
+
+Create your environment configuration:
 
 ```bash
 cp .env.example .env
@@ -92,13 +99,13 @@ cp .env.example .env
 
 Open `.env` and configure the following:
 
-#### 1. ⚙️ App Configuration
+#### 4.1 ⚙️ App Configuration
 Essential settings for the application server.
 - `NEXTAUTH_URL`: The base URL of your application. Defaults to `http://localhost:3000`.
 - `AUTH_TRUST_HOST`: Required for authentication to work inside Docker. Defaults to `true`.
 - `AUTH_SECRET`: Run `openssl rand -base64 32` in your terminal and paste the output string here.
 
-#### 2. 🌐 Google OAuth
+#### 4.2 🌐 Google OAuth
 To enable user login, you must set up Google OAuth:
 - Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
 - Navigate to **APIs & Services** > **Credentials** > **Create Credentials** > **OAuth client ID**.
@@ -108,25 +115,25 @@ To enable user login, you must set up Google OAuth:
 - Click **Create**.
 - Copy the **Client ID** and **Client Secret** into the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` fields in your `.env` file.
 
-#### 3. 🗄️ Database Configuration
+#### 4.3 🗄️ Database Configuration
 Settings for the PostgreSQL database connection. **All have workable defaults.**
 - `POSTGRES_USER`: Database username.
 - `POSTGRES_PASSWORD`: Database password.
 - `POSTGRES_DB`: Name of the database.
 - `DATABASE_URL`: Full connection string for local development.
 
-#### 4. 🐳 Docker Configuration
+#### 4.4 🐳 Docker Configuration
 Configuration for container-to-container communication. **All have workable defaults.**
 - `DOCKER_DATABASE_URL`: Connection string used by the app container to reach the database container.
 - `APP_CONTAINER_NAME`: Name for the application service container.
 - `DB_CONTAINER_NAME`: Name for the database service container.
 
-#### 5. 👤 PgAdmin Configuration
+#### 4.5 👤 PgAdmin Configuration
 Credentials for the PgAdmin database management interface. **All have workable defaults.**
 - `PGADMIN_DEFAULT_EMAIL`: Email for PgAdmin login.
 - `PGADMIN_DEFAULT_PASSWORD`: Password for PgAdmin login.
 
-### 4. Initial Installation
+### 5. Initial Installation
 
 Run the setup command to install dependencies, build containers, and sync the database schema.
 
@@ -134,7 +141,7 @@ Run the setup command to install dependencies, build containers, and sync the da
 make setup
 ```
 
-### 5. Running the Application
+### 6. Running the Application
 
 Choose the method that fits your needs:
 
@@ -158,5 +165,5 @@ make dev
 
 <div align="center">
   <img src="public/images/company-logo.svg" alt="KAI Team Logo" width="80" height="80" />
-  <p>Built with ❤️ by the <b>KAI</b></p>
+  <p>Built with ❤️ by <b>KAI</b></p>
 </div>
