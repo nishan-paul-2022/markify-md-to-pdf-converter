@@ -458,12 +458,10 @@ export default function LandingContent({ session }: LandingContentProps): React.
             <div className="flex items-center gap-3 font-mono text-[10px] font-bold uppercase text-slate-100 tracking-[0.4em] transition-all duration-300">
               <span className="inline-block scale-y-[1.4]">Built with</span>
               <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
-              <span className="inline-block scale-y-[1.4]">by the</span>
+              <span className="inline-block scale-y-[1.4]">by</span>
               <Image src="/images/company-logo.svg" alt="KAI" width={36} height={36} className="object-contain" />
               <span className="inline-block scale-y-[1.4]">KAI</span>
             </div>
-
-
           </div>
         </footer>
       </main>
