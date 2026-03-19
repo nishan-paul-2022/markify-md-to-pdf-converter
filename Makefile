@@ -1,59 +1,65 @@
-.PHONY: fix-perms kill-port setup clean build dev up down restart db-push db-migrate db-studio db-seed db-reset logs help
-
+# Load environment variables from .env file
 ifneq (,$(wildcard ./.env))
     include .env
     export
 endif
 
-APP_NAME = $(APP_CONTAINER_NAME)
-DB_NAME = $(DB_CONTAINER_NAME)
+.PHONY: setup clean build dev up down restart db-push db-migrate db-studio db-seed db-reset logs help kill-port ensure-network fix-perms
 
 fix-perms:
 	@sudo chown -R $$USER:$$USER public/uploads 2>/dev/null || true
 
 kill-port:
-	@fuser -k 3000/tcp 2>/dev/null || true
-	@CONTAINERS=$$(docker ps -q --filter "publish=3000"); \
-	if [ -n "$$CONTAINERS" ]; then \
-		docker stop $$CONTAINERS >/dev/null; \
+	@if [ -z "$(PORT)" ]; then echo "Error: PORT is not set in .env"; exit 1; fi
+	@fuser -k $(PORT)/tcp 2>/dev/null || true
+	@if lsof -Pi :$(PORT) -sTCP:LISTEN -t >/dev/null; then \
+		lsof -ti :$(PORT) | xargs kill -9 || true; \
 	fi
+	@CONTAINER_ID=$$(docker ps -q --filter "publish=$(PORT)"); \
+	if [ ! -z "$$CONTAINER_ID" ]; then \
+		docker stop $$CONTAINER_ID || true; \
+	fi
+	@sleep 1
 
-setup: kill-port
+ensure-network:
+	@docker network inspect main_network >/dev/null 2>&1 || docker network create main_network
+
+setup: ensure-network kill-port
 	npm install
 	$(MAKE) up
 	$(MAKE) db-push
 
-clean: kill-port
+clean: 
 	docker compose down -v
-	docker rmi $(APP_NAME) || true
+	docker rmi $(IMAGE) || true
 
-build: kill-port
-	docker compose up -d --build
+build: ensure-network kill-port
+	docker compose build
 
 dev: kill-port
 	docker compose up -d db
-	npm run dev
+	npm run dev -- --port $(PORT)
 
-up: kill-port
+up: ensure-network kill-port
 	docker compose up -d
 
-down: kill-port
+down:
 	docker compose down
 
-restart: kill-port
+restart:
 	docker compose restart
 
 db-push:
-	docker exec $(APP_NAME) npx prisma db push
+	docker compose exec app npx prisma db push
 
 db-migrate:
-	docker exec $(APP_NAME) npx prisma migrate dev
+	docker compose exec app npx prisma migrate dev
 
 db-studio:
-	docker exec -it $(APP_NAME) npx prisma studio --port 5555 --browser none
+	docker compose exec -it app npx prisma studio --port 5555 --browser none
 
 db-seed:
-	docker exec $(APP_NAME) npx prisma db seed
+	docker compose exec app npx prisma db seed
 
 db-reset:
 	npx prisma db push --force-reset
@@ -63,18 +69,12 @@ logs:
 	docker compose logs -f app
 
 help:
-	@echo "  fix-perms    - Fix ownership of the uploads directory"
-	@echo "  kill-port    - Stop any process on port 3000"
 	@echo "  setup        - Full install and docker setup"
-	@echo "  clean        - Remove all Docker artifacts including volumes"
-	@echo "  build        - Force rebuild and start services (for dependency/Docker changes)"
-	@echo "  dev          - Run Next.js dev server locally (with DB in Docker)"
-	@echo "  up           - Start services in Docker (uses existing images)"
-	@echo "  down         - Stop and remove Docker services"
-	@echo "  restart      - Restart Docker services"
-	@echo "  db-push      - Sync DB schema (no migrations)"
-	@echo "  db-migrate   - Run Prisma migrations"
-	@echo "  db-studio    - Open Prisma Studio"
-	@echo "  db-seed      - Run database seed"
-	@echo "  db-reset     - Reset DB and clear uploads (runs locally)"
-	@echo "  logs         - Follow app logs in Docker"
+	@echo "  clean        - Remove all Docker artifacts"
+	@echo "  build        - Build Docker images"
+	@echo "  dev          - Run Next.js dev server on PORT"
+	@echo "  up           - Start services in Docker"
+	@echo "  down         - Stop services"
+	@echo "  kill-port    - Forcefully free up the current PORT"
+	@echo "  db-push      - Sync DB schema"
+	@echo "  logs         - Follow app logs"

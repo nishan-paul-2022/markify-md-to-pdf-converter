@@ -1,32 +1,33 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: ${DB_CONTAINER_NAME}
+    container_name: markify_db
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - '5432:5432'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - /var/lib/markify/postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - main_network
 
   app:
+    image: ${IMAGE}:main
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ${APP_CONTAINER_NAME}
+    container_name: markify_app
     restart: always
     ports:
-      - '3000:3000'
+      - "${PORT}:${PORT}"
     volumes:
-      - ./public/uploads:/app/public/uploads
+      - /var/www/markify-md-to-pdf-converter/public/uploads:/app/public/uploads
     environment:
       DATABASE_URL: ${DOCKER_DATABASE_URL}
       AUTH_SECRET: ${AUTH_SECRET}
@@ -34,22 +35,13 @@ services:
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      PORT: ${PORT}
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - main_network
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: markify-pgadmin
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - '5050:80'
-    depends_on:
-      db:
-        condition: service_healthy
-
-volumes:
-  postgres_data:
+networks:
+  main_network:
+    external: true
