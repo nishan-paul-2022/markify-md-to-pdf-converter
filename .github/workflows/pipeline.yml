@@ -47,6 +47,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          DATABASE_URL: "postgresql://placeholder:placeholder@localhost:5432/placeholder"
 
   # ──────────────────────────────────────────────────────────
   # JOB 2 — Build Docker image & push to GHCR
