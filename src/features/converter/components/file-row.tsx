@@ -84,7 +84,7 @@ export const FileRow = React.memo(
                     ? selectionMode === 'deletion'
                       ? 'scale-50 bg-red-500/0 text-transparent opacity-0' // Deletion: Hide icon
                       : 'scale-50 bg-indigo-500/0 text-transparent opacity-0' // Conversion: Hide icon
-                    : 'bg-white/5 text-slate-400 opacity-100 scale-100 group-hover/row:scale-50 group-hover/row:opacity-0',
+                    : 'scale-100 bg-white/5 text-slate-400 opacity-100 group-hover/row:scale-50 group-hover/row:opacity-0',
                 )}
               >
                 <FileCode className="h-6 w-6" />
@@ -99,8 +99,8 @@ export const FileRow = React.memo(
                 className={cn(
                   'absolute inset-0 flex cursor-pointer items-center justify-center rounded-xl transition-all duration-300',
                   isSelected || selectionMode !== 'none'
-                    ? 'translate-y-0 opacity-100 scale-100'
-                    : 'translate-y-2 opacity-0 scale-50 group-hover/row:translate-y-0 group-hover/row:opacity-100 group-hover/row:scale-100',
+                    ? 'translate-y-0 scale-100 opacity-100'
+                    : 'translate-y-2 scale-50 opacity-0 group-hover/row:translate-y-0 group-hover/row:scale-100 group-hover/row:opacity-100',
                   isSelected
                     ? selectionMode === 'deletion'
                       ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' // Deletion: Red
@@ -111,7 +111,9 @@ export const FileRow = React.memo(
                 )}
                 aria-label={isSelected ? 'Deselect file' : 'Select file'}
               >
-                <CheckCircle2 className={cn('transition-transform', isSelected ? 'h-6 w-6' : 'h-5 w-5')} />
+                <CheckCircle2
+                  className={cn('transition-transform', isSelected ? 'h-6 w-6' : 'h-5 w-5')}
+                />
               </button>
             </div>
 
@@ -133,12 +135,12 @@ export const FileRow = React.memo(
 
           <div className="relative z-10 flex shrink-0 items-center gap-2">
             {selectionMode === 'none' && (
-                  <button
-                    onClick={() => onDelete(file.id)}
-                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+              <button
+                onClick={() => onDelete(file.id)}
+                className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             )}
 
             {isDone ? (
@@ -188,8 +190,8 @@ export const FileRow = React.memo(
         >
           {/* Bottom Border Progress Bar - Minimal & Sleek */}
           {isProcessing && (
-            <div className="absolute bottom-0 left-0 right-0 h-[1px] overflow-hidden bg-white/5">
-              <div className="h-full w-full bg-slate-400 animate-progress-shimmer" />
+            <div className="absolute right-0 bottom-0 left-0 h-[1px] overflow-hidden bg-white/5">
+              <div className="animate-progress-shimmer h-full w-full bg-slate-400" />
             </div>
           )}
           <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4 pl-5">

@@ -1,3 +1,3 @@
-Here is a photo: 
+Here is a photo:
 
 ![Photo](files/img.jpg)

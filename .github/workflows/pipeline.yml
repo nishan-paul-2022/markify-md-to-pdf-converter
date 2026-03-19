@@ -47,6 +47,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          DATABASE_URL: "postgresql://placeholder:placeholder@localhost:5432/placeholder"
 
   # ──────────────────────────────────────────────────────────
   # JOB 2 — Build Docker image & push to GHCR
@@ -121,7 +123,7 @@ jobs:
             set -e
 
             cd /var/www/markify-md-to-pdf-converter
-            
+
             # Sync local files (docker-compose, etc) first
             git pull origin main
 

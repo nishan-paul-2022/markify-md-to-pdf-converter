@@ -104,48 +104,53 @@ export const MdPreviewToolbar = ({
       >
         {/* Pill 1: View Mode */}
         <div className="flex h-8 items-center gap-1 rounded-full border border-white/5 bg-slate-800/40 px-1 shadow-inner">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setViewMode('live')}
-                className={cn(
-                  'flex h-6 items-center justify-center gap-1 rounded-full border border-transparent px-2 text-[10px] font-bold tracking-wider uppercase transition-all duration-200 sm:gap-1.5 md:px-3',
-                  viewMode === 'live'
-                    ? 'border-white/20 bg-white/10 text-white shadow-sm'
-                    : 'text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-200',
-                )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setViewMode('live')}
+            className={cn(
+              'flex h-6 items-center justify-center gap-1 rounded-full border border-transparent px-2 text-[10px] font-bold tracking-wider uppercase transition-all duration-200 sm:gap-1.5 md:px-3',
+              viewMode === 'live'
+                ? 'border-white/20 bg-white/10 text-white shadow-sm'
+                : 'text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-200',
+            )}
+          >
+            <Eye className="h-3.5 w-3.5" />
+            LIVE
+          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-block">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={mermaidErrorCount > 0}
+                  onClick={() => setViewMode('preview')}
+                  className={cn(
+                    'flex h-6 items-center justify-center gap-1 rounded-full border border-transparent px-2 text-[10px] font-bold tracking-wider uppercase transition-all duration-200 sm:gap-1.5 md:px-3',
+                    viewMode === 'preview'
+                      ? 'border-white/20 bg-white/10 text-white shadow-sm'
+                      : 'text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-200',
+                    mermaidErrorCount > 0 && 'cursor-not-allowed opacity-50',
+                  )}
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  PRINT
+                </Button>
+              </span>
+            </TooltipTrigger>
+            {mermaidErrorCount > 0 && (
+              <TooltipContent
+                side="bottom"
+                className="max-w-xs border-red-500/50 bg-red-950 text-red-200"
               >
-                <Eye className="h-3.5 w-3.5" />
-                LIVE
-              </Button>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="inline-block">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={mermaidErrorCount > 0}
-                      onClick={() => setViewMode('preview')}
-                      className={cn(
-                        'flex h-6 items-center justify-center gap-1 rounded-full border border-transparent px-2 text-[10px] font-bold tracking-wider uppercase transition-all duration-200 sm:gap-1.5 md:px-3',
-                        viewMode === 'preview'
-                          ? 'border-white/20 bg-white/10 text-white shadow-sm'
-                          : 'text-slate-500 hover:border-white/10 hover:bg-white/5 hover:text-slate-200',
-                        mermaidErrorCount > 0 && 'cursor-not-allowed opacity-50',
-                      )}
-                    >
-                      <Printer className="h-3.5 w-3.5" />
-                      PRINT
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                {mermaidErrorCount > 0 && (
-                  <TooltipContent side="bottom" className="max-w-xs border-red-500/50 bg-red-950 text-red-200">
-                    <p className="text-[10px] font-bold">MERMAID ERROR</p>
-                    <p className="text-[10px] opacity-80">Fix Mermaid diagrams to enable Print Preview</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
+                <p className="text-[10px] font-bold">MERMAID ERROR</p>
+                <p className="text-[10px] opacity-80">
+                  Fix Mermaid diagrams to enable Print Preview
+                </p>
+              </TooltipContent>
+            )}
+          </Tooltip>
         </div>
 
         {/* Pill 2: Sync (Preview Mode Only) */}
@@ -273,15 +278,18 @@ export const MdPreviewToolbar = ({
                   : 'pointer-events-none translate-y-1 scale-95 opacity-0',
               )}
             >
-              <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1.5 whitespace-nowrap">
+              <form
+                onSubmit={handlePageInputSubmit}
+                className="flex items-center gap-1.5 whitespace-nowrap"
+              >
                 <Input
                   type="text"
                   value={pageInput}
                   onChange={handlePageInputChange}
                   onBlur={handlePageInputSubmit}
-                  className="h-5 w-11 shrink-0 rounded-full border-none bg-white/5 p-0 text-center text-[10px] font-bold text-slate-200 tabular-nums leading-none shadow-inner transition-all hover:bg-white/10 focus:text-white focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="h-5 w-11 shrink-0 rounded-full border-none bg-white/5 p-0 text-center text-[10px] leading-none font-bold text-slate-200 tabular-nums shadow-inner transition-all hover:bg-white/10 focus:text-white focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
-                <span className="flex items-center text-[12px] font-bold text-slate-400 tabular-nums select-none shrink-0 leading-none">
+                <span className="flex shrink-0 items-center text-[12px] leading-none font-bold text-slate-400 tabular-nums select-none">
                   / {totalPages}
                 </span>
               </form>
@@ -344,7 +352,10 @@ export const MdPreviewToolbar = ({
               <TooltipContent>Zoom Out</TooltipContent>
             </Tooltip>
 
-            <form onSubmit={handleZoomInputSubmit} className="flex min-w-[4rem] items-center justify-center whitespace-nowrap">
+            <form
+              onSubmit={handleZoomInputSubmit}
+              className="flex min-w-[4rem] items-center justify-center whitespace-nowrap"
+            >
               {!isScaleCalculated ? (
                 <div className="flex h-5 w-8 items-center justify-center">
                   <Loader2 className="h-3 w-3 animate-spin text-slate-500" />
@@ -355,7 +366,7 @@ export const MdPreviewToolbar = ({
                   value={zoomInput}
                   onChange={handleZoomInputChange}
                   onBlur={handleZoomInputSubmit}
-                  className="h-5 w-14 shrink-0 rounded-full border-none bg-white/5 p-0 text-center text-[10px] font-bold text-slate-200 tabular-nums leading-none shadow-inner transition-all hover:bg-white/10 focus:text-white focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="h-5 w-14 shrink-0 rounded-full border-none bg-white/5 p-0 text-center text-[10px] leading-none font-bold text-slate-200 tabular-nums shadow-inner transition-all hover:bg-white/10 focus:text-white focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               )}
             </form>

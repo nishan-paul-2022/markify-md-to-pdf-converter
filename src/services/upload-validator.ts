@@ -1,11 +1,11 @@
 /**
  * MARKIFY UPLOAD VALIDATOR - PRODUCTION GRADE
- * 
+ *
  * Implements strict validation rules as defined in docs/upload-rules.md
- * 
+ *
  * Rules Summary:
  * 1. Single/Multiple File Upload: Only .md files allowed
- * 2. Folder Upload: 
+ * 2. Folder Upload:
  *    - Only .md files at root
  *    - Optional images/ subfolder with only images
  *    - NO other subfolders
@@ -146,7 +146,8 @@ function validateSingleFileUpload(files: File[]): ValidationResult {
   if (mdFiles.length === 0) {
     return {
       valid: false,
-      error: 'We couldn\'t find any `.md` files in your selection. Please make sure you\'re uploading at least one markdown file.',
+      error:
+        "We couldn't find any `.md` files in your selection. Please make sure you're uploading at least one markdown file.",
       filteredFiles: [],
       case: 0,
     };
@@ -161,13 +162,13 @@ function validateSingleFileUpload(files: File[]): ValidationResult {
 
 /**
  * RULE 2 & 3: Folder/Zip Upload
- * 
+ *
  * FOLDER UPLOAD:
  * - Only .md files at root
  * - Optional images/ subfolder (only images allowed)
  * - NO other subfolders
  * - If images/ exists, ALL images must be referenced
- * 
+ *
  * ZIP UPLOAD (More Flexible):
  * - Can contain multiple folders at root
  * - Can contain multiple .md files at root
@@ -183,9 +184,10 @@ async function validateFolderOrZipUpload(
   const topLevelItems = new Set(paths.map((p) => p.split('/')[0]));
 
   // Detect if there's a wrapper folder that should be stripped
-  const hasWrapper = topLevelItems.size === 1 && 
-                     paths.every((p) => p.includes('/')) &&
-                     ![...topLevelItems][0].toLowerCase().endsWith('.md');
+  const hasWrapper =
+    topLevelItems.size === 1 &&
+    paths.every((p) => p.includes('/')) &&
+    ![...topLevelItems][0].toLowerCase().endsWith('.md');
 
   const mdFiles: File[] = [];
   const imageFiles: { file: File; path: string; name: string; folder: string }[] = [];
@@ -246,7 +248,9 @@ async function validateFolderOrZipUpload(
 
     // .md files deeper than folder root are not allowed
     if (isMd && depth > 2) {
-      errors.push(`Markdown files must be in the main folder. We found one too deep: \`${effectivePath}\`.`);
+      errors.push(
+        `Markdown files must be in the main folder. We found one too deep: \`${effectivePath}\`.`,
+      );
       continue;
     }
 
@@ -303,7 +307,9 @@ async function validateFolderOrZipUpload(
     }
 
     // RULE: No other file types allowed
-    errors.push(`We only support \`.md\` and image files. We found an unsupported file: \`${effectivePath}\`.`);
+    errors.push(
+      `We only support \`.md\` and image files. We found an unsupported file: \`${effectivePath}\`.`,
+    );
   }
 
   // RULE: At least one .md file required
@@ -338,7 +344,7 @@ async function validateFolderOrZipUpload(
 
       refs.forEach((ref) => {
         const normalized = normalizePath(ref);
-        
+
         // Add the raw reference
         allReferences.add(normalized);
 
@@ -352,7 +358,7 @@ async function validateFolderOrZipUpload(
         if (!mdFolder) {
           // References like "images/pic.png" should match "images/pic.png"
           allReferences.add(normalized);
-          
+
           // Also add with images/ prefix if not present
           if (!normalized.startsWith('images/')) {
             allReferences.add(`images/${normalized}`);
@@ -360,21 +366,21 @@ async function validateFolderOrZipUpload(
         } else {
           // If the .md file is inside a folder (e.g., "project/main.md")
           // References like "images/pic.png" should match "project/images/pic.png"
-          
+
           // Add the reference as-is
           allReferences.add(normalized);
-          
+
           // Add with folder prefix
           if (!normalized.startsWith(mdFolder + '/')) {
             allReferences.add(`${mdFolder}/${normalized}`);
           }
-          
+
           // Add with images/ prefix if not present
           if (!normalized.startsWith('images/')) {
             allReferences.add(`images/${normalized}`);
             allReferences.add(`${mdFolder}/images/${normalized}`);
           }
-          
+
           // Extract just the "images/filename" part if present
           if (normalized.includes('images/')) {
             const imagesIndex = normalized.indexOf('images/');
@@ -388,9 +394,7 @@ async function validateFolderOrZipUpload(
 
     // Check each image is referenced
     for (const img of imageFiles) {
-      const isReferenced =
-        allReferences.has(img.path) ||
-        allReferences.has(img.name);
+      const isReferenced = allReferences.has(img.path) || allReferences.has(img.name);
 
       if (!isReferenced) {
         return {

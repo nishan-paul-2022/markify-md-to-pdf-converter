@@ -103,12 +103,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
               >
                 <X className="h-4 w-4" />
               </button>
-              <span
-                className={cn(
-                  'font-black',
-                  isDeletion ? 'text-red-300' : 'text-indigo-300',
-                )}
-              >
+              <span className={cn('font-black', isDeletion ? 'text-red-300' : 'text-indigo-300')}>
                 {selectedCount} {selectedCount === 1 ? 'FILE' : 'FILES'} SELECTED
               </span>
             </div>
@@ -142,7 +137,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                 size="sm"
                 onClick={onBatchDelete}
                 disabled={isBatchProcessing || deleting}
-                className="h-8 gap-2 rounded-lg bg-red-500 px-4 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-red-500/20 transition-all hover:bg-red-600 hover:scale-[1.02] active:scale-95"
+                className="h-8 gap-2 rounded-lg bg-red-500 px-4 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-red-500/20 transition-all hover:scale-[1.02] hover:bg-red-600 active:scale-95"
               >
                 {deleting ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -158,7 +153,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                 size="sm"
                 onClick={onBatchConvert}
                 disabled={isBatchProcessing || deleting}
-                className="h-8 gap-2 rounded-lg bg-indigo-500 px-4 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-600 hover:scale-[1.02] active:scale-95"
+                className="h-8 gap-2 rounded-lg bg-indigo-500 px-4 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] hover:bg-indigo-600 active:scale-95"
               >
                 {isBatchProcessing ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -201,26 +196,22 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
             {filteredFilesCount > 0 && (
               <div className="flex items-center gap-3">
                 {/* 1. Selection Mode Entry */}
-                    <button
-                      onClick={onToggleConversionMode}
-                      className="group flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-slate-400 transition-all hover:bg-white/10 hover:text-white"
-                    >
-                      <Zap className="h-3.5 w-3.5" />
-                      <span className="text-[10px] font-black tracking-wider uppercase">
-                        CONVERT
-                      </span>
-                    </button>
+                <button
+                  onClick={onToggleConversionMode}
+                  className="group flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-slate-400 transition-all hover:bg-white/10 hover:text-white"
+                >
+                  <Zap className="h-3.5 w-3.5" />
+                  <span className="text-[10px] font-black tracking-wider uppercase">CONVERT</span>
+                </button>
 
                 {/* 2. Deletion Mode Entry (Minimal) */}
-                    <button
-                      onClick={onToggleDeletionMode}
-                      className="group flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-slate-400 transition-all hover:bg-white/10 hover:text-white"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      <span className="text-[10px] font-black tracking-wider uppercase">
-                        DELETE
-                      </span>
-                    </button>
+                <button
+                  onClick={onToggleDeletionMode}
+                  className="group flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-slate-400 transition-all hover:bg-white/10 hover:text-white"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span className="text-[10px] font-black tracking-wider uppercase">DELETE</span>
+                </button>
 
                 {/* 2. Sorting Actions */}
                 <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] p-1">
@@ -235,7 +226,11 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                           <Clock className="h-3.5 w-3.5" />
                         )}
                         <span className="text-[10px] font-black tracking-wider uppercase">
-                          {sortBy === 'name' ? 'Name' : sortBy === 'size' ? 'File Size' : 'Upload Time'}
+                          {sortBy === 'name'
+                            ? 'Name'
+                            : sortBy === 'size'
+                              ? 'File Size'
+                              : 'Upload Time'}
                         </span>
                       </button>
                     </DropdownMenuTrigger>
@@ -271,9 +266,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                         )}
                       >
                         <SortAsc className="h-4 w-4" />
-                        <span className="text-xs font-bold tracking-wider uppercase">
-                          Name
-                        </span>
+                        <span className="text-xs font-bold tracking-wider uppercase">Name</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => onSortByChange('size')}
@@ -305,7 +298,10 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                         )}
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom" className="border-slate-800 bg-slate-900 text-xs text-white">
+                    <TooltipContent
+                      side="bottom"
+                      className="border-slate-800 bg-slate-900 text-xs text-white"
+                    >
                       {sortOrder === 'asc' ? 'Sort Ascending' : 'Sort Descending'}
                     </TooltipContent>
                   </Tooltip>

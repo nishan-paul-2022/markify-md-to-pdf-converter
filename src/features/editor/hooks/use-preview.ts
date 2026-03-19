@@ -301,8 +301,7 @@ export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: 
     let scale = 1;
     if (zoomMode === 'fit-page') {
       scale = fitPageScale;
-    }
-    else if (zoomMode === 'fit-width') {
+    } else if (zoomMode === 'fit-width') {
       scale = fitWidthScale;
     } else {
       scale = customZoom / 100;

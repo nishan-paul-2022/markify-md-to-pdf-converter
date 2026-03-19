@@ -84,7 +84,7 @@ export function useConverter(
     isOpen: false,
     type: 'file',
   });
-  
+
   const isModified = useMemo(() => {
     if (!rawContent || !originalContent) return false;
     return rawContent.trim() !== originalContent.trim();
@@ -95,7 +95,6 @@ export function useConverter(
     save: (content: string) => void;
     flush: () => Promise<boolean>;
   } | null>(null);
-
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -143,7 +142,7 @@ export function useConverter(
   const onMarkdownFound = useCallback(
     async (file: { id: string; originalName: string; url: string }) => {
       const text = await FilesService.getContent(file.url);
-      
+
       // Update store states
       setOriginalContent(text);
       setRawContent(text);
@@ -206,8 +205,9 @@ export function useConverter(
 
   // Update debounced save function when selectedFileId changes
   useEffect(() => {
-    let currentSaveRef: { save: (content: string) => void; flush: () => Promise<boolean> } | null = null;
-    
+    let currentSaveRef: { save: (content: string) => void; flush: () => Promise<boolean> } | null =
+      null;
+
     if (selectedFileId && !selectedFileId.startsWith('default-')) {
       currentSaveRef = createDebouncedDraftSave(selectedFileId, 1000);
       debouncedSaveRef.current = currentSaveRef;
@@ -222,8 +222,6 @@ export function useConverter(
       }
     };
   }, [selectedFileId]);
-
-
 
   useEffect(() => {
     if (isLoading) {
@@ -240,8 +238,6 @@ export function useConverter(
 
     return () => clearTimeout(timer);
   }, [rawContent, isLoading, setMetadata, setContent]);
-
-
 
   const onFileSelect = useCallback(async (_id: string) => {
     // Simplified for brevity, usually involves FilesService.getContent
@@ -283,12 +279,6 @@ export function useConverter(
     }
   }, [generatePdfBlob, filename, setIsPdfDownloaded]);
 
-
-
-
-
-
-
   const getAllDeletableFileIds = useCallback(() => {
     return files
       .filter(
@@ -326,8 +316,8 @@ export function useConverter(
       setIsLoading(true);
       try {
         // Delete drafts for deleted files from server
-        await Promise.all(Array.from(selectedIds).map(id => deleteDraft(id)));
-        
+        await Promise.all(Array.from(selectedIds).map((id) => deleteDraft(id)));
+
         await onDelete(Array.from(selectedIds));
         setSelectedIds(new Set());
         setIsSelectionMode(false);
@@ -344,7 +334,8 @@ export function useConverter(
   const handleReset = useCallback(async (): Promise<void> => {
     const confirmed = await confirm({
       title: 'Reset Content?',
-      message: 'Are you sure you want to revert to the original file content? All unsaved changes in your current draft will be permanently lost.',
+      message:
+        'Are you sure you want to revert to the original file content? All unsaved changes in your current draft will be permanently lost.',
       confirmText: 'Reset',
       variant: 'destructive',
     });
@@ -379,7 +370,7 @@ export function useConverter(
           if (response.ok) {
             const text = await response.text();
             handleContentChange(text);
-            
+
             // Re-parse metadata to reset derived state
             const parsedMetadata = parseMetadataFromMarkdown(text);
             const contentWithoutLandingPage = removeLandingPageSection(text);

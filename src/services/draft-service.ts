@@ -1,6 +1,6 @@
 /**
  * Server-Side Draft Service
- * 
+ *
  * This service provides a clean API for managing drafts stored on the server.
  * Benefits over localStorage:
  * - Works across devices and browsers
@@ -8,7 +8,6 @@
  * - No version conflicts or stale data
  * - Survives browser cache clears
  */
-
 
 /**
  * Fetch a draft from the server
@@ -36,8 +35,8 @@ export async function fetchDraft(fileId: string): Promise<string | null> {
 export async function saveDraftToServer(fileId: string, content: string): Promise<boolean> {
   try {
     const body = JSON.stringify({ content });
-    
-    // browser keepalive has a budget (typically 64KiB). 
+
+    // browser keepalive has a budget (typically 64KiB).
     // If exceeded, fetch will throw TypeError: Failed to fetch.
     // We only use keepalive for small payloads.
     const useKeepAlive = body.length < 60000;
@@ -90,10 +89,7 @@ export async function deleteDraft(fileId: string): Promise<boolean> {
  * Create a debounced save function with flush capability
  * Usage: const { save, flush } = createDebouncedDraftSave(fileId, 1000);
  */
-export function createDebouncedDraftSave(
-  fileId: string,
-  delayMs = 1000,
-) {
+export function createDebouncedDraftSave(fileId: string, delayMs = 1000) {
   let timeoutId: NodeJS.Timeout | null = null;
   let lastContent: string | null = null;
 

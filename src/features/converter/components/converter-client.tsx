@@ -18,10 +18,7 @@ import { useFiles } from '@/features/file-management/hooks/use-files';
 import { useFileUpload } from '@/hooks/use-file-upload';
 import { formatConverterDate, formatFileSize } from '@/utils/formatters';
 // Utilities
-import {
-  formatFilenameTimestamp,
-  generateTimestampedPdfName,
-} from '@/utils/naming';
+import { formatFilenameTimestamp, generateTimestampedPdfName } from '@/utils/naming';
 
 import JSZip from 'jszip';
 import { FileCode, Loader2 } from 'lucide-react';
@@ -45,8 +42,6 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
     isOpen: boolean;
     type: 'file' | 'folder' | 'zip';
   }>({ isOpen: false, type: 'file' });
-
-
 
   // Status and result management (kept local as it's ephemeral/session-based)
   const [processingStates, setProcessingStates] = React.useState<
@@ -435,15 +430,13 @@ export default function ConverterClient({ user }: ConverterClientProps): React.J
                   <div className="flex items-center gap-3">
                     <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-slate-300">
-                        Converting
-                      </span>
+                      <span className="text-xs font-medium text-slate-300">Converting</span>
                       <span className="text-[10px] font-medium text-slate-500">
                         {batchProgress.current} / {batchProgress.total}
                       </span>
                     </div>
                   </div>
-                  
+
                   {/* Right: Progress Bar - Simple fill from left to right */}
                   <div className="flex flex-1 items-center">
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">

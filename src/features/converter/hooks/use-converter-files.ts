@@ -14,17 +14,13 @@ export function useConverterFiles(files: AppFile[]) {
 
   const filteredMdFiles = useMemo(() => {
     return files
-      .filter(
-        (f) =>
-          f.originalName.toLowerCase().endsWith('.md') || f.mimeType === 'text/markdown',
-      )
+      .filter((f) => f.originalName.toLowerCase().endsWith('.md') || f.mimeType === 'text/markdown')
       .filter(
         (f) =>
           f.originalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (f.relativePath && f.relativePath.toLowerCase().includes(searchQuery.toLowerCase())),
       )
       .sort((a, b) => {
-
         let comparison = 0;
         if (sortBy === 'name') {
           comparison = a.originalName.localeCompare(b.originalName);
