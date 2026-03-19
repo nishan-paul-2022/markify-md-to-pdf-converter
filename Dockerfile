@@ -40,11 +40,8 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-EXPOSE 3000
-
-ENV PORT=3000
+# PORT is injected at runtime — no defaults set here
 ENV HOSTNAME="0.0.0.0"
 
-RUN npm install -g prisma
-
+# server.js is created by next build from the standalone output
 CMD ["node", "server.js"]
