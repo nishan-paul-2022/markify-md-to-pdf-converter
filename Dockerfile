@@ -40,11 +40,12 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-EXPOSE 3000
+# Setup auto-sync entrypoint
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-ENV PORT=3000
+# PORT is injected at runtime
 ENV HOSTNAME="0.0.0.0"
 
-RUN npm install -g prisma
-
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "server.js"]

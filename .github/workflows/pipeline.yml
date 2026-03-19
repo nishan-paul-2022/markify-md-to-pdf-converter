@@ -1,0 +1,162 @@
+name: CI / CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  # ──────────────────────────────────────────────────────────
+  # JOB 1 — CI: Lint, Type-check, Prisma, Build
+  # ──────────────────────────────────────────────────────────
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run check-types
+
+      - name: Build
+        run: npm run build
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 2 — Build Docker image & push to GHCR
+  # ──────────────────────────────────────────────────────────
+  build-push:
+    name: Build & Push to GHCR
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=main
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:main
+          cache-to: type=inline
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 3 — Deploy to kai-server
+  # ──────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to kai-server
+    needs: build-push
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Pull image and restart container
+        uses: appleboy/ssh-action@v1
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          envs: GHCR_TOKEN,GITHUB_ACTOR
+          script: |
+            set -e
+
+            cd /var/www/markify-md-to-pdf-converter
+            
+            # Sync local files (docker-compose, etc) first
+            git pull origin main
+
+            # Authenticate with GHCR to pull the private image
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+            # Pull the image built on GitHub's servers
+            docker compose pull
+
+            # Start with the new image — no build step on server
+            docker compose up -d --remove-orphans
+
+            # Free disk space by removing dangling images
+            docker image prune -f
+
+      - name: Health check
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            set -e
+
+            # Wait for the container to be ready (up to 30s)
+            echo "Waiting for app to be ready on port 3003..."
+            for i in $(seq 1 10); do
+              if curl --silent --fail http://localhost:3003 > /dev/null; then
+                echo "App is up."
+                exit 0
+              fi
+              sleep 3
+            done
+
+            echo "Health check failed — app did not respond on port 3003."
+            docker logs markify_app --tail=50
+            exit 1
