@@ -18,7 +18,7 @@ const initializeMermaid = () => {
       htmlLabels: false, // Force SVG labels for reliable measurement
       useMaxWidth: false,
       curve: 'basis',
-      padding: 20,     // Add generous padding
+      padding: 20, // Add generous padding
     },
     themeVariables: {
       primaryColor: '#e0f2fe',
@@ -43,12 +43,8 @@ const initializeMermaid = () => {
 export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const instanceId = useRef(`mermaid-${Math.random().toString(36).substring(2, 11)}`);
-  const {
-    reportMermaidError,
-    resolveMermaidError,
-    reportMermaidLoading,
-    resolveMermaidLoading,
-  } = useEditorStore();
+  const { reportMermaidError, resolveMermaidError, reportMermaidLoading, resolveMermaidLoading } =
+    useEditorStore();
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [prevChart, setPrevChart] = useState(chart);
@@ -70,18 +66,18 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
 
     const renderDiagram = async () => {
       if (!ref.current) return;
-      
+
       reportMermaidLoading(taskId);
 
       try {
         await mermaid.parse(chart, { suppressErrors: true });
-        
+
         if (!isCurrent) return;
 
         ref.current.innerHTML = '';
         await document.fonts.ready;
         const { svg } = await mermaid.render(id, chart);
-        
+
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (isCurrent) {
           ref.current.innerHTML = svg;
@@ -94,7 +90,7 @@ export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Eleme
             svgElement.style.maxWidth = '100%';
             // If width attribute is present, height:auto usually maintains aspect ratio.
             // If we don't set width, it defaults to attribute width.
-            svgElement.style.height = 'auto'; 
+            svgElement.style.height = 'auto';
             svgElement.style.display = 'block';
             svgElement.style.margin = '0 auto'; // Center the diagram
             svgElement.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.05))';

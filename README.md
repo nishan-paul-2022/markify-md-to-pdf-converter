@@ -12,7 +12,6 @@ Markify is a professional, high-performance web application designed to convert 
   <br />
 </div>
 
-
 ## ✨ Core Features
 
 - **📄 Pro PDF Generation**: High-fidelity PDF output using Playwright engine.
@@ -29,6 +28,7 @@ Markify is a professional, high-performance web application designed to convert 
 ## 📸 Interface In Action
 
 ### Intelligent Workspace
+
 Real-time side-by-side editing with instant feedback, local image rendering, and diagram support.
 
 <img src="public/previews/page-editor.gif" alt="Editor Preview" width="100%" style="border-radius: 8px; border: 1px solid #333;" />
@@ -36,6 +36,7 @@ Real-time side-by-side editing with instant feedback, local image rendering, and
 <br />
 
 ### Batch Processing Pipeline
+
 Convert entire folders, extensive archives, or multiple files into polished PDFs in seconds.
 
 <img src="public/previews/page-converter.gif" alt="Converter Preview" width="100%" style="border-radius: 8px; border: 1px solid #333;" />
@@ -100,13 +101,17 @@ cp .env.example .env
 Open `.env` and configure the following:
 
 #### 4.1 ⚙️ App Configuration
+
 Essential settings for the application server.
+
 - `NEXTAUTH_URL`: The base URL of your application. Defaults to `http://localhost:3000`.
 - `AUTH_TRUST_HOST`: Required for authentication to work inside Docker. Defaults to `true`.
 - `AUTH_SECRET`: Run `openssl rand -base64 32` in your terminal and paste the output string here.
 
 #### 4.2 🌐 Google OAuth
+
 To enable user login, you must set up Google OAuth:
+
 - Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
 - Navigate to **APIs & Services** > **Credentials** > **Create Credentials** > **OAuth client ID**.
 - Select **Web application** as the application type.
@@ -116,20 +121,26 @@ To enable user login, you must set up Google OAuth:
 - Copy the **Client ID** and **Client Secret** into the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` fields in your `.env` file.
 
 #### 4.3 🗄️ Database Configuration
+
 Settings for the PostgreSQL database connection. **All have workable defaults.**
+
 - `POSTGRES_USER`: Database username.
 - `POSTGRES_PASSWORD`: Database password.
 - `POSTGRES_DB`: Name of the database.
 - `DATABASE_URL`: Full connection string for local development.
 
 #### 4.4 🐳 Docker Configuration
+
 Configuration for container-to-container communication. **All have workable defaults.**
+
 - `DOCKER_DATABASE_URL`: Connection string used by the app container to reach the database container.
 - `APP_CONTAINER_NAME`: Name for the application service container.
 - `DB_CONTAINER_NAME`: Name for the database service container.
 
 #### 4.5 👤 PgAdmin Configuration
+
 Credentials for the PgAdmin database management interface. **All have workable defaults.**
+
 - `PGADMIN_DEFAULT_EMAIL`: Email for PgAdmin login.
 - `PGADMIN_DEFAULT_PASSWORD`: Password for PgAdmin login.
 
@@ -146,6 +157,7 @@ make setup
 Choose the method that fits your needs:
 
 #### Option A: Docker Environment
+
 Runs the entire application suite in Docker containers.
 
 ```bash
@@ -153,6 +165,7 @@ make up
 ```
 
 #### Option B: Local Development
+
 Runs the app locally with hot-reloading enabled, connected to the Dockerized database. Best for coding.
 
 ```bash

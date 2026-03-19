@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import UserNav from '@/features/auth/components/user-nav';
 
 import { motion } from 'framer-motion';
-import { 
+import {
   CheckCircle2,
   Code2,
   FileDown,
@@ -50,85 +50,107 @@ const stagger = {
 const WorkflowAnimation = () => {
   return (
     <div className="relative mx-auto mt-32 mb-52 max-w-5xl px-6">
-      <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-12 items-stretch">
-        
+      <div className="relative grid grid-cols-1 items-stretch gap-12 lg:grid-cols-3">
         {/* The Central "Core" Beam */}
         {/* The Central "Core" Beam & Moving Dot */}
-        <div className="absolute top-1/2 left-0 w-full -translate-y-1/2 hidden lg:block pointer-events-none z-0">
+        <div className="pointer-events-none absolute top-1/2 left-0 z-0 hidden w-full -translate-y-1/2 lg:block">
           <div className="absolute inset-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
           {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
-              initial={{ left: "10%", opacity: 0 }}
-              animate={{ left: "90%", opacity: [0, 1, 1, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "linear", delay: i * 0.5 }}
-              className="absolute top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,1)] z-20"
+              initial={{ left: '10%', opacity: 0 }}
+              animate={{ left: '90%', opacity: [0, 1, 1, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', delay: i * 0.5 }}
+              className="absolute top-1/2 z-20 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,1)]"
             />
           ))}
         </div>
-        
+
         {/* Step 1: Input / Parsing */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           className="relative z-10 h-full"
         >
-          <div className="group relative h-full p-8 rounded-[3rem] border border-blue-500/30 bg-black/30 backdrop-blur-3xl overflow-hidden transition-all duration-700 flex flex-col shadow-2xl">
+          <div className="group relative flex h-full flex-col overflow-hidden rounded-[3rem] border border-blue-500/30 bg-black/30 p-8 shadow-2xl backdrop-blur-3xl transition-all duration-700">
             {/* Glossy Top Edge Highlight */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            
+
             {/* Sleek Inner Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/[0.07] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/[0.07] via-transparent to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
+
             {/* Background scanline animation */}
-            <motion.div 
-              animate={{ y: ["0%", "200%"] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-x-0 h-20 bg-gradient-to-b from-blue-500/0 via-blue-500/5 to-blue-500/0 top-[-100%]"
+            <motion.div
+              animate={{ y: ['0%', '200%'] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-x-0 top-[-100%] h-20 bg-gradient-to-b from-blue-500/0 via-blue-500/5 to-blue-500/0"
             />
-            
-            <div className="relative z-10 flex-1 flex flex-col">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-400">
+
+            <div className="relative z-10 flex flex-1 flex-col">
+              <div className="mb-6 flex items-center gap-4">
+                <div className="rounded-2xl bg-blue-500/10 p-3 text-blue-400">
                   <Code2 className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="text-white font-black text-sm uppercase tracking-tighter">Markdown Input</h4>
-                  <p className="text-[10px] text-blue-400 font-black flex items-center gap-1">
+                  <h4 className="text-sm font-black tracking-tighter text-white uppercase">
+                    Markdown Input
+                  </h4>
+                  <p className="flex items-center gap-1 text-[10px] font-black text-blue-400">
                     <CheckCircle2 className="h-3 w-3" /> SYNTAX READY
                   </p>
                 </div>
               </div>
-              
-              <div className="flex-1 flex flex-col justify-center">
+
+              <div className="flex flex-1 flex-col justify-center">
                 <div className="flex gap-1.5 px-1">
-                  {[1, 2, 3, 4, 5, 6].map(i => (
-                    <motion.div 
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <motion.div
                       key={i}
-                      animate={{ 
-                        backgroundColor: ["rgba(59, 130, 246, 0.1)", "rgba(59, 130, 246, 0.5)", "rgba(59, 130, 246, 0.1)"] 
+                      animate={{
+                        backgroundColor: [
+                          'rgba(59, 130, 246, 0.1)',
+                          'rgba(59, 130, 246, 0.5)',
+                          'rgba(59, 130, 246, 0.1)',
+                        ],
                       }}
                       transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
                       className="h-1.5 flex-1 rounded-full bg-blue-500/10"
                     />
                   ))}
                 </div>
-                
+
                 <div className="mt-8 space-y-4">
                   {[
-                    { icon: Search, label: "Write your docs", color: "from-blue-500/20 to-blue-500/0", iconColor: "text-blue-400" },
-                    { icon: Layers, label: "Add diagrams", color: "from-indigo-500/20 to-indigo-500/0", iconColor: "text-indigo-400" },
-                    { icon: LucideImage, label: "Add images", color: "from-violet-500/20 to-violet-500/0", iconColor: "text-violet-400" },
+                    {
+                      icon: Search,
+                      label: 'Write your docs',
+                      color: 'from-blue-500/20 to-blue-500/0',
+                      iconColor: 'text-blue-400',
+                    },
+                    {
+                      icon: Layers,
+                      label: 'Add diagrams',
+                      color: 'from-indigo-500/20 to-indigo-500/0',
+                      iconColor: 'text-indigo-400',
+                    },
+                    {
+                      icon: LucideImage,
+                      label: 'Add images',
+                      color: 'from-violet-500/20 to-violet-500/0',
+                      iconColor: 'text-violet-400',
+                    },
                   ].map((item, i) => (
-                    <motion.div 
+                    <motion.div
                       key={i}
-                      whileHover={{ scale: 1.03, backgroundColor: "rgba(255,255,255,0.08)" }}
-                      style={{ backgroundColor: "rgba(255, 255, 255, 0.03)" }}
-                      className="group flex items-center gap-4 py-6 px-4 rounded-2xl border border-white/5 transition-all duration-300"
+                      whileHover={{ scale: 1.03, backgroundColor: 'rgba(255,255,255,0.08)' }}
+                      style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)' }}
+                      className="group flex items-center gap-4 rounded-2xl border border-white/5 px-4 py-6 transition-all duration-300"
                     >
-                      <item.icon className={`h-5 w-5 ${item.iconColor} group-hover:scale-110 transition-transform`} />
-                      <span className="text-xs font-black uppercase tracking-[0.15em] text-slate-300 group-hover:text-white transition-colors">
+                      <item.icon
+                        className={`h-5 w-5 ${item.iconColor} transition-transform group-hover:scale-110`}
+                      />
+                      <span className="text-xs font-black tracking-[0.15em] text-slate-300 uppercase transition-colors group-hover:text-white">
                         {item.label}
                       </span>
                     </motion.div>
@@ -140,111 +162,132 @@ const WorkflowAnimation = () => {
         </motion.div>
 
         {/* Step 2: The Transformation Vortex (Unique Centerpiece) */}
-        <motion.div 
-           initial={{ opacity: 0, scale: 0.9 }}
-           whileInView={{ opacity: 1, scale: 1 }}
-           viewport={{ once: true }}
-           transition={{ delay: 0.2 }}
-           className="relative z-10 h-full flex items-center justify-center py-12 lg:py-0"
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+          className="relative z-10 flex h-full items-center justify-center py-12 lg:py-0"
         >
-           {/* Abstract swirling particles around logo */}
-           <div className="relative h-64 w-64 flex items-center justify-center">
-              <motion.div 
+          {/* Abstract swirling particles around logo */}
+          <div className="relative flex h-64 w-64 items-center justify-center">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-0 rounded-full border border-dashed border-white/5"
+            />
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-4 rounded-full border border-dotted border-blue-500/10"
+            />
+
+            {/* Pulsing Core */}
+            <div className="relative z-10 flex h-44 w-44 items-center justify-center rounded-full bg-white text-slate-950 shadow-[0_0_80px_rgba(255,255,255,0.4)]">
+              {/* Always Rotating Border */}
+              <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-0 rounded-full border border-white/5 border-dashed"
+                transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+                className="absolute -inset-4 rounded-full border-2 border-dashed border-white/20"
               />
-              <motion.div 
+              <motion.div
                 animate={{ rotate: -360 }}
-                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-4 rounded-full border border-blue-500/10 border-dotted"
+                transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+                className="absolute -inset-8 rounded-full border border-dotted border-white/10"
               />
-              
-              {/* Pulsing Core */}
-              <div className="relative z-10 flex h-44 w-44 items-center justify-center rounded-full bg-white text-slate-950 shadow-[0_0_80px_rgba(255,255,255,0.4)]">
-                {/* Always Rotating Border */}
-                <motion.div 
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                  className="absolute -inset-4 rounded-full border-2 border-dashed border-white/20"
-                />
-                <motion.div 
-                  animate={{ rotate: -360 }}
-                  transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-                  className="absolute -inset-8 rounded-full border border-dotted border-white/10"
-                />
 
-                <Image src="/images/brand-logo.svg" alt="Core" width={72} height={72} />
-              </div>
-
-           </div>
+              <Image src="/images/brand-logo.svg" alt="Core" width={72} height={72} />
+            </div>
+          </div>
         </motion.div>
 
         {/* Step 3: Synthesis / Output */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: 30 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
           className="relative z-10 h-full"
         >
-          <div className="group relative h-full p-8 rounded-[3rem] border border-emerald-500/30 bg-black/30 backdrop-blur-3xl overflow-hidden transition-all duration-700 flex flex-col shadow-2xl">
-             {/* Glossy Top Edge Highlight */}
+          <div className="group relative flex h-full flex-col overflow-hidden rounded-[3rem] border border-emerald-500/30 bg-black/30 p-8 shadow-2xl backdrop-blur-3xl transition-all duration-700">
+            {/* Glossy Top Edge Highlight */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
             {/* Sleek Inner Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/[0.07] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            
-            <div className="relative z-10 flex-1 flex flex-col">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/[0.07] via-transparent to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
+
+            <div className="relative z-10 flex flex-1 flex-col">
+              <div className="mb-6 flex items-center gap-4">
+                <div className="rounded-2xl bg-emerald-500/10 p-3 text-emerald-400">
                   <FileDown className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="text-white font-black text-sm uppercase tracking-tighter">PDF Generation</h4>
-                  <p className="text-[10px] text-emerald-400 font-black flex items-center gap-1">
+                  <h4 className="text-sm font-black tracking-tighter text-white uppercase">
+                    PDF Generation
+                  </h4>
+                  <p className="flex items-center gap-1 text-[10px] font-black text-emerald-400">
                     <CheckCircle2 className="h-3 w-3" /> PIXEL PERFECT
                   </p>
                 </div>
               </div>
-              
-              <div className="flex-1 flex flex-col justify-center">
-                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                  <motion.div 
-                    animate={{ width: ["0%", "100%", "100%"] }}
+
+              <div className="flex flex-1 flex-col justify-center">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-white/5">
+                  <motion.div
+                    animate={{ width: ['0%', '100%', '100%'] }}
                     transition={{ duration: 3, repeat: Infinity, times: [0, 0.8, 1] }}
                     className="h-full bg-gradient-to-r from-blue-500 to-emerald-500"
                   />
                 </div>
-                <div className="mt-8 grid grid-cols-2 gap-3 flex-1">
-                   {[
-                     { icon: Workflow, label: "Branded", color: "from-emerald-500/20 to-emerald-500/0", iconColor: "text-emerald-400" },
-                     { icon: Zap, label: "Fast", color: "from-blue-500/20 to-blue-500/0", iconColor: "text-blue-400" },
-                     { icon: Sparkles, label: "Stylized", color: "from-amber-500/20 to-amber-500/0", iconColor: "text-amber-400" },
-                     { icon: FileText, label: "Multi-page", color: "from-indigo-500/20 to-indigo-500/0", iconColor: "text-indigo-400" }
-                   ].map((item, i) => (
-                     <motion.div 
-                        key={i} 
-                        whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.08)" }}
-                        style={{ backgroundColor: "rgba(255, 255, 255, 0.03)" }}
-                        className="group flex flex-col items-center justify-center py-6 px-3 rounded-[1.5rem] border border-white/5 h-full transition-all duration-300"
-                      >
-                        <item.icon className={`h-6 w-6 mb-4 ${item.iconColor} group-hover:rotate-12 transition-transform`} />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-white transition-colors text-center">
-                          {item.label}
-                        </span>
-                     </motion.div>
-                   ))}
+                <div className="mt-8 grid flex-1 grid-cols-2 gap-3">
+                  {[
+                    {
+                      icon: Workflow,
+                      label: 'Branded',
+                      color: 'from-emerald-500/20 to-emerald-500/0',
+                      iconColor: 'text-emerald-400',
+                    },
+                    {
+                      icon: Zap,
+                      label: 'Fast',
+                      color: 'from-blue-500/20 to-blue-500/0',
+                      iconColor: 'text-blue-400',
+                    },
+                    {
+                      icon: Sparkles,
+                      label: 'Stylized',
+                      color: 'from-amber-500/20 to-amber-500/0',
+                      iconColor: 'text-amber-400',
+                    },
+                    {
+                      icon: FileText,
+                      label: 'Multi-page',
+                      color: 'from-indigo-500/20 to-indigo-500/0',
+                      iconColor: 'text-indigo-400',
+                    },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.08)' }}
+                      style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)' }}
+                      className="group flex h-full flex-col items-center justify-center rounded-[1.5rem] border border-white/5 px-3 py-6 transition-all duration-300"
+                    >
+                      <item.icon
+                        className={`mb-4 h-6 w-6 ${item.iconColor} transition-transform group-hover:rotate-12`}
+                      />
+                      <span className="text-center text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase transition-colors group-hover:text-white">
+                        {item.label}
+                      </span>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         </motion.div>
-
       </div>
 
       {/* Extreme ambient backglow */}
-
     </div>
   );
 };
@@ -277,30 +320,30 @@ export default function LandingContent({ session }: LandingContentProps): React.
       >
         <div className="flex items-center gap-12">
           <Link href="/" className="group flex items-center gap-3">
-             <Image 
-               src="/images/brand-logo.svg" 
-               alt="Markify" 
-               width={32} 
-               height={32} 
-               className="transition-transform duration-500"
-             />
+            <Image
+              src="/images/brand-logo.svg"
+              alt="Markify"
+              width={32}
+              height={32}
+              className="transition-transform duration-500"
+            />
             <span className="text-2xl font-black tracking-tighter text-white">Markify</span>
           </Link>
 
           {/* New Header Navigation */}
           <nav className="hidden items-center gap-8 md:flex">
-            <Link 
-              href="/editor" 
+            <Link
+              href="/editor"
               onClick={(e) => handleAuthRedirect(e, '/editor')}
-              className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-400 transition-colors hover:text-white"
+              className="flex items-center gap-2 text-sm font-black tracking-widest text-slate-400 uppercase transition-colors hover:text-white"
             >
               <Layout className="h-4 w-4" />
               Workspace
             </Link>
-            <Link 
-              href="/converter" 
+            <Link
+              href="/converter"
               onClick={(e) => handleAuthRedirect(e, '/converter')}
-              className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-400 transition-colors hover:text-white"
+              className="flex items-center gap-2 text-sm font-black tracking-widest text-slate-400 uppercase transition-colors hover:text-white"
             >
               <Zap className="h-4 w-4" />
               Converter
@@ -314,7 +357,7 @@ export default function LandingContent({ session }: LandingContentProps): React.
           ) : (
             <Button
               onClick={() => void signIn('google')}
-              className="group relative h-12 overflow-hidden rounded-full bg-white px-8 text-sm font-black uppercase tracking-widest text-slate-950 transition-all hover:scale-105 hover:bg-white"
+              className="group relative h-12 overflow-hidden rounded-full bg-white px-8 text-sm font-black tracking-widest text-slate-950 uppercase transition-all hover:scale-105 hover:bg-white"
             >
               <span className="relative z-10">Sign In</span>
             </Button>
@@ -325,14 +368,18 @@ export default function LandingContent({ session }: LandingContentProps): React.
       <main className="relative z-10">
         {/* Hero Section */}
         <section className="mx-auto max-w-7xl px-6 pt-24 pb-12 text-center lg:pt-40">
-          <motion.div initial="initial" animate="animate" variants={stagger} className="flex flex-col items-center">
-
-
+          <motion.div
+            initial="initial"
+            animate="animate"
+            variants={stagger}
+            className="flex flex-col items-center"
+          >
             <motion.h1
               variants={fadeIn}
-              className="mb-8 bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-6xl font-black leading-[1.1] tracking-tighter text-transparent md:text-8xl"
+              className="mb-8 bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-6xl leading-[1.1] font-black tracking-tighter text-transparent md:text-8xl"
             >
-              <span className="text-red-500">PDF</span> should look as good as <span className="text-blue-500">Markdown</span>
+              <span className="text-red-500">PDF</span> should look as good as{' '}
+              <span className="text-blue-500">Markdown</span>
             </motion.h1>
 
             <motion.p
@@ -355,27 +402,28 @@ export default function LandingContent({ session }: LandingContentProps): React.
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="group relative overflow-hidden rounded-[3rem] border border-blue-500/30 bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent backdrop-blur-3xl transition-all duration-700 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
+              className="group relative overflow-hidden rounded-[3rem] border border-blue-500/30 bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] backdrop-blur-3xl transition-all duration-700"
             >
               {/* Glossy Top Edge Highlight */}
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              
-              <div className="relative p-8 lg:p-12 h-full flex flex-col">
+
+              <div className="relative flex h-full flex-col p-8 lg:p-12">
                 <div className="mb-8 flex items-center justify-between">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
                     <Code2 className="h-7 w-7" />
                   </div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+                  <div className="text-[10px] font-black tracking-[0.3em] text-slate-500 uppercase">
                     Workspace
                   </div>
                 </div>
 
                 <h3 className="mb-4 text-3xl font-black text-white">Integrated Editor</h3>
-                <p className="mb-10 text-lg leading-relaxed text-slate-400 min-h-[90px]">
-                  Advanced workspace featuring real-time side-by-side rendering. Native folder asset support and instant Mermaid diagram generation.
+                <p className="mb-10 min-h-[90px] text-lg leading-relaxed text-slate-400">
+                  Advanced workspace featuring real-time side-by-side rendering. Native folder asset
+                  support and instant Mermaid diagram generation.
                 </p>
 
-                <div className="shadow-2xl relative mb-12 aspect-video overflow-hidden rounded-3xl border border-white/[0.08] bg-[#020617]">
+                <div className="relative mb-12 aspect-video overflow-hidden rounded-3xl border border-white/[0.08] bg-[#020617] shadow-2xl">
                   <div className="absolute inset-0 animate-pulse bg-blue-500/[0.02]" />
                   <Image
                     src="/previews/page-editor.gif"
@@ -401,27 +449,28 @@ export default function LandingContent({ session }: LandingContentProps): React.
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="group relative overflow-hidden rounded-[3rem] border border-emerald-500/30 bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent backdrop-blur-3xl transition-all duration-700 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)]"
+              className="group relative overflow-hidden rounded-[3rem] border border-emerald-500/30 bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] backdrop-blur-3xl transition-all duration-700"
             >
               {/* Glossy Top Edge Highlight */}
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              
-              <div className="relative p-8 lg:p-12 h-full flex flex-col">
+
+              <div className="relative flex h-full flex-col p-8 lg:p-12">
                 <div className="mb-8 flex items-center justify-between">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
                     <Zap className="h-7 w-7" />
                   </div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+                  <div className="text-[10px] font-black tracking-[0.3em] text-slate-500 uppercase">
                     Pipeline
                   </div>
                 </div>
 
                 <h3 className="mb-4 text-3xl font-black text-white">Batch Converter</h3>
-                <p className="mb-10 text-lg leading-relaxed text-slate-400 min-h-[90px]">
-                  Industrial-grade conversion engine. Process single files or massive zip archives into pixel-perfect PDF documents with one click.
+                <p className="mb-10 min-h-[90px] text-lg leading-relaxed text-slate-400">
+                  Industrial-grade conversion engine. Process single files or massive zip archives
+                  into pixel-perfect PDF documents with one click.
                 </p>
 
-                <div className="shadow-2xl relative mb-12 aspect-video overflow-hidden rounded-3xl border border-white/[0.08] bg-[#020617]">
+                <div className="relative mb-12 aspect-video overflow-hidden rounded-3xl border border-white/[0.08] bg-[#020617] shadow-2xl">
                   <div className="absolute inset-0 animate-pulse bg-emerald-500/[0.02]" />
                   <Image
                     src="/previews/page-converter.gif"
@@ -446,20 +495,25 @@ export default function LandingContent({ session }: LandingContentProps): React.
         </section>
 
         {/* Super Modern Footer */}
-        <footer className="relative border-t border-white/5 bg-slate-950 py-20 px-6">
+        <footer className="relative border-t border-white/5 bg-slate-950 px-6 py-20">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-12 md:flex-row">
             <div className="flex flex-col items-center gap-4 md:items-start">
-
               <p className="text-sm font-medium text-slate-500">
                 © 2026 MARKIFY. ALL RIGHTS RESERVED.
               </p>
             </div>
 
-            <div className="flex items-center gap-3 font-mono text-[10px] font-bold uppercase text-slate-100 tracking-[0.4em] transition-all duration-300">
+            <div className="flex items-center gap-3 font-mono text-[10px] font-bold tracking-[0.4em] text-slate-100 uppercase transition-all duration-300">
               <span className="inline-block scale-y-[1.4]">Built with</span>
               <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
               <span className="inline-block scale-y-[1.4]">by</span>
-              <Image src="/images/company-logo.svg" alt="KAI" width={36} height={36} className="object-contain" />
+              <Image
+                src="/images/company-logo.svg"
+                alt="KAI"
+                width={36}
+                height={36}
+                className="object-contain"
+              />
               <span className="inline-block scale-y-[1.4]">KAI</span>
             </div>
           </div>

@@ -121,7 +121,7 @@ jobs:
             set -e
 
             cd /var/www/markify-md-to-pdf-converter
-            
+
             # Sync local files (docker-compose, etc) first
             git pull origin main
 

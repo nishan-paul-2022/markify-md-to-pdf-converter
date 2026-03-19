@@ -26,9 +26,12 @@ export function useFileUpload({
   const folderInputRef = useRef<HTMLInputElement | null>(null);
   const zipInputRef = useRef<HTMLInputElement | null>(null);
 
-  const setLoading = useCallback((loading: boolean) => {
-    if (setIsLoading) setIsLoading(loading);
-  }, [setIsLoading]);
+  const setLoading = useCallback(
+    (loading: boolean) => {
+      if (setIsLoading) setIsLoading(loading);
+    },
+    [setIsLoading],
+  );
 
   /**
    * Universal File Uploader

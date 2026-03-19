@@ -129,7 +129,7 @@ export const ServerFilesService = {
       try {
         const filePath = join(process.cwd(), 'public', file.storageKey);
         await unlink(filePath);
-        
+
         // Clean up empty directories
         const fileDir = dirname(filePath);
         if (fileDir.startsWith(uploadsRoot)) {
@@ -173,7 +173,7 @@ export const ServerFilesService = {
 
     try {
       await unlink(filePath);
-      
+
       // Clean up empty directories
       const fileDir = dirname(filePath);
       if (fileDir.startsWith(uploadsRoot)) {
