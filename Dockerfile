@@ -40,8 +40,12 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-# PORT is injected at runtime — no defaults set here
+# Setup auto-sync entrypoint
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# PORT is injected at runtime
 ENV HOSTNAME="0.0.0.0"
 
-# server.js is created by next build from the standalone output
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "server.js"]
