@@ -108,9 +108,7 @@ export function removeLandingPageSection(markdown: string): string {
 
   // 2. If the content now starts with a page break, remove it to avoid an empty second page
   // (since the cover page already implies a page break)
-  return cleaned
-    .replace(/^(?:\\pagebreak|<!--\s*pagebreak\s*-->)\s*/i, '')
-    .trim();
+  return cleaned.replace(/^(?:\\pagebreak|<!--\s*pagebreak\s*-->)\s*/i, '').trim();
 }
 
 export const DEFAULT_METADATA: Metadata = {};

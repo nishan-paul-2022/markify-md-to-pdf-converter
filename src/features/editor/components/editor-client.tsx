@@ -42,7 +42,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         await handleDelete(id);
       }
     },
-    [handleDelete, handleBulkDelete]
+    [handleDelete, handleBulkDelete],
   );
 
   const converterState = useConverter(files, handleUnifiedDelete, refreshFiles);
@@ -87,10 +87,10 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         if (response.ok) {
           const originalText = await response.text();
           let currentText = originalText;
-          
+
           // Store the authentic file content from server as "original"
           setOriginalContent(originalText);
-          
+
           // Check for draft from server
           if (targetFile.id && !targetFile.id.startsWith('default-')) {
             const draft = await fetchDraft(targetFile.id);
@@ -107,7 +107,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
           setContent(contentWithoutLandingPage);
 
           // CRITICAL: Use setRawContent instead of handleContentChange for initial load.
-          // This prevents the "auto-save" from triggering for the new content 
+          // This prevents the "auto-save" from triggering for the new content
           // before the selectedFileId has updated in the store/hook.
           setRawContent(currentText);
 
@@ -209,10 +209,10 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
       setNavigationHistory((prev) => {
         // Don't add if it's already the last one
         if (prev[prev.length - 1] === selectedFileId) return prev;
-        
+
         // Keep unique entries, move new one to the end
         const newHistory = [...prev.filter((id) => id !== selectedFileId), selectedFileId];
-        
+
         // Limit history size to 20
         return newHistory.slice(-20);
       });
@@ -350,13 +350,7 @@ export default function EditorClient({ user }: EditorClientProps): React.JSX.Ele
         }
       }
     },
-    [
-      files,
-      setActiveImage,
-      setImageGallery,
-      loadFileContent,
-      flushDraft,
-    ],
+    [files, setActiveImage, setImageGallery, loadFileContent, flushDraft],
   );
 
   return (

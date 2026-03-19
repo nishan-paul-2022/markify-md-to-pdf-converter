@@ -1,6 +1,6 @@
 /**
  * Centralized Draft Storage Manager
- * 
+ *
  * This utility provides a single source of truth for managing localStorage drafts
  * with proper cache invalidation and version tracking.
  */
@@ -23,7 +23,7 @@ export function saveDraft(fileId: string, content: string, serverVersion: string
     updatedAt: new Date().toISOString(),
     fileVersion: serverVersion,
   };
-  
+
   try {
     localStorage.setItem(`${DRAFT_PREFIX}${fileId}`, JSON.stringify(draft));
     localStorage.setItem(`${VERSION_PREFIX}${fileId}`, serverVersion);
@@ -45,7 +45,7 @@ export function loadDraft(fileId: string, currentServerVersion: string): string 
     if (!draftStr) return null;
 
     const draft: DraftData = JSON.parse(draftStr);
-    
+
     // Version mismatch - server file has changed
     if (draft.fileVersion !== currentServerVersion) {
       console.info(`🔄 Server version changed for file ${fileId}. Discarding stale draft.`);
@@ -75,7 +75,7 @@ export function clearDraft(fileId: string): void {
  */
 export function clearAllDrafts(): void {
   const keys = Object.keys(localStorage);
-  keys.forEach(key => {
+  keys.forEach((key) => {
     if (key.startsWith(DRAFT_PREFIX) || key.startsWith(VERSION_PREFIX)) {
       localStorage.removeItem(key);
     }

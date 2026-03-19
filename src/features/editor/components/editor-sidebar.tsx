@@ -114,7 +114,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                   setIsSelectionMode(!isSelectionMode);
                 }}
                 className={cn(
-                  'h-6.5 w-6.5 transition-all hover:scale-110 !bg-transparent hover:!bg-transparent',
+                  'h-6.5 w-6.5 !bg-transparent transition-all hover:scale-110 hover:!bg-transparent',
                   isSelectionMode ? 'text-sky-400' : 'text-slate-500 hover:text-white',
                 )}
               >
@@ -132,7 +132,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                 variant={undefined}
                 size="icon"
                 onClick={() => refreshFiles()}
-                className="h-6.5 w-6.5 transition-all text-slate-500 hover:text-white hover:scale-110 !bg-transparent hover:!bg-transparent"
+                className="h-6.5 w-6.5 !bg-transparent text-slate-500 transition-all hover:scale-110 hover:!bg-transparent hover:text-white"
                 disabled={filesLoading}
               >
                 <RefreshCw className={cn('h-3.5 w-3.5', filesLoading && 'animate-spin')} />
@@ -152,7 +152,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                   e.stopPropagation();
                   setIsSidebarOpen(false);
                 }}
-                className="h-6.5 w-6.5 transition-all text-slate-500 hover:text-white hover:scale-110 !bg-transparent hover:!bg-transparent"
+                className="h-6.5 w-6.5 !bg-transparent text-slate-500 transition-all hover:scale-110 hover:!bg-transparent hover:text-white"
               >
                 <PanelLeftClose className="h-4 w-4" />
               </Button>

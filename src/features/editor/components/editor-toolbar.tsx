@@ -208,64 +208,62 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
         {/* Group 3: Actions */}
         <div className="flex h-8 items-center gap-0.5 rounded-full border border-white/5 bg-slate-800/40 px-1 shadow-inner">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void handleCopy();
-                }}
-                className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
-              >
-                {isCopied ? (
-                  <Check className="mr-1.5 h-3.5 w-3.5 text-green-400" />
-                ) : (
-                  <Copy className="mr-1.5 h-3.5 w-3.5" />
-                )}
-                {isCopied ? 'Copied' : 'Copy'}
-              </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              void handleCopy();
+            }}
+            className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
+          >
+            {isCopied ? (
+              <Check className="mr-1.5 h-3.5 w-3.5 text-green-400" />
+            ) : (
+              <Copy className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            {isCopied ? 'Copied' : 'Copy'}
+          </Button>
 
           <div className="h-3 w-[1px] bg-white/10" />
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void handleReset();
-                }}
-                className={`flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95 ${
-                  isModified && !isReset ? 'text-blue-400' : 'text-slate-500'
-                }`}
-              >
-                {isReset ? (
-                  <Check className="mr-1.5 h-3.5 w-3.5 text-green-400" />
-                ) : (
-                  <RotateCcw
-                    className={`mr-1.5 h-3.5 w-3.5 ${isModified ? 'text-blue-400' : ''}`}
-                  />
-                )}
-                {isReset ? 'Done' : 'Reset'}
-              </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              void handleReset();
+            }}
+            className={`flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95 ${
+              isModified && !isReset ? 'text-blue-400' : 'text-slate-500'
+            }`}
+          >
+            {isReset ? (
+              <Check className="mr-1.5 h-3.5 w-3.5 text-green-400" />
+            ) : (
+              <RotateCcw className={`mr-1.5 h-3.5 w-3.5 ${isModified ? 'text-blue-400' : ''}`} />
+            )}
+            {isReset ? 'Done' : 'Reset'}
+          </Button>
 
           <div className="h-3 w-[1px] bg-white/10" />
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDownloadMd();
-                }}
-                className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
-              >
-                {isDownloaded ? (
-                  <Check className="mr-1.5 h-3.5 w-3.5 text-green-400" />
-                ) : (
-                  <Download className="mr-1.5 h-3.5 w-3.5" />
-                )}
-                Export
-              </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDownloadMd();
+            }}
+            className="flex h-6 items-center justify-center rounded-full border border-transparent px-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase transition-all duration-200 hover:border-white/10 hover:bg-white/5 hover:text-slate-200 active:scale-95"
+          >
+            {isDownloaded ? (
+              <Check className="mr-1.5 h-3.5 w-3.5 text-green-400" />
+            ) : (
+              <Download className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            Export
+          </Button>
 
           <div className="ml-1 md:hidden">
             <DropdownMenu>

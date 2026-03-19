@@ -112,7 +112,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // 5. Apply Zero Tolerance Validation Rules
-    
+
     // Rule: Must contain at least one .md file
     const mdFiles = allFiles.filter((f) => f.name.toLowerCase().endsWith('.md'));
     if (mdFiles.length === 0) {
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const allowedImageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
     const validFiles: typeof allFiles = [];
-    
+
     // Helper to find all image references in markdown content with relative path resolution
     async function getReferencedImages(
       mdFiles: { fullPath: string; relativePath: string }[],
@@ -206,7 +206,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
 
       // Rule: Hidden files are already skipped in walk()
-      
+
       // Zip acts as a batch of Section 1 (Files) and Section 2 (Folders)
       const depth = effectiveParts.length;
       const parentFolder = depth > 1 ? effectiveParts[depth - 2].toLowerCase() : null;
@@ -215,7 +215,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Rule: Strict Depth (Zero Tolerance for messy nesting)
       if (depth > 3) {
         return NextResponse.json(
-          { error: `Upload failed — directory structure too deep (max 3 levels): ${file.relativePath}` },
+          {
+            error: `Upload failed — directory structure too deep (max 3 levels): ${file.relativePath}`,
+          },
           { status: 400 },
         );
       }
@@ -224,24 +226,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (isMd) {
         // MDs allowed at Root (L1) or Folder Root (L2). No MDs allowed inside images/ or deeper.
         if (depth > 2 || isInsideImages) {
-           return NextResponse.json(
-            { error: `Upload failed — Markdown files must be at a project root, not in subfolders: ${file.relativePath}` },
+          return NextResponse.json(
+            {
+              error: `Upload failed — Markdown files must be at a project root, not in subfolders: ${file.relativePath}`,
+            },
             { status: 400 },
           );
         }
         validFiles.push(file);
-      } 
-      else if (isImage) {
+      } else if (isImage) {
         // Images MUST be inside a folder named 'images/'
         if (!isInsideImages) {
           return NextResponse.json(
-            { error: `Upload failed — images must be inside an 'images/' subfolder: ${file.relativePath}` },
+            {
+              error: `Upload failed — images must be inside an 'images/' subfolder: ${file.relativePath}`,
+            },
             { status: 400 },
           );
         }
         validFiles.push(file);
-      }
-      else {
+      } else {
         // Anything else is forbidden baggage (unless ignored hidden files)
         const fileName = effectiveParts[depth - 1].toLowerCase();
         if (!fileName.startsWith('.')) {
@@ -259,7 +263,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // e.g. "images/pic.png" or "Folder/images/pic.png"
       if (!referencedImages.has(imagePath)) {
         return NextResponse.json(
-          { error: `Upload failed — Orphaned asset found: '${imagePath}' is not referenced in any Markdown file.` },
+          {
+            error: `Upload failed — Orphaned asset found: '${imagePath}' is not referenced in any Markdown file.`,
+          },
           { status: 400 },
         );
       }

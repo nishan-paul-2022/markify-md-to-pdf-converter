@@ -89,7 +89,9 @@ export async function renderMermaidToSvg(mermaidCode: string): Promise<string> {
     await page.setContent(html, { waitUntil: 'networkidle' });
 
     // Wait for mermaid and fonts
-    await page.waitForFunction(() => typeof window.renderMermaid === 'function', { timeout: 10000 });
+    await page.waitForFunction(() => typeof window.renderMermaid === 'function', {
+      timeout: 10000,
+    });
 
     // Render the diagram
     const svg = await page.evaluate(async (code) => {
@@ -99,11 +101,10 @@ export async function renderMermaidToSvg(mermaidCode: string): Promise<string> {
     // Post-process SVG to ensure it's responsive and not clipped
 
     const responsiveSvg = svg.replace(/<svg([\s\S]*?)>/, (_match, content) => {
-      // Keep existing width/height attributes if present! 
+      // Keep existing width/height attributes if present!
       // Only remove existing style to avoid conflicts, then inject our responsive style.
-      const cleanedContent = content
-        .replace(/\bstyle\s*=\s*"[^"]*"/g, '');
-      
+      const cleanedContent = content.replace(/\bstyle\s*=\s*"[^"]*"/g, '');
+
       // Use max-width: 100% to shrink if needed, but let natural width apply otherwise.
       // Do NOT set width: 100% or width: auto (which can force expansion).
       return `<svg${cleanedContent} style="max-width: 100%; height: auto; display: block; margin: 0 auto;">`;

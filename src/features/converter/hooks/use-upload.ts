@@ -19,36 +19,39 @@ export function useUpload() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderInputRef = useRef<HTMLInputElement | null>(null);
 
-  const processUploadedFiles = useCallback(async (inputFiles: File[], type?: 'single' | 'folder' | 'zip') => {
-    logger.info(`📦 Processing ${inputFiles.length} files...`);
+  const processUploadedFiles = useCallback(
+    async (inputFiles: File[], type?: 'single' | 'folder' | 'zip') => {
+      logger.info(`📦 Processing ${inputFiles.length} files...`);
 
-    // Now validate and filter using the consolidated logic
-    const validation = await validateUploadStructure(inputFiles, type);
+      // Now validate and filter using the consolidated logic
+      const validation = await validateUploadStructure(inputFiles, type);
 
-    if (!validation.valid) {
-      const api = getAlert();
-      if (api) {
-        api.show({
-          title: validation.case <= 2 ? 'Invalid File' : 'Invalid Folder',
-          message: validation.error || 'Invalid selection.',
-          variant: 'destructive',
-        });
-      } else {
-        setError(validation.error || 'Invalid file structure.');
+      if (!validation.valid) {
+        const api = getAlert();
+        if (api) {
+          api.show({
+            title: validation.case <= 2 ? 'Invalid File' : 'Invalid Folder',
+            message: validation.error || 'Invalid selection.',
+            variant: 'destructive',
+          });
+        } else {
+          setError(validation.error || 'Invalid file structure.');
+        }
+        return;
       }
-      return;
-    }
 
-    setError(null);
-    const processedFiles = processFilesWithNaming(validation.filteredFiles, validation.case);
+      setError(null);
+      const processedFiles = processFilesWithNaming(validation.filteredFiles, validation.case);
 
-    // For selective file uploads, we only allow one file at a time
-    if (validation.case <= 2) {
-      setFiles(processedFiles);
-    } else {
-      setFiles((prev) => [...prev, ...processedFiles]);
-    }
-  }, []);
+      // For selective file uploads, we only allow one file at a time
+      if (validation.case <= 2) {
+        setFiles(processedFiles);
+      } else {
+        setFiles((prev) => [...prev, ...processedFiles]);
+      }
+    },
+    [],
+  );
 
   const handleFileSelect = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {

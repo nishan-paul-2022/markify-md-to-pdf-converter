@@ -26,7 +26,6 @@ export const ConverterHeader: React.FC<ConverterHeaderProps> = ({
   searchQuery,
   onSearchChange,
 }) => {
-
   return (
     <header className="relative z-10 flex h-16 shrink-0 items-center justify-between border-b border-white/5 bg-slate-950/50 px-6 backdrop-blur-xl">
       <Link
