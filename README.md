@@ -2,7 +2,11 @@
   <img src="public/images/brand-logo.svg" alt="Markify Logo" width="120" height="120" />
   <h1>Markify</h1>
   <p>Professional Markdown to PDF Conversion Suite</p>
+  <a href="https://markify.kaiofficial.xyz" target="_blank">
+    <img src="https://img.shields.io/badge/Live_App-markify.kaiofficial.xyz-0070f3?style=for-the-badge&logo=next.js&logoColor=white" alt="Live App" />
+  </a>
 </div>
+
 
 Markify is a professional, high-performance web application designed to convert Markdown into beautiful, high-fidelity PDF reports. Built with **Next.js**, **Playwright**, and **Tailwind CSS v4**, it features real-time preview, image support, and seamless Mermaid diagram support.
 
